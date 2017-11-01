@@ -41,6 +41,7 @@ enigmatic = x => {
     }
     window[ename](e);
    });
+   console.log('enigmatic runtime')
  } catch(e) {
    document.body.innerHTML = `<div style='color:red'>${e.stack}</div>`
  }  
