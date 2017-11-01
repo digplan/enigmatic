@@ -4,12 +4,17 @@ enigmatic = x => {
     e.set = showid =>
      $('views > view').forEach( v => v.hidden = v.id != showid )
   
-   window.load = function(s, cb){
-    var css = s.match(/css$/);
-    var i = document.body.appendChild(document.createElement(css ? 'link' : 'script'));
-    i.onload = cb||null;
-    if(css) css.rel = "stylesheet";
-    i[css ? 'href' : 'src'] = s;
+   window.load = s => {
+    return new Promise(r => {
+      var iscss = s.match(/css$/);
+      var e = document.createElement(iscss ? 'link' : 'script')
+      if(iscss) e.rel = "stylesheet";
+      e[iscss ? 'href' : 'src'] = s; 
+      document.body.appendChild(e)
+      e.onload = x => {
+        console.log(s); r(s);
+      }
+    })
    }
    window.$ = document.querySelectorAll.bind(document);
    window.data = new Proxy({}, {
@@ -20,11 +25,11 @@ enigmatic = x => {
       if(prop) v = eval('value.' + prop);
       if(e.set) e.set(v);
       if(e.render) e.render(v);
-    });
-        target[property] = value;
-      }
+     });
+     target[property] = value;
+    }
    });
-   document.querySelectorAll('[control]').forEach((e)=>{
+   document.querySelectorAll('[control]').forEach(e => {
     console.log(e)
     var ename = e.tagName.toLowerCase();
     var cn = e.getAttribute('control');
