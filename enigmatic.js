@@ -43,7 +43,7 @@ enigmatic = x => {
    });
    console.log('enigmatic runtime')
  } catch(e) {
-   document.body.innerHTML = `<div style='color:red'>${e.stack}</div>`
+   console.error(`<div style='color:red'>${e.stack}</div>`)
  }  
 }
 window.onload = enigmatic
