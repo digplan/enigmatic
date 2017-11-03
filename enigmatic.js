@@ -1,5 +1,7 @@
 enigmatic = x => {
  try {
+   window.helloworld = e =>
+     e.innerHTML = 'Hello World!'
    window.views = e =>
     e.set = showid =>
      $('views > view').forEach( v => v.hidden = v.id != showid )
@@ -18,19 +20,16 @@ enigmatic = x => {
    }
    window.$ = document.querySelectorAll.bind(document);
    window.data = new Proxy({}, {
-    set: function(target, property, value, receiver) {
-     document.querySelectorAll(`[data=${property}]`).forEach(function(e){
-      var v = value;
-      var prop = e.getAttribute('data-property');
-      if(prop) v = eval('value.' + prop);
-      if(e.set) e.set(v);
-      if(e.render) e.render(v);
+    set: (target, property, value, receiver) => {
+      $(`[data=${property}]`).forEach(e => {
+      console.log(`set data ${e.tagName} ${JSON.stringify(value)}`);
+      if(e.set) e.set(value);
      });
      target[property] = value;
-    }
+    } 
    });
-   document.querySelectorAll('[control]').forEach(e => {
-    console.log(e)
+   $('[control]').forEach(e => {
+    console.log(e) 
     var ename = e.tagName.toLowerCase();
     var cn = e.getAttribute('control');
     if(cn) ename = cn;
@@ -39,11 +38,19 @@ enigmatic = x => {
       document.head.appendChild(style);
       style.sheet.insertRule(`${sel||e.tagName} { ${rules} }`); 
     }
-    window[ename](e);
-   });
+    window[ename](e)
+   }); 
+   window.get = async url => {
+     var res = await fetch(url)
+     var d = await res.json()
+     for(k in d) data[k] = d[k] 
+   }
+   var dataurl = $('meta[data]')[0];
+   if(dataurl)
+     get(dataurl.getAttribute('data'))
    console.log('enigmatic runtime')
  } catch(e) {
-   console.error(`<div style='color:red'>${e.stack}</div>`)
+   console.error(e.stack)
  }  
 }
 window.onload = enigmatic
