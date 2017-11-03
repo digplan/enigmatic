@@ -43,11 +43,13 @@ enigmatic = x => {
    window.get = async url => {
      var res = await fetch(url)
      var d = await res.json()
-     for(k in d) data[k] = d[k] 
+     return d;      
    }
    var dataurl = $('meta[data]')[0];
-   if(dataurl)
-     get(dataurl.getAttribute('data'))
+   if(dataurl){
+     var d = get(dataurl.getAttribute('data'))
+     for(k in d) data[k] = d[k]
+   }
    console.log('enigmatic runtime')
  } catch(e) {
    console.error(e.stack)
