@@ -1,4 +1,4 @@
-enigmatic = x => {
+enigmatic = async x => {
  try {
    window.helloworld = e =>
      e.innerHTML = 'Hello World!'
@@ -50,7 +50,7 @@ enigmatic = x => {
    }
    var dataurl = $('meta[data]')[0];
    if(dataurl){
-     var d = get(dataurl.getAttribute('data'))
+     var d = await get(dataurl.getAttribute('data'))
      for(k in d) data[k] = d[k]
    }
    console.log('enigmatic runtime')
