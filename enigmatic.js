@@ -48,11 +48,13 @@ enigmatic = async x => {
      var d = await res.json()
      return d;      
    }
-   var dataurl = $('meta[data]')[0];
-   if(dataurl){
-     var d = await get(dataurl.getAttribute('data'))
-     for(k in d) data[k] = d[k]
-   }
+   (async () => {
+      var dataurl = $('meta[data]')[0];
+      if(dataurl){
+        var d = await get(dataurl.getAttribute('data'))
+        for(k in d) data[k] = d[k]
+      }
+   })()
    console.log('enigmatic runtime')
  } catch(e) {
    console.error(e.stack)
