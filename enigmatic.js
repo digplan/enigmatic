@@ -21,12 +21,15 @@ enigmatic = x => {
    window.$ = document.querySelectorAll.bind(document);
    window.data = new Proxy({}, {
     set: (target, property, value, receiver) => {
-      $(`[data=${property}]`).forEach(e => {
-      console.log(`set data ${e.tagName} ${JSON.stringify(value)}`);
-      if(e.set) e.set(value);
-     });
-     target[property] = value;
-    } 
+      var arr = $(`[data=${property}]`)
+      if(arr){
+        arr.forEach(e => {
+         console.log(`set data ${e.tagName} ${JSON.stringify(value)}`);
+         if(e.set) e.set(value);
+        });
+      }
+      target[property] = value;
+    }
    });
    $('[control]').forEach(e => {
     console.log(e) 
