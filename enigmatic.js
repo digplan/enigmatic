@@ -44,7 +44,7 @@ enigmatic = async x => {
     window[ename](e)
    }); 
    window.get = async url => {
-     var res = await fetch(url)
+     var res = await fetch(url, {mode: 'no-cors'})
      var d = await res.json()
      return d;      
    }
