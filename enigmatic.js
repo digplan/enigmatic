@@ -45,7 +45,7 @@ enigmatic = async x => {
       document.head.appendChild(style);
       style.sheet.insertRule(`${sel||e.tagName} { ${rules} }`); 
     }
-    window[ename](e)
+    await window[ename](e)
    }); 
    window.get = async url => {
      var res = await fetch(url)
