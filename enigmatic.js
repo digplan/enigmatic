@@ -61,6 +61,6 @@ enigmatic = async x => {
    })()
    console.log('enigmatic runtime')
  } catch(e) {
-   console.error(e.stack)
+   document.write(e.stack)
  }  
 }
