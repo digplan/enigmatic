@@ -64,4 +64,4 @@ enigmatic = async x => {
    console.error(e.stack)
  }  
 }
-window.onload = enigmatic
+if(ready) ready(enigmatic)
