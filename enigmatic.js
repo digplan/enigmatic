@@ -64,4 +64,3 @@ enigmatic = async x => {
    console.error(e.stack)
  }  
 }
-if(ready) ready(enigmatic)
