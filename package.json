@@ -12,6 +12,9 @@
   	 "type"     : "git",
  	   "url"      : "git://github.com/digplan/enigmatic.js.git"
   },
+  "scripts": {
+    "test": "node test.js"
+  },
   "runkitExampleFilename" : "enigmatic.js",
   "version"     : "0.1.1"
 }
