@@ -6,11 +6,12 @@
   "author"      : "C Borkert <drivetrafficnow@gmail.com>",
   "main"        : "enigmatic.js",
   "dependencies": {
+    "chromeless": ""
   },
   "repository": {
   	 "type"     : "git",
  	   "url"      : "git://github.com/digplan/enigmatic.js.git"
   },
   "runkitExampleFilename" : "enigmatic.js",
-  "version"     : "0.1.0"
+  "version"     : "0.1.1"
 }
