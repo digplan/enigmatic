@@ -1,5 +1,6 @@
 enigmatic = async x => {
-  window.controls = {helloworld: e => e.innerHTML='Hello World!'}
+  window.controls = window.controls || {}
+  window.controls.helloworld = e=>e.innerHTML='Hello World!'
   window.$ = document.querySelectorAll.bind(document)
   window.load = s => {
     return new Promise(r => {
