@@ -42,4 +42,4 @@ enigmatic = async x => {
     for(k in d) data[k] = d[k]
   }
 }
-enigmatic()
+document.addEventListener("DOMContentLoaded", enigmatic);
