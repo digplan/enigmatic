@@ -43,4 +43,5 @@ enigmatic = async x => {
     for(k in d) data[k] = d[k]
   }
 }
-document.addEventListener("DOMContentLoaded", enigmatic);
+if(typeof enigmatic !== 'undefined')
+  document.addEventListener("DOMContentLoaded", enigmatic);
