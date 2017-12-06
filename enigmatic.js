@@ -1,4 +1,4 @@
-enigmatic = async x => {
+window.enigmatic = async x => {
   window.controls = window.controls || {}
   window.controls.helloworld = e=>e.innerHTML='Hello World!'
   window.$ = document.querySelectorAll.bind(document)
