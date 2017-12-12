@@ -6,7 +6,7 @@ window.enigmatic = async x => {
     return new Promise(r => {
       var iscss = s.match(/css$/);
       if(!iscss){
-        for(i=0;i<document.scripts.length;i++)
+        for(var i=0;i<document.scripts.length;i++)
           if(document.scripts[i].src == s) return r()
       }
       var e = document.createElement(iscss ? 'link' : 'script')
