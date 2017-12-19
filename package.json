@@ -6,7 +6,7 @@
   "author"      : "<digplan@outlook.com>",
   "main"        : "main.js",
   "dependencies": {
-    "chromeless": ""
+    "testchrome": ""
   },
   "repository": {
   	 "type"     : "git",
