@@ -1,20 +1,17 @@
 {
-  "name"        : "enigmatic.js",
+  "name"        : "enigmatic",
   "description" : "",
-  "url"         : "http://github.com/digplan/enigmatic.js",
+  "url"         : "http://github.com/digplan/enigmatic",
   "keywords"    : ["util", "nodejs", "express", "web", "html5"],
-  "author"      : "C Borkert <drivetrafficnow@gmail.com>",
-  "main"        : "enigmatic.js",
+  "author"      : "<digplan@outlook.com>",
+  "main"        : "main.js",
   "dependencies": {
     "chromeless": ""
   },
   "repository": {
   	 "type"     : "git",
- 	   "url"      : "git://github.com/digplan/enigmatic.js.git"
+ 	   "url"      : "git://github.com/digplan/enigmatic.git"
   },
-  "scripts": {
-    "test": "node test.js"
-  },
-  "runkitExampleFilename" : "enigmatic.js",
-  "version"     : "0.1.1"
+  "runkitExampleFilename" : "main.js",
+  "version"     : "0.1.2"
 }

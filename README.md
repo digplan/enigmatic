@@ -1,4 +1,6 @@
-# enigmatic.js
+# enigmatic
+![Build Status](https://travis-ci.org/digplan/enigmatic.svg?branch=master "")
+
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
 It aspires to enable faster web app development and performance, especially on devices with extremely limited resources or slow network.
 
