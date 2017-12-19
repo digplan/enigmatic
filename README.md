@@ -7,7 +7,7 @@ It aspires to enable faster web app development and performance, especially on d
 ## Usage
 Can be used as simply as follows.
 ````
-<script src=//tiny.cc/tryenig></script>
+<script src=//unpkg.com/enigmatic></script>
 
 <!-- Hello world control -->
 <helloworld control></helloworld>
@@ -26,10 +26,10 @@ Enigmatic also includes some helpers.
 $('div').forEach(...)
 
 // Load scripts
-async x => await load('https://...')
+await load('https://...')
 
-// Get (fetch) data
-async x = await get('//now.httpbin.org')
+// Get (fetch) JSON data
+const json = await get('//now.httpbin.org')
 ````
 
 ## Data
@@ -54,7 +54,7 @@ const counter = e =>
 ````
 
 ## Meta-data
-An HTML Meta tag is introduced, which optionally can be used to instantiate the data object.
+An HTML Meta tag, optionally can be used to instantiate the data object.
 ````
 // This expects a JSON object.  Each property of the object will be used in the app's data object
 <meta data='//now.httpbin.org'>
@@ -64,18 +64,12 @@ An HTML Meta tag is introduced, which optionally can be used to instantiate the 
 ## HTML
 ````
 <!-- Shortcut to instantiate the data for the app -->
+<script src=//unpkg.com/enigmatic ></script>
 <meta data='//now.httpbin.org'>
 
-<!-- Control -->
+<!-- Control spec -->
 <controlname [data='key'] control></controlname>
 
 <helloworld></helloworld>
 <time></time>
-````
-## JS
-````
-// $: const es = $('div')
-// load : await load('//tiny.cc/tryenig')
-// get : await get('//tiny.cc/tryenig')
-// data : window.data
 ````
