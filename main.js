@@ -43,5 +43,7 @@ window.enigmatic = async x => {
     for(k in d) data[k] = d[k]
   }
 }
-if(typeof enigmatic !== 'undefined')
-  document.addEventListener("DOMContentLoaded", enigmatic);
+if(typeof window.enigmatic !== 'undefined')
+  document.addEventListener("DOMContentLoaded", window.enigmatic);
+else
+  setTimeout(window.enigmatic, 2000);
