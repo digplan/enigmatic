@@ -44,4 +44,4 @@ window.enigmatic = async x => {
   }
   console.warn(+new Date())
 }
-document.addEventListener('DOMContentLoaded', ()=>console.warn(+new Date()))
+window.enigmatic()
