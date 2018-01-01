@@ -45,3 +45,4 @@ window.enigmatic = async x => {
   console.warn(+new Date())
 }
 window.enigmatic()
+document.addEventListener('DOMContentLoaded', window.enigmatic)
