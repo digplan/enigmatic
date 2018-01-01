@@ -42,8 +42,6 @@ window.enigmatic = async x => {
     let d = await (await fetch(dataurl.getAttribute('data'))).json()
     for(k in d) data[k] = d[k]
   }
+  console.warn(+new Date())
 }
-if(typeof window.enigmatic !== 'undefined')
-  document.addEventListener("DOMContentLoaded", window.enigmatic);
-else
-  setTimeout(window.enigmatic, 2000);
+document.addEventListener('DOMContentLoaded', ()=>console.warn(+new Date()))
