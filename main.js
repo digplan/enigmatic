@@ -25,7 +25,10 @@ window.enigmatic = async x => {
       });
     }
   })
-          
+  Element.child = (type, parent) => {
+    const e = document.createElement(type||'div')
+    (parent||this).appendChild(e)
+  }
   let controls = $('[control]')
   for(let i=0; i<controls.length; i++){
     let e = controls[i]
