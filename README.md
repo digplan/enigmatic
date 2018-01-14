@@ -1,5 +1,10 @@
 # enigmatic
 ![Build Status](https://travis-ci.org/digplan/enigmatic.svg?branch=master "")
+![version](https://img.shields.io/npm/v/enigmatic.svg)
+![node](https://img.shields.io/node/v/enigmatic.svg)
+![dependencies](https://img.shields.io/david/digplan/enigmatic.svg)
+
+Example Travis CI project with test and deploy
 
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
 It aspires to enable faster web app development and performance, especially on devices with extremely limited resources or slow network.
