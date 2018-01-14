@@ -68,6 +68,14 @@ A hello world control is included
 <helloworld control></helloworld>
 ````
 
+## Element.child
+A simple helper for creating controls is included
+````
+window.controls.mycontrol = e => {
+  const childElement = e.child('input')
+}
+````
+
 ## Meta-data
 An HTML Meta tag, optionally can be used to instantiate the data object.
 ````
