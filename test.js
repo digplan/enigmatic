@@ -1,6 +1,6 @@
 (async ()=>{
   const page = await require('testchrome')('https://digplan.github.io/enigmatic/test.html')
-  const html = page.evaluate('document.documentElement.outerHTML')
+  const html = await page.evaluate('document.documentElement.outerHTML')
   console.log(html)
   
   process.exit(0) 

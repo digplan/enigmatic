@@ -1,17 +1,23 @@
 {
-  "name"        : "enigmatic",
-  "description" : "",
-  "url"         : "http://github.com/digplan/enigmatic",
-  "keywords"    : ["util", "nodejs", "express", "web", "html5"],
-  "author"      : "<digplan@outlook.com>",
-  "main"        : "main.js",
+  "name": "enigmatic",
+  "description": "",
+  "url": "http://github.com/digplan/enigmatic",
+  "keywords": [
+    "util",
+    "nodejs",
+    "express",
+    "web",
+    "html5"
+  ],
+  "author": "<digplan@outlook.com>",
+  "main": "main.js",
   "dependencies": {
     "testchrome": ""
   },
   "repository": {
-  	 "type"     : "git",
- 	   "url"      : "git://github.com/digplan/enigmatic.git"
+    "type": "git",
+    "url": "git://github.com/digplan/enigmatic.git"
   },
-  "runkitExampleFilename" : "main.js",
-  "version"     : "0.1.6"
+  "runkitExampleFilename": "main.js",
+  "version": "0.1.6"
 }
