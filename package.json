@@ -1,23 +1,16 @@
 {
   "name": "enigmatic",
-  "description": "",
+  "description": "Simple web controls",
   "url": "http://github.com/digplan/enigmatic",
-  "keywords": [
-    "util",
-    "nodejs",
-    "express",
-    "web",
-    "html5"
-  ],
   "author": "<digplan@outlook.com>",
   "main": "main.js",
   "dependencies": {
-    "testchrome": ""
+    "testchrome": "*"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/digplan/enigmatic.git"
   },
   "runkitExampleFilename": "main.js",
-  "version": "0.1.7"
+  "version": "0.1.8"
 }
