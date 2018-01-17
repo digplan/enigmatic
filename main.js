@@ -17,12 +17,21 @@ window.enigmatic = async x => {
     })
   }
   window.data = new Proxy({}, {
-    set: (target, property, value, receiver) => {
-      let arr = $(`[data=${property}]`)
-      if(!arr) return;
-      arr.forEach(e => {
-         if(e.set) e.set(value); else e.innerHTML = value
-      });
+    set: (obj, prop, value) => {
+      console.warn('data.' + prop + ' = ' + JSON.stringify(value))
+      obj[prop] = value
+      const controls = $(`[data^=${prop}]`)
+      if(!controls.length) return console.warn('did not find controls for ' + `[data^=${prop}]`)
+      console.warn('found controls ' + controls)
+      controls.forEach(control => {
+         var cval = value
+         control.getAttribute('data').split('.').forEach(p=>{
+           if(p == prop) return
+           cval = cval[p]
+         })
+         console.warn(control + ' ' + control.getAttribute('data') + ' = ' + cval)
+         if(control.set) control.set(cval); else control.innerHTML = cval
+      })
     }
   })
   Element.child = (type, parent) => {
@@ -47,6 +56,5 @@ window.enigmatic = async x => {
   }
   console.warn(+new Date())
 }
-window.enigmatic.version = 'v0.7.2'
-window.enigmatic()
+window.enigmatic.version = 'v0.8.0'
 document.addEventListener('DOMContentLoaded', window.enigmatic)
