@@ -47,7 +47,8 @@ window.enigmatic = async x => {
      document.head.appendChild(style)
      style.sheet.insertRule(`${sel||name} { ${rules} }`)
     }
-    await window.controls[name](e)
+    if(name in window.controls)
+      await window.controls[name](e)
   }
   let dataurl = $('meta[data]')[0];
   if(dataurl){
