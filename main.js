@@ -57,5 +57,5 @@ window.enigmatic = async x => {
   }
   console.warn(+new Date())
 }
-window.enigmatic.version = 'v0.8.0'
+window.enigmatic.version = 'v0.8.1'
 document.addEventListener('DOMContentLoaded', window.enigmatic)
