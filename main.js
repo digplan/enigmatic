@@ -1,7 +1,10 @@
 window.enigmatic = async x => {
   window.controls = window.controls || {}
   window.controls.helloworld = e=>e.innerHTML='Hello World!'
-  window.controls.youtube = e=>e.innerHTML=`<embed src='//www.youtube.com/embed/MlDx9s-zJMM' />`
+  window.controls.youtube = e => {
+    const id = e.getAttribute('id') || 'MlDx9s-zJMM'
+    e.innerHTML = `<embed src='//www.youtube.com/embed/${id}' style='height:100%;width:100%' />`
+  }
   window.$ = document.querySelectorAll.bind(document)
   window.load = s => {
     return new Promise(r => {
