@@ -3,7 +3,7 @@ window.enigmatic = async x => {
   window.controls.helloworld = e=>e.innerHTML='Hello World!'
   window.controls.youtube = e => {
     const id = e.getAttribute('id') || 'MlDx9s-zJMM'
-    e.innerHTML = `<embed src='//www.youtube.com/embed/${id}?modestbranding=1' style='height:100%;width:100%' />`
+    e.innerHTML = `<embed src='//www.youtube.com/embed/${id}?rel=0&amp;controls=0&amp;showinfo=0' style='height:100%;width:100%' />`
   }
   window.$ = document.querySelectorAll.bind(document)
   window.load = s => {
