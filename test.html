@@ -1,10 +1,33 @@
-<meta data='https://cors-anywhere.herokuapp.com/now.httpbin.org' >
 <!-- Enigmatic
      //unpkg.com/enigmatic (latest build, NPM) 
      //rawgit.com/digplan/enigmatic.js/master/main.js  (testing, Github latest commit)
 -->
-<script src=https://rawgit.com/digplan/enigmatic.js/master/main.js ></script>
+<meta data='https://cors-anywhere.herokuapp.com/now.httpbin.org' >
+<script src=//rawgit.com/digplan/enigmatic.js/master/main.js ></script>
+<link href=//rawgit.com/digplan/enigmatic.js/master/css.css rel=stylesheet >
 
-<helloworld control>pending..</helloworld>
-<div data=now.iso8601 control>pending..</div>
-<div data=now.epoch control>pending..</div>
+<body style='width:1200px; margin:auto auto auto auto; display:grid; grid-gap: 10px 10px; 
+             grid: 50px 300px auto / 100px auto 300px' class=bg-silver> 
+
+<header style='grid-column:1/4; grid-row: 1/2' class=bg-purple>
+  <helloworld control>pending..</helloworld>
+  <div data=now.iso8601 control>pending..</div>
+  <div data=now.epoch control>pending..</div>
+</header>
+
+<navleft  style='grid-column:1/2; grid-row:2/3' class=bg-blue>
+</navleft>
+
+<content  style='grid-column:2/3; grid-row:2/4' class=bg-orange>
+</content>
+   	 
+<navright style='grid-column:3/4; grid-row:2/3' class='bg-lime'>
+</navright>
+   	 
+<navright style='grid-column:3/4; grid-row-start:3/4' class='bg-yellow'>
+  <h1>grid-column:3/4; grid-row-start:3/4</h1>
+</navright>
+
+<footer style='grid-column:1/4; grid-row-start:4/5' class=bg-green>
+</footer>
+</body>
