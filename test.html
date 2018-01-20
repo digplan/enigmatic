@@ -6,19 +6,14 @@
 <script src=//rawgit.com/digplan/enigmatic.js/master/main.js ></script>
 <link href=//rawgit.com/digplan/enigmatic.js/master/css.css rel=stylesheet >
 
-<body style='display: grid; grid-template-columns: 150px auto 150px; grid-template-rows: 100px auto 100px; 
-             grid-gap: 10px; padding: 20px' >
-<div>
+<body style='display: grid; grid-template-columns: 80px auto 100px; 
+             grid-template-rows: 80px auto 100px; 
+             grid-gap: 10px; padding: 20px; height:100%' >
+
+<div class=bg-yellow style='grid-column: span 3'>
   <helloworld control>pending..</helloworld>
   <div data=now.iso8601 control>pending..</div>
   <div data=now.epoch control>pending..</div>
 </div>
-<div class=bg-orange >2</div>
-<div class=bg-blue >3</div>
-<div class=bg-black >4</div>
-<div class=bg-purple >5</div>
-<div class=bg-green >6</div>
-<div class=bg-black >7</div>
-<div class=bg-purple >8</div>
-<div class=bg-green >9</div>
-</body>
+<div class=bg-orange style='grid-column: span 3'></div>
+<div class=bg-black style='grid-column: span 3'>4</div>
