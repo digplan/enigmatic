@@ -5,7 +5,7 @@
   grid-row: <input size=2 value='span 1' onkeyup="window.resizerow(this.value)">' control> &lt/test>
 <br> 
 
-<textarea id=t rows=6 cols=38 onkeyup='controls.test=eval(`e=>${t.value}`);enigmatic()'>
+<textarea id=t rows=6 cols=38 onkeyup='controls.test=eval(`e=>{ ${t.value} }`);enigmatic()'>
 e.innerHTML = `<embed src='//www.youtube.com/embed/MlDx9s-zJMM?rel=0&amp;controls=1&amp;showinfo=1' style='height:100%;width:100%' />`
 </textarea>
 <hr>
