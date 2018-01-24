@@ -1,9 +1,25 @@
 <script src=//unpkg.com/enigmatic ></script>
+<link rel=stylesheet href=https://digplan.github.io/enigmatic/css.css >
 
-&lttest a=1 b=2 control> &lt/test>
-<br>
+&lttest a=1 b=2 style='grid-column: <input size=2 value='span 2' onkeyup='window.resizecol(this.value)' >; 
+  grid-row: <input size=2 value='span 1' onkeyup="window.resizerow(this.value)">' control> &lt/test>
+<br> 
+
 <textarea id=t rows=6 cols=38 onkeyup='controls.test=eval(`e=>${t.value}`);enigmatic()'>
 e.innerHTML = e.getAttribute('b')
 </textarea>
 <hr>
-<test a=1 b=2 control>ready..</test>
+<div style='display: grid; grid-template-columns: 120px 120px 120px 120px 120px 120px 120px; 
+             grid-template-rows: 120px 120px 120px 120px 120px 120px 120px; 
+             grid-gap: 10px; padding: 20px; height:95%' >
+<test style='grid-column: span 2; grid-row: span 1' class=bg-gray a=1 b=2 control>ready..</test>
+</div>
+
+<script>
+  window.resizecol = function(v){
+    $('test')[0].style.gridColumn = v
+  }
+  window.resizerow = function(v){
+    $('test')[0].style.gridRow = v
+  }
+</script>
