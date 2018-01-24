@@ -8,7 +8,22 @@ window.controls.mapembed = e => {
   const id = e.getAttribute('id')
   e.innerHTML = `<iframe height='100%' width=100% frameborder=0 src="https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=${id||'Chicago'}&output=embed"></iframe>` 
 }
-  
+window.controls.dragpanel = e => {
+  e.css('position:absolute;cursor:move')
+  e.setAttribute('draggable', 'true')
+  e.addEventListener('dragstart', ev=>{
+      var style = window.getComputedStyle(ev.target, null)
+      ev.dataTransfer.setData("text/plain",
+      (parseInt(style.getPropertyValue("left"),10) - ev.clientX) + ',' + (parseInt(style.getPropertyValue("top"),10) - ev.clientY))
+  }, false)
+  document.body.addEventListener('dragover', ev=>ev.preventDefault())
+  document.body.addEventListener('drop', ev=>{ 
+    var offset = ev.dataTransfer.getData("text/plain").split(',')
+    e.style.left = (ev.clientX + parseInt(offset[0],10)) + 'px'
+    e.style.top = (ev.clientY + parseInt(offset[1],10)) + 'px'
+  }, false)   
+}
+
 window.enigmatic = async x => {
   window.$ = document.querySelectorAll.bind(document)
   window.load = s => {
@@ -66,5 +81,5 @@ window.enigmatic = async x => {
   }
   console.warn(+new Date())
 }
-window.enigmatic.version = 'v0.8.1'
+window.enigmatic.version = 'v0.8.4'
 document.addEventListener('DOMContentLoaded', window.enigmatic)
