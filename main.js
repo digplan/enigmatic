@@ -23,6 +23,12 @@ window.controls.dragpanel = e => {
     e.style.top = (ev.clientY + parseInt(offset[1],10)) + 'px'
   }, false)   
 }
+window.controls.view = e => {
+ e.show = ()=>{
+   $('view').forEach(v=>v.hidden=(v.id!=e.id))
+   history.pushState({}, '', e.id)
+ }  
+}
 
 window.enigmatic = async x => {
   window.$ = document.querySelectorAll.bind(document)
