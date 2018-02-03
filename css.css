@@ -1,5 +1,4 @@
 body {margin:0}
-
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
@@ -8,7 +7,7 @@ body {margin:0}
 }
 .flat { border: 0; outline-width: 0}
 .fill {height:100%; width: 100%}
-
+.border { border: 1px solid black }
 .fadein {
     font-size: 21px;
     text-align: center;
@@ -27,17 +26,11 @@ body {margin:0}
   font-family: 'Roboto', sans-serif;
 }
 
-a {text-decoration: none}
-
-.v-center {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
+a {text-decoration:none !important}
 .shadow { box-shadow: 6px 6px 6px #dbdbdb }
+
 .loading {
-  border: 6px solid #dbdbdb;
+  border: 4px solid #dbdbdb;
   border-radius: 50%;
   border-top: 6px solid #000000;
   width: 10px;
@@ -50,25 +43,22 @@ a {text-decoration: none}
   100% { -webkit-transform: rotate(360deg); }
 }
 
-.cursor { cursor: default; }
-.bg-navy {  background-color: #001f3f}
-.bg-blue {  background-color: #0074d9}
-.bg-aqua {  background-color: #7fdbff}
-.bg-teal {  background-color: #39cccc}
-.bg-olive {  background-color: #3d9970}
-.bg-green { background-color: #2ecc40}
-.bg-lime {  background-color: #01ff70}
-.bg-yellow {  background-color: #ffdc00}
-.bg-orange {  background-color: #ff851b}
-.bg-red {  background-color: #ff4136}
-.bg-fuchsia {  background-color: #f012be}
-.bg-purple {  background-color: #b10dc9}
-.bg-maroon {  background-color: #85144b}
-.bg-white {  background-color: #fff}
-.bg-gray {  background-color: #aaa}
-.bg-silver {  background-color: #ddd}
-.bg-black {  background-color: #111}
-.bg-ltgray {  background-color: #fcfcfc}
+.cursor { cursor: default }
+navy, .bg-navy {  background-color: #001f3f}
+blue, .bg-blue {  background-color: #0074d9}
+aqua, .bg-aqua {  background-color: #7fdbff}
+green, .bg-green { background-color: #2ecc40}
+yellow, .bg-yellow {  background-color: #ffdc00}
+orange, .bg-orange {  background-color: #ff851b}
+red, .bg-red {  background-color: #ff4136}
+fuchsia, .bg-fuchsia {  background-color: #f012be}
+purple, .bg-purple {  background-color: #b10dc9}
+maroon, .bg-maroon {  background-color: #85144b}
+white, .bg-white {  background-color: #fff}
+gray, .bg-gray {  background-color: #aaa}
+silver, .bg-silver {  background-color: #ddd}
+black, .bg-black {  background-color: #111}
+ltgray, .bg-ltgray {  background-color: #fcfcfc}
 .navy {  color: #001f3f}
 .blue {  color: #0074d9}
 .aqua {  color: #7fdbff}
@@ -100,64 +90,14 @@ a {text-decoration: none}
   z-index: 1000;
 }
 
-.left {  float: left}
-.right {  float: right}
-.clear {  display:table}
 .center {  margin: 0 auto;  text-align: center}
 .margins {  margin: 15px}
 .padding {  padding: 15px}
 .border {  border: 10px solid #eee}
-
-.push-half {  margin-left: 6.25%}
-.push-one {  margin-left: 12.5%}
-.push-two {  margin-left: 25%}
-.push-three {  margin-left: 37.5%}
-.push-four {  margin-left: 50%}
-.push-five {  margin-left: 62.5%}
-.push-six {  margin-left: 75%}
-.push-seven {  margin-left: 87.5%}
-.pull-half {  margin-right: 6.25%}
-.pull-one {  margin-right: 12.5%}
-.pull-two {  margin-right: 25%}
-.pull-three {  margin-right: 37.5%}
-.pull-four {  margin-right: 50%}
-.pull-five {  margin-right: 62.5%}
-.pull-six {  margin-right: 75%}
-.pull-seven {  margin-right: 87.5%}
-.top-one {  margin-top: 12.5%}
-.top-two {  margin-top: 25%}
-.top-three {  margin-top: 37.5%}
-.top-four {  margin-top: 50%}
-.top-five {  margin-top: 62.5%}
-.top-six {  margin-top: 75%}
-.top-seven {  margin-top: 87.5%}
-.bottom-one {  margin-bottom: 12.5%}
-.bottom-two {  margin-bottom: 25%}
-.bottom-three {  margin-bottom: 37.5%}
-.bottom-four {  margin-bottom: 50%}
-.bottom-five {  margin-bottom: 62.5%}
-.bottom-six {  margin-bottom: 75%}
-.bottom-seven {  margin-bottom: 87.5%}
-
 .front {  z-index: 100}
+
 img {  max-width: 100%;  height: auto}
-.one {  width: 12.5%}
-.two {  width: 25%}
-.three {  width: 37.5%}
-.four {  width: 50%}
-.five {  width: 62.5%}
-.six {  width: 75%}
-.seven {  width: 87.5%}
-.eight {  width: 100%}
-.half-high {  height: 6.25%}
-.one-high {  height: 12.5%}
-.two-high {  height: 25%}
-.three-high {  height: 37.5%}
-.four-high {  height: 50%}
-.five-high {  height: 62.5%}
-.six-high {  height: 75%}
-.seven-high {  height: 87.5%}
-.eight-high {  height: 100%}
+
 .ten {  font-size: 10px;}
 .twelve {  font-size: 12px;}
 .thirteen {  font-size: 13px;}
@@ -190,13 +130,7 @@ img {  max-width: 100%;  height: auto}
   -webkit-transition: opacity .25s ease-in-out;
 }
 .unfade:hover {  opacity: 1}
-.center-screen {
-  position: fixed;
-  top: 36%;
-  left: 50%;
-  margin-top: -50px;
-  margin-left: -100px;
-}
+
 .full-page {
   min-height: 100%;
   min-width: 1024px;
@@ -206,14 +140,7 @@ img {  max-width: 100%;  height: auto}
   top: 0;
   left: 0;
 }
-.container {
-  min-height: 100%;
-  min-width: 100%;
-  height: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-}
+
 @media screen and (max-width: 1024px) {
   /* Specific to this particular image */
   img.full-page {
@@ -227,33 +154,4 @@ img {  max-width: 100%;  height: auto}
   -webkit-border-radius: 10px;
   border-radius: 10px;
   -khtml-border-radius: 10px;
-}
-@-webkit-keyframes typing {
-    from { width: 0 }
-    to { width:16.3em }
-}
-@-moz-keyframes typing {
-    from { width: 0 }
-    to { width:16.3em }
-}
-@-webkit-keyframes blink-caret {
-    from, to { border-color: transparent }
-    50% { border-color: black }
-}
-@-moz-keyframes blink-caret {
-    from, to { border-color: transparent }
-    50% { border-color: black }
-}
-.typing { 
-    /* props! http://jsfiddle.net/user/leaverou/ */
-    font-size:150%;
-    width:16.3em;
-    white-space:nowrap;
-    overflow:hidden;
-    border-right: .1em solid black;
-    
-    -webkit-animation: typing 1s steps(30, end), /* # of steps = # of characters */
-                        blink-caret 1s step-end infinite;
-    -moz-animation: typing 1s steps(30, end), /* # of steps = # of characters */
-                        blink-caret 1s step-end infinite;
 }
