@@ -1,6 +1,6 @@
 # enigmatic
 ![Build Status](https://travis-ci.org/digplan/enigmatic.svg?branch=master "")
-<img src=https://badge.fury.io/js/enigmatic.svg />
+<img src=https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&type=6&v=0.8.5&x2=0 />
 ![Size](http://img.badgesize.io/digplan/enigmatic/master/main.js)
 
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
