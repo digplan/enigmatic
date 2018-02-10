@@ -78,7 +78,7 @@ ltgray, .bg-ltgray {  background-color: #fcfcfc}
 .black {  color: #111}
 .ltgray {  color: #fcfcfc}
 
-.overlay {
+.modal {
   position: fixed;
   top: 0;
   left: 0;

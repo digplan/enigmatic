@@ -62,6 +62,7 @@ window.enigmatic = async x => {
          console.warn(control + ' ' + control.getAttribute('data') + ' = ' + cval)
          if(control.set) control.set(cval); else control.innerHTML = cval
       })
+      return prop
     }
   })
   Element.child = (type, parent) => {
@@ -87,5 +88,5 @@ window.enigmatic = async x => {
   }
   console.warn(+new Date())
 }
-window.enigmatic.version = 'v0.8.4'
+window.enigmatic.version = 'v0.8.5'
 document.addEventListener('DOMContentLoaded', window.enigmatic)
