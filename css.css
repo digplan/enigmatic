@@ -5,7 +5,7 @@ body {margin:0}
   font-weight: 400;
   src: local('Roboto Regular'), local('Roboto-Regular'), url(//themes.googleusercontent.com/static/fonts/roboto/v10/2UX7WLTfW3W8TclTUvlFyQ.woff) format('woff');
 }
-grid { display:grid }
+grid { display:grid; grid-gap: 3px }
 box, .box { background: #eaeaea; display: flex; align-items: center; justify-content: center }
 
 .flat { border: 0; outline-width: 0}
