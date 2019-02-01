@@ -87,6 +87,7 @@ window.enigmatic = async x => {
     for(k in d) data[k] = d[k]
   }
   console.warn(+new Date())
+  if(ready) ready()
 }
 window.enigmatic.version = 'v0.8.5'
 document.addEventListener('DOMContentLoaded', window.enigmatic)
