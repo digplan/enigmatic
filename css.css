@@ -1,85 +1,45 @@
-body {margin:0}
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto Regular'), local('Roboto-Regular'), url(//themes.googleusercontent.com/static/fonts/roboto/v10/2UX7WLTfW3W8TclTUvlFyQ.woff) format('woff');
-}
-grid { display:grid; grid-gap: 3px }
-box, .box { background: #eaeaea; display: flex; align-items: center; justify-content: center }
+.bg-navy 	{ background-color: #001f3f }
+.bg-blue 	{ background-color: #0074d9 }
+.bg-green 	{ background-color: #2ecc40 }
+.bg-yellow 	{ background-color: #ffdc00 }
+.bg-orange 	{ background-color: #ff851b }
+.bg-red 	{ background-color: #ff4136 }
+.bg-purple 	{ background-color: #b10dc9 }
+.bg-white 	{ background-color: #fff }
+.bg-gray 	{ background-color: #aaa }
+.bg-silver 	{ background-color: #ddd }
+.bg-black 	{ background-color: #111 }
+.bg-ltgray 	{ background-color: #fcfcfc }
 
-.flat { border: 0; outline-width: 0}
-.fill {height:100%; width: 100%}
-.border { border: 1px solid black }
-.fadein {
-    font-size: 21px;
-    text-align: center;
-    -webkit-animation: fadein 3s; /* Safari, Chrome and Opera > 12.1 */
-       -moz-animation: fadein 3s; /* Firefox < 16 */
-        -ms-animation: fadein 3s; /* Internet Explorer */
-         -o-animation: fadein 3s; /* Opera < 12.1 */
-            animation: fadein 3s;
-}
-@keyframes fadein {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
+.navy 	{ color: #001f3f }
+.blue 	{ color: #0074d9 }
+.green 	{ color: #2ecc40 }
+.yellow 	{ color: #ffdc00 }
+.orange 	{ color: #ff851b }
+.red 	{ color: #ff4136 }
+.purple 	{ color: #b10dc9 }
+.white 	{ color: #fff }
+.gray 	{ color: #aaa }
+.silver 	{ color: #ddd }
+.black 	{ color: #111 }
+.ltgray 	{ color: #fcfcfc }
 
-.roboto {
-  font-family: 'Roboto', sans-serif;
-}
+.center 	{ margin: 0 auto;  text-align: center }
+.left 		{ text-align: left }
+.right 		{ text-align: right }
 
-a {text-decoration:none !important}
-.shadow { box-shadow: 6px 6px 6px #dbdbdb }
+.twelve 	{ font-size: 12px }
+.fixed 		{ position: fixed }
+.center-screen 	{ position: fixed; top: 30%; left: 40% }
 
-.loading {
-  border: 4px solid #dbdbdb;
-  border-radius: 50%;
-  border-top: 6px solid #000000;
-  width: 10px;
-  height: 10px;
-  -webkit-animation: spin 1s linear infinite;
-  animation: spin 1s linear infinite;
-}
-@-webkit-keyframes spin {
-  0% { -webkit-transform: rotate(0deg); }
-  100% { -webkit-transform: rotate(360deg); }
-}
+.faded 		{ opacity: 0.5 }
+.hide 		{ overflow: hidden; opacity: 0; transition: opacity .25s ease-in-out; -moz-transition: opacity .25s ease-in-out; -webkit-transition: opacity .25s ease-in-out }
+.show 		{ opacity: 1; transition: opacity .25s ease-in-out; -moz-transition: opacity .25s ease-in-out; -webkit-transition: opacity .25s ease-in-out }
+.hidden {display:none}
+.block {display:block}
 
-.cursor { cursor: default }
-navy, .bg-navy {  background-color: #001f3f}
-blue, .bg-blue {  background-color: #0074d9}
-aqua, .bg-aqua {  background-color: #7fdbff}
-green, .bg-green { background-color: #2ecc40}
-yellow, .bg-yellow {  background-color: #ffdc00}
-orange, .bg-orange {  background-color: #ff851b}
-red, .bg-red {  background-color: #ff4136}
-fuchsia, .bg-fuchsia {  background-color: #f012be}
-purple, .bg-purple {  background-color: #b10dc9}
-maroon, .bg-maroon {  background-color: #85144b}
-white, .bg-white {  background-color: #fff}
-gray, .bg-gray {  background-color: #aaa}
-silver, .bg-silver {  background-color: #ddd}
-black, .bg-black {  background-color: #111}
-ltgray, .bg-ltgray {  background-color: #fcfcfc}
-.navy {  color: #001f3f}
-.blue {  color: #0074d9}
-.aqua {  color: #7fdbff}
-.teal {  color: #39cccc}
-.olive {  color: #3d9970}
-.green {  color: #2ecc40}
-.lime {  color: #01ff70}
-.yellow {  color: #ffdc00}
-.orange {  color: #ff851b}
-.red {  color: #ff4136}
-.fuchsia {  color: #f012be}
-.purple {  color: #b10dc9}
-.maroon {  color: #85144b}
-.white {  color: #fff !important}
-.silver {  color: #ddd}
-.gray {  color: #aaa}
-.black {  color: #111}
-.ltgray {  color: #fcfcfc}
+.blur 		{ filter: blur(5px); -webkit-filter: blur(5px); transition:0.2s }
+.unblur 	{ filter: blur(0px); -webkit-filter: blur(0px); transition:0.2s }
 
 .modal {
   position: fixed;
@@ -93,68 +53,17 @@ ltgray, .bg-ltgray {  background-color: #fcfcfc}
   z-index: 1000;
 }
 
-.center {  margin: 0 auto;  text-align: center}
-.margins {  margin: 15px}
-.padding {  padding: 15px}
-.border {  border: 10px solid #eee}
-.front {  z-index: 100}
-
-img {  max-width: 100%;  height: auto}
-
-.ten {  font-size: 10px;}
-.twelve {  font-size: 12px;}
-.thirteen {  font-size: 13px;}
-.fourteen {  font-size: 14px;}
-.fifteen {  font-size: 15px;}
-.twenty {  font-size: 20px;}
-.thirty {  font-size: 30px;}
-.forty {  font-size: 40px;}
-.fifty {  font-size: 50px;}
-.sixty {  font-size: 60px;}
-.seventy {  font-size: 70px;}
-.eighty {  font-size: 80px;}
-.ninety {  font-size: 90px;}
-.hundred {  font-size: 100px;}
-.fixed {  position: fixed}
-.hide {  visibility: hidden}
-.show {  visibility: ''}
-.faded {  opacity: 0.5}
-.fade {
-  opacity: 1;
-  transition: opacity .25s ease-in-out;
-  -moz-transition: opacity .25s ease-in-out;
-  -webkit-transition: opacity .25s ease-in-out;
-}
-.fade:hover {  opacity: 0.5}
-.unfade {
-  opacity: 0.5;
-  transition: opacity .25s ease-in-out;
-  -moz-transition: opacity .25s ease-in-out;
-  -webkit-transition: opacity .25s ease-in-out;
-}
-.unfade:hover {  opacity: 1}
-
-.full-page {
-  min-height: 100%;
-  min-width: 1024px;
-  width: 100%;
-  height: auto;
-  position: fixed;
-  top: 0;
-  left: 0;
-}
-
-@media screen and (max-width: 1024px) {
-  /* Specific to this particular image */
-  img.full-page {
-    left: 50%;
-    margin-left: -512px;
-    /* 50% */
-  }
-}
-.rounded {
-  -moz-border-radius: 10px;
-  -webkit-border-radius: 10px;
-  border-radius: 10px;
-  -khtml-border-radius: 10px;
+button {
+	box-shadow:inset 0px 1px 0px 0px #ffffff;
+	background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+	background-color:#ffffff;
+	border-radius:6px;
+	border:1px solid #dcdcdc;
+	display:inline-block;
+	cursor:pointer;
+	color:#666666;
+	font-size:15px;
+	padding:11px 37px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #ffffff;
 }
