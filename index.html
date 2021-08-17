@@ -1,0 +1,44 @@
+<script src='index.js'></script>
+<link rel="stylesheet" href="css.css">
+
+<style>
+  body {
+	display: grid; 
+	font-family: Verdana;
+  	background-size: cover;
+  	height: 100vh;
+  	overflow: hidden;
+    	grid-template-columns: 20% auto 20%;
+    	grid-template-rows: 20% auto 10%;
+    	gap: 4px;
+  }
+</style>
+
+<body class='bg-black' 	debug>
+  
+  <h3 class='bg-blue' data='datetime'>hey hey</h3>
+    
+  <view id='view1' control>
+    <div control='youtube'></div>
+  </view> 
+
+  <view id='view2' hidden control>
+    <div class='bg-red'>I AM BIEW 2</div>
+  </view>
+ 
+  <div class='bg-green'>
+    <button onclick='view1.show()'>Show view 1</button>
+    <button onclick='view2.show()'>Show view 2</button>
+  </div>
+  
+  <div class='bg-orange'>
+   
+  </div>
+  <div class='bg-yellow' control='mapembed'></div>
+  <div class='bg-yellow show'>222</div>
+  
+    <div class='bg-yellow'>222</div>
+    <div class='bg-yellow'>222</div>
+    <div class='bg-yellow'>222</div>
+  
+</body>

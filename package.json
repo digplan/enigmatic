@@ -1,15 +1,13 @@
 {
   "name": "enigmatic",
-  "description": "Simple web controls",
+  "description": "Better, simpler web applications",
   "url": "http://github.com/digplan/enigmatic",
   "author": "<digplan@outlook.com>",
-  "main": "main.js",
-  "dependencies": {
-    "testchrome": "*"
-  },
+  "main": "index.js",
+  "dependencies": { },
   "repository": {
     "type": "git",
     "url": "git://github.com/digplan/enigmatic.git"
   },
-  "version": "0.8.6"
+  "version": "0.9.1"
 }
