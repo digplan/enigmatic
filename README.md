@@ -1,10 +1,14 @@
 # enigmatic
-![build status](https://travis-ci.org/digplan/enigmatic.svg?branch=master "")
 ![version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&type=6&v=0.8.5&x2=0)
 ![size](http://img.badgesize.io/digplan/enigmatic/master/main.js)
 
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
-It aspires to enable faster web app development and performance, especially on devices with extremely limited resources or slow network.
+It aspires to enable faster web app development and performance. Enigmatic focuses on using languages rather than learning complicated frameworks.
+
+Uses a single page web application (PWA) with standard HTML/CSS grid layout
+Simple Web component based model with basic UI components
+Global app data store with two-way component data binding
+Data fetch and streamable event-source updates
 
 ## Usage
 Can be used as simply as follows.
@@ -25,7 +29,6 @@ const helloworld = e => e.innerHTML = 'Hello world'
 ## window.$
 ````
 // $ = Query Selector All
-$('div').forEach(...)
 ````
 ## window.load
 ````
@@ -76,23 +79,30 @@ window.controls.mycontrol = e => {
 }
 ````
 
-## Meta-data
-An HTML Meta tag, optionally can be used to instantiate the data object.
+## Element.css
+A simple helper for creating controls is included
 ````
-// This expects a JSON object.  Each property of the object will be used in the app's data object
-<meta data='//now.httpbin.org'>
+childElement.css('color: red')
 ````
 
-# Cheat Sheet
-## HTML
+## Datasrc, Events, debug Attributes
 ````
-<!-- Shortcut to instantiate the data for the app -->
-<script src=//unpkg.com/enigmatic ></script>
-<meta data='//now.httpbin.org'>
+// Get data from data api
+<body datasrc='https://mydata.com/api/data'>
 
-<!-- Control spec -->
-<controlname [data='key'] control></controlname>
+// Get Eventsource streaming data
+<body events='https://mydata.com/api/stream'>
 
-<helloworld></helloworld>
-<time></time>
+// Debug the enigmatic processing
+<body debug>
+````
+
+## CSS Helpers
+````
+<body bg-color='black'>
+````
+
+## Control classes
+````
+<helloworld class='print' control></helloworld>
 ````
