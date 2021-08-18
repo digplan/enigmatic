@@ -3,17 +3,52 @@
 ![size](http://img.badgesize.io/digplan/enigmatic/master/main.js)
 
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
-It aspires to enable faster web app development and performance. Enigmatic focuses on using languages rather than learning complicated frameworks.
+It aspires to enable faster web app peformance, better reliabilty, and faster development process. 
 
-Uses a single page web application (PWA) with standard HTML/CSS grid layout
+Enigmatic focuses on HTML directives and existing HTML, JS, and CSS functionality, rather than learning new complicated custom frameworks.
+
+Single page web application (SPA) with standard HTML/CSS grid layout
 Simple Web component based model with basic UI components
-Global app data store with two-way component data binding
+App data store with two-way component data binding
 Data fetch and streamable event-source updates
 
-## Usage
-Can be used as simply as follows.
+Enigmatic was created to deal with the problems of web application development that has evolved over the 20 years.
+
+- Applications are built with various tooling and frameworks, making them too complicated to be completely secure and reliable
+- They are very expensive to develop and maintain because of the knowledge of several frameworks and tools required
+
+## Quick Start
+Just create an HTML page
 ````
-<script src=//unpkg.com/enigmatic></script>
+<script src='//unpkg.com/enigmatic'></script>
+<link href='//unpkg.com/enigmatic.css' rel='stylesheet'>
+
+<style>
+  body {
+    grid-template-columns: 10% auto 20%;
+    grid-template-rows: auto 1fr 10%;
+    gap: 4px;
+  }
+</style>
+
+<body class='bg-black' debug>
+  
+  <div class='bg-yellow'></div>
+  <div class='bg-yellow'></div>
+  <div class='bg-yellow'>222</div>
+  <div class='bg-yellow'>222</div>
+  <div class='bg-yellow'>222</div>
+  <div class='bg-yellow'>222</div>
+  <div class='bg-yellow'>222</div>
+  <div class='bg-yellow'>222</div>
+  <div class='bg-yellow'>222</div>
+  
+</body>
+````
+
+Web components are called controls.  A Hello World control is included. an be used as simply as follows.
+````
+<script src='//unpkg.com/enigmatic'></script>
 
 <!-- Hello world control -->
 <helloworld control></helloworld>
@@ -22,31 +57,30 @@ Can be used as simply as follows.
 Controls are just HTML elements with the attribute *control* added.
 Defining a control is as simple as a function.
 ````
-const helloworld = e => e.innerHTML = 'Hello world'
+window.controls.helloworld = (e) => e.innerHTML = 'Hello world'
 ````
 
-## Enigmatic also includes some helpers.
-## window.$
+## Enigmatic also includes some helpers
 ````
-// $ = Query Selector All
+ window.$ -- $([body])[0] // Query Selector All
+ window.load -- ('mycontrol.js') // Load JS or CSS
+ Element.css -- e.css('color:red') // Add css to an element
+ Element.child -- body.child('span') // Add a child element
+ 
 ````
-## window.load
-````
-// Load = load js or css files
-await load('https://...')
-````
+
 ## window.data
-window.data is the single data object, that holds all data in the app.  It's a JS object, with each key being an identifier, or *channel* to use with controls that have the data attribute.
+window.data is a single data object, that holds all the data for the app.  It's a JS object, with each key being an identifier, or *channel* to use with controls that have the data attribute.
 
 Controls interact with the data object to send and receive data, using a data attribute and .set() method.
 ````
 <!-- Just use the *data* attribute
-<hellodata data='key' control></hellodata>
+<hellodata data='mykey' control></hellodata>
 
 hellodata = e =>
-  e.set = datain => e.innerHTML = datain
+  e.set = (datain) => e.innerHTML = datain
   
-window.data = 'Hello world!' // Puts Hello world! in the inner HTML of the control
+window.data.mykey = 'Hello world!' // Puts Hello world! in the inner HTML of the control
 ````
 
 One may also create a simple counter, interacting with plain ole (non-control) HTML elements.
@@ -65,44 +99,21 @@ const counter = e =>
 window.controls // holds all the control definitions
 ````
 
+## window.classes
+Classes can be defined which add functionality to a control. A class, print, is included
+````
+// The print class brings up the print dialog when selected
+<helloworld class='print' control></helloworld>
+````
+
 ## helloworld
 A hello world control is included
 ````
 <helloworld control></helloworld>
 ````
 
-## Element.child
-A simple helper for creating controls is included
+## Debug
+Processing can be debugged by just adding the debug attribute to the body tag
 ````
-window.controls.mycontrol = e => {
-  const childElement = e.child('input')
-}
-````
-
-## Element.css
-A simple helper for creating controls is included
-````
-childElement.css('color: red')
-````
-
-## Datasrc, Events, debug Attributes
-````
-// Get data from data api
-<body datasrc='https://mydata.com/api/data'>
-
-// Get Eventsource streaming data
-<body events='https://mydata.com/api/stream'>
-
-// Debug the enigmatic processing
 <body debug>
-````
-
-## CSS Helpers
-````
-<body bg-color='black'>
-````
-
-## Control classes
-````
-<helloworld class='print' control></helloworld>
 ````
