@@ -5,17 +5,21 @@
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
 It aspires to enable faster web app peformance, better reliabilty, and faster development process. 
 
-Enigmatic focuses on HTML directives and existing HTML, JS, and CSS functionality, rather than learning new complicated custom frameworks.
+Enigmatic uses HTML attributes (directives) with a simple component model and data binding - all on existing HTML, JS, and CSS functionality, instead of complicated frameworks.
+- No special tooling required
+- No compilation or preprocessing
+- No new languages to learn
+- Small 4k JS core, includes basic component framework and two way data binding
 
-Single page web application (SPA) with standard HTML/CSS grid layout
+## Single page web application (SPA) with standard HTML/CSS grid layout
 Simple Web component based model with basic UI components
 App data store with two-way component data binding
 Data fetch and streamable event-source updates
 
 Enigmatic was created to deal with the problems of web application development that has evolved over the 20 years.
 
-- Applications are built with various tooling and frameworks, making them too complicated to be completely secure and reliable
-- They are very expensive to develop and maintain because of the knowledge of several frameworks and tools required
+- Applications are built with various tooling and frameworks, making them too complicated to be secure, reliable, and fast
+- They are very expensive to develop and maintain, because of the expertise of several frameworks and tools required
 
 ## Quick Start
 Just create an HTML page
