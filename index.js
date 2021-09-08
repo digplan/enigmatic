@@ -6,13 +6,12 @@ window.controls = {
     },
     mapembed: (e) => {
         const id = e.getAttribute('id')
-        e.innerHTML = `<iframe height='100%' width=100% frameborder=0 src="https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=${id||'Chicago'}&output=embed"></iframe>`
+        e.innerHTML = `<iframe height='100%' width=100% frameborder=0 src="https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=${id || 'Chicago'}&output=embed"></iframe>`
     },
     view: (e) => {
-        var debug = $('body')[0].hasAttribute('debug');
         var agent = e.getAttribute('useragent');
         if (debug)
-            console.log('View useragent: ' + navigator.userAgent)
+            console.log(`e ======> View ${e.id} useragent: ${navigator.userAgent}`)
         if (agent && !navigator.userAgent.match(agent)) {
             e.hidden = true;
         }
@@ -29,8 +28,9 @@ window.controls = {
         }
     }
 }
+window.classes = {
 
-window.$ = document.querySelectorAll.bind(document)
+}
 window.load = s => {
     return new Promise(r => {
         var iscss = s.match(/css$/);
@@ -47,69 +47,88 @@ window.load = s => {
 }
 window.data = new Proxy({}, {
     set: (obj, prop, value) => {
-        console.warn('data.' + prop + ' = ' + JSON.stringify(value))
+        if (window.debug)
+            console.log('e ======> SETTING DATA OBJECT .' + prop + ' = ' + JSON.stringify(value))
         obj[prop] = value
         const controls = $(`[data^=${prop}]`)
-        if (!controls.length) return console.warn('did not find controls for ' + `[data^=${prop}]`)
-        console.warn('found controls ' + controls)
         controls.forEach(control => {
-            var cval = value
-            control.getAttribute('data').split('.').forEach(p => {
-                if (p == prop) return
-                cval = cval[p]
-            })
-            console.warn(control + ' ' + control.getAttribute('data') + ' = ' + cval)
-            if (control.set) control.set(cval);
-            else control.innerHTML = cval
+            var newval = value
+            if(window.debug)
+                console.log(`e ======> DATA SETTING CONTROL ${control.getAttribute('control') || control.tagName.toLowerCase()} ${prop} ${value}`)
+            if (control.set) control.set(newval);
+            else control.innerHTML = newval
         })
         return prop
     }
 })
 
-Element.child = (type, parent) => {
+window.child = (parent, type) => {
     const e = document.createElement(type || 'div')
-        (parent || this).appendChild(e)
+    parent.appendChild(e)
+    return e
 }
-Element.css = (rules, sel) => {
+
+window.css = (id, rules) => {
     var style = document.createElement("style")
     document.head.appendChild(style)
-    style.sheet.insertRule(`${sel||name} { ${rules} }`)
+    const rule = `#${id} { ${rules} }`
+    style.sheet.insertRule(rule)
+    return rules
 }
 
 window.enigmatic = {
     "version": 'v0.9.1',
     "start": async x => {
-	  let controls = $('[control]')
-  for(let i=0; i<controls.length; i++){
-    let e = controls[i]
-    let name = e.getAttribute('control') || e.tagName.toLowerCase()
-    e.css = (rules, sel)=>{
-     var style = document.createElement("style")
-     document.head.appendChild(style)
-     style.sheet.insertRule(`${sel||name} { ${rules} }`)
-    }
-    if(name in window.controls)
-      await window.controls[name](e)
-  }
-        const b = $('body')[0];
-	    const debug = b.hasAttribute('debug');
-            let datasrc = b.getAttribute('datasrc');
-            if (datasrc) {
-                let d = await (await fetch(datasrc)).json()
-                for (k in d) data[k] = d[k];
-                if (debug) console.log('datasrc: ' + JSON.stringify(d))
-            };
-            let events = b.getAttribute('events');
-            if (events) {
-                var source = new EventSource(events);
-                if (debug) console.log('eventsource: ' + events)
-                source.onmessage = function(d) {
-                    if (debug) console.log('events: ' + JSON.stringify(d.data))
-                    for (k in d) data[k] = d[k];
-                }
+        console.log(`\r\ne ======> ${window.enigmatic.version} : ${new Date()}`);
+        window.$ = document.querySelectorAll.bind(document)
+        window.debug = $('body')[0].hasAttribute('debug');
+        let controls = $('[control]')
+        for (let i = 0; i < controls.length; i++) {
+            let e = controls[i]
+            let name = e.getAttribute('control') || e.tagName.toLowerCase()
+            if (name in window.controls){
+                console.log(`e ======> Found Control: ${name} ${e.id} ${e}`)
+                await window.controls[name](e)
             }
-  
-        console.log(`e ${window.enigmatic.version} : ${new Date()}`);
+        }
+
+        let datasrc = $('body')[0].getAttribute('datasrc');
+        if (datasrc) {
+            if(window.debug)
+              console.log(`e ======> Body Datasrc is set: ${datasrc}`)
+            let d = await (await fetch(datasrc)).json()
+            if(window.debug)
+              console.log(`e ======> Body Datasrc: ${datasrc}, data: ${JSON.stringify(d)}`)
+            for (k in d) data[k] = d[k];
+        }
+
+        let events = $('body')[0].getAttribute('events');
+        if (events) {
+            window.events = source = new EventSource(events);
+            if(window.debug) 
+              console.log('e ======> eventsource: ' + events)
+
+            source.onopen = function(e){
+               console.log(`e ======> eventsource opened`)
+            }
+
+            source.onmessage = function(e) {
+                console.log(`e ======> Event data in: ${e.data}`)
+                let obj = JSON.parse(e.data)
+                for (k in obj) data[k] = obj[k]
+            }
+
+            source.onerror = function(e) {
+                if(!window.debug) return;
+                if (this.readyState == EventSource.CONNECTING)
+                  return console.log(`e ======> eventsource connecting`)
+                if (this.readyState == EventSource.OPEN)
+                  return console.log(`e ======> eventsource open`)
+                if (this.readyState == EventSource.CLOSED)
+                  return console.log(`e ======> eventsource closed`)             
+            }
+        }
+
         if (window.ready) window.ready();
     }
 }

@@ -1,22 +1,20 @@
+
 <script src='index.js'></script>
-<link rel="stylesheet" href="css.css">
+<link href='enigmatic.css' rel='stylesheet'>
 
 <style>
   body {
-	display: grid; 
-	font-family: Verdana;
-  	background-size: cover;
-  	height: 100vh;
-  	overflow: hidden;
-    	grid-template-columns: 20% auto 20%;
-    	grid-template-rows: 20% auto 10%;
-    	gap: 4px;
-  }
+	  font-family: Inter,OpenSans,Helvetica,Arial,sans-serif;
+	  display: grid;
+	  grid-template-columns: 20% 1fr 20%;
+	  grid-template-rows: 10% 1fr 10%;
+	  gap: 4px;
+	}
 </style>
 
-<body class='bg-black' 	debug>
+<body class='bg-black' datasrc='/data' debug>
   
-  <h3 class='bg-blue' data='datetime'>hey hey</h3>
+  <h3 id='myid' class='bg-blue' data='time'>hey hey</h3>
     
   <view id='view1' control>
     <div control='youtube'></div>
