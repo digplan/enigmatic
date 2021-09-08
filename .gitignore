@@ -1,2 +1,6 @@
 node_modules
 .vscode
+localhost.pem
+localhost-key.pem
+data.json
+data.txt

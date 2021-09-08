@@ -41,6 +41,8 @@
 .blur 		{ filter: blur(5px); -webkit-filter: blur(5px); transition:0.2s }
 .unblur 	{ filter: blur(0px); -webkit-filter: blur(0px); transition:0.2s }
 
+body {font-family: Inter,OpenSans,Helvetica,Arial,sans-serif;height: 100%;}
+
 .modal {
   position: fixed;
   top: 0;
