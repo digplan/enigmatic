@@ -26,10 +26,12 @@ module.exports = DB = {
 
     },
 
-    transaction: (type, obj) => {
+    transaction: (type, obj, table) => {
 
-        if (type == 'GET')
-            return DB.DATA
+        if (type == 'GET') {
+            let ret = Object.values(DB.DATA).filter((o)=>o._type==table)
+            return ret
+        }
 
         if (obj) obj = JSON.parse(obj)
         const ret = DB.processLine(type, obj)

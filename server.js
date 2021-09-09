@@ -13,12 +13,14 @@ const app = (r, s) => {
     //console.log([r.method, r.url]);
 
     try {
-        
-        if (r.url.match('/api')) {
+
+        var api = r.url.match(/^\/api\/(.*)/)
+
+        if (api && api[1]) {
             var body = ''
             r.on('data', (datain) => body += datain)
             r.on('end', () => {
-                var x = DB.transaction(r.method, body)
+                var x = DB.transaction(r.method, body, api[1])
                 s.end(JSON.stringify(x))
             })
             return;
