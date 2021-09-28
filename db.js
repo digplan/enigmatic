@@ -21,67 +21,66 @@ const DB = {
     build: async () => {
 
         const rl = require('readline').createInterface({
-            input: FS.createReadStream('./data.txt'),
+            input: require('fs').createReadStream('./data.txt'),
             crlfDelay: Infinity
         })
 
         for await (const line of rl) {
             let [time, type, obj] = line.split('\t')
             if (obj)
-                DB.processLine(type, JSON.parse(obj))
+                DB.readLine(time, type, JSON.parse(obj))
         }
+
+        console.log(JSON.stringify(DB.DATA, null, 2))
 
     },
 
     transaction: (type, obj, table) => {
 
-        if (type == 'GET')
-          return DB.DATA[table]
-
+        if (type == 'GET'){}
+     
         let ret = []
 
-        for(rec of JSON.parse(obj)) {
-        
-          if (type == 'POST')
-            rec._id = +new Date()
-
-          ret.push(DB.processLine(type, rec, table))
-          FS.appendFileSync('./data.txt', `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(rec)}`)
-        
+        for (rec of JSON.parse(obj)) {
+            ret.push(DB.readLine(+new Date(), type, rec, table))
+            FS.appendFileSync('./data.txt', `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(rec)}`)
         }
 
         return ret
 
     },
 
-    processLine: (type, arr, table) => {
-
-        let ret = []
+    readLine: (time, type, arr) => {
 
         for (const obj of arr) {
 
             if (type == 'POST') {
-                obj._id = +new Date()
-                DB.DATA[table].push(obj)
-                ret.push(obj)
+                DB.DATA.push(obj)
             }
+
             if (type == 'PUT') {
-                DB.DATA[obj._id] = obj
-                ret.push(DB.DATA[obj._id])
+                for( var i = 0; i < DB.DATA.length; i++){ 
+                    console.log(i)
+                    if ( DB.DATA[i]._id == obj._id) { 
+                        DB.DATA[i] = obj
+                    }
+                }
             }
+
             if (type == 'DELETE') {
-                delete DB.DATA[obj._id]
-                ret.push(obj)
+                for( var i = 0; i < DB.DATA.length; i++){ 
+                    if ( DB.DATA[i]._id == obj._id) { 
+                        DB.DATA.splice(i, 1); 
+                    }
+                }
             }
 
         }
 
-        return ret
-
     },
 
-    DATA: {}
-    
+    DATA: []
+
 }
 
 module.exports = DB
