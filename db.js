@@ -8,14 +8,11 @@ DELETE /api [{_id:'sdkjshdkjasd'}, {_id:'widhgahsgdjasd']
 
 */
 
-const FS = require('fs')
-const READLINE = require('readline')
-
-module.exports = DB = {
+const DB = {
 
     init: () => {
 
-        if (!FS.existsSync('./data.txt'))
+        if (!require('fs').existsSync('./data.txt'))
             FS.writeFileSync('./data.txt', `edb ${new Date().toISOString()}`)
         DB.build()
 
@@ -23,7 +20,7 @@ module.exports = DB = {
 
     build: async () => {
 
-        const rl = READLINE.createInterface({
+        const rl = require('readline').createInterface({
             input: FS.createReadStream('./data.txt'),
             crlfDelay: Infinity
         })
@@ -84,5 +81,7 @@ module.exports = DB = {
     },
 
     DATA: {}
-
+    
 }
+
+module.exports = DB
