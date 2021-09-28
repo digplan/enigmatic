@@ -29,7 +29,12 @@ window.controls = {
     }
 }
 window.classes = {
-
+    "post": async (e) => {
+        e.onclick = async ()=>{
+          var resp = await fetch('/data/post', {method:'POST', body:''})
+          alert(resp)
+        }
+    }
 }
 window.load = s => {
     return new Promise(r => {
@@ -79,9 +84,12 @@ window.css = (id, rules) => {
 window.enigmatic = {
     "version": 'v0.9.1',
     "start": async x => {
+
         console.log(`\r\ne ======> ${window.enigmatic.version} : ${new Date()}`);
+
         window.$ = document.querySelectorAll.bind(document)
         window.debug = $('body')[0].hasAttribute('debug');
+
         let controls = $('[control]')
         for (let i = 0; i < controls.length; i++) {
             let e = controls[i]
@@ -89,6 +97,13 @@ window.enigmatic = {
             if (name in window.controls){
                 console.log(`e ======> Found Control: ${name} ${e.id} ${e}`)
                 await window.controls[name](e)
+            }
+        }
+
+        for(let name in window.classes){
+            let es = document.getElementsByClassName(name)
+            for(let i = 0; i<es.length; i++){
+                window.classes[name](es[i])
             }
         }
 

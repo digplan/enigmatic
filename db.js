@@ -1,3 +1,13 @@
+/*
+
+DB.DATA = {"tablename": [{_id:'sdkjshdkjasd', _type:'tablename'}, {_id:'asdaaaasdadd', _type:'tablename'}], }
+GET /api/tablename
+POST /api   [{_type:'tablename'}, {_type:'tablename'}]
+PUT /api    [{_id:'sdkjshdkjasd', _type:'tablename'}, {_id:'sdkjshdkjasd', _type:'tablename'}]
+DELETE /api [{_id:'sdkjshdkjasd'}, {_id:'widhgahsgdjasd']
+
+*/
+
 const FS = require('fs')
 const READLINE = require('readline')
 
@@ -28,29 +38,35 @@ module.exports = DB = {
 
     transaction: (type, obj, table) => {
 
-        if (type == 'GET') {
-            let ret = Object.values(DB.DATA).filter((o)=>o._type==table)
-            return ret
+        if (type == 'GET')
+          return DB.DATA[table]
+
+        let ret = []
+
+        for(rec of JSON.parse(obj)) {
+        
+          if (type == 'POST')
+            rec._id = +new Date()
+
+          ret.push(DB.processLine(type, rec, table))
+          FS.appendFileSync('./data.txt', `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(rec)}`)
+        
         }
 
-        if (obj) obj = JSON.parse(obj)
-        const ret = DB.processLine(type, obj)
-        FS.appendFileSync('./data.txt', `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}`)
         return ret
 
     },
 
-    processLine: (type, arr) => {
+    processLine: (type, arr, table) => {
 
         let ret = []
 
         for (const obj of arr) {
 
             if (type == 'POST') {
-                const id = +new Date()
-                obj._id = id
-                DB.DATA[id] = obj
-                ret.push(DB.DATA[id])
+                obj._id = +new Date()
+                DB.DATA[table].push(obj)
+                ret.push(obj)
             }
             if (type == 'PUT') {
                 DB.DATA[obj._id] = obj
