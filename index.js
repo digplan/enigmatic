@@ -1,4 +1,4 @@
-window.controls = {
+const controls = {
     helloworld: (e) => e.innerHTML = 'Hello World!',
     youtube: (e) => {
         const id = e.getAttribute('id') || 'MlDx9s-zJMM'
@@ -28,7 +28,9 @@ window.controls = {
         }
     }
 }
-window.classes = {
+window.controls = controls
+
+const classes = {
     "post": async (e) => {
         e.onclick = async ()=>{
           var resp = await fetch('/data/post', {method:'POST', body:''})
@@ -36,7 +38,9 @@ window.classes = {
         }
     }
 }
-window.load = s => {
+window.classes = classes
+
+const load = s => {
     return new Promise(r => {
         var iscss = s.match(/css$/);
         if (!iscss) {
@@ -50,7 +54,9 @@ window.load = s => {
         e.onload = r
     })
 }
-window.data = new Proxy({}, {
+window.load = load
+
+const data = new Proxy({}, {
     set: (obj, prop, value) => {
         if (window.debug)
             console.log('e ======> SETTING DATA OBJECT .' + prop + ' = ' + JSON.stringify(value))
@@ -66,28 +72,31 @@ window.data = new Proxy({}, {
         return prop
     }
 })
+window.data = data
 
-window.child = (parent, type) => {
+const child = (parent, type) => {
     const e = document.createElement(type || 'div')
     parent.appendChild(e)
-    return e
+    return es
 }
+window.child = child
 
-window.css = (id, rules) => {
+const css = (id, rules) => {
     var style = document.createElement("style")
     document.head.appendChild(style)
     const rule = `#${id} { ${rules} }`
     style.sheet.insertRule(rule)
     return rules
 }
+window.css = css
 
-window.enigmatic = {
+const enigmatic = {
     "version": 'v0.9.1',
     "start": async x => {
 
         console.log(`\r\ne ======> ${window.enigmatic.version} : ${new Date()}`);
 
-        window.$ = document.querySelectorAll.bind(document)
+        window.$ = document.querySelectorAll
         window.debug = $('body')[0].hasAttribute('debug');
 
         let controls = $('[control]')
