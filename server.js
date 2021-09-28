@@ -31,6 +31,9 @@ const app = (r, s) => {
             if (r.url == '/' || r.url == '/index.html')
                 return s.end(FS.readFileSync('./index.html').toString());
 
+            if (r.url == '/' || r.url == '/testdb.html')
+                return s.end(FS.readFileSync('./testdb.html').toString());
+
             else if (r.url == '/index.js')
                 return s.end(FS.readFileSync('./index.js').toString());
 
