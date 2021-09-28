@@ -12,9 +12,7 @@ const app = (r, s) => {
 
     try {
 
-        var api = r.url.match(/^\/api\/(.*)/)
-
-        if (api && api[1]) {
+        if(r.method.match(/POST|PUT|DELETE/) && r.url == '/api') {
             var body = ''
             r.on('data', (datain) => body += datain)
             r.on('end', () => {
@@ -23,6 +21,10 @@ const app = (r, s) => {
             })
             return;
         }
+
+        var api = r.url.match(/^\/api\/(.*)/)
+        if(r.method.match(/GET/) && api && api[1])
+            return s.end(DB.query(api[1]))
 
         if (r.url == '/events') {
                 s.writeHead(200, {
@@ -60,5 +62,4 @@ const app = (r, s) => {
 
 }
 
-const server = PROTOCOL.createServer(options, app).listen(443)
-console.log(server)
+PROTOCOL.createServer(options, app).listen(443)

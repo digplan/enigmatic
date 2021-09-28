@@ -32,13 +32,19 @@ const DB = {
         }
 
         console.log(JSON.stringify(DB.DATA, null, 2))
+        const ff = DB.query('person')
+        console.log(ff)
 
     },
 
-    transaction: (type, obj, table) => {
+    query: (name) => {
+        let ret = []
+        const filter = DB.DATA.filter(i=>(i['_type']=='_function')&&(i['name']==name))[0].filter
+        console.log(filter)
+    },
 
-        if (type == 'GET'){}
-     
+    transaction: (type, obj, func) => {
+
         let ret = []
 
         for (rec of JSON.parse(obj)) {
@@ -54,20 +60,18 @@ const DB = {
 
         for (const obj of arr) {
 
-            if (type == 'POST')
-                return DB.DATA.push(obj)
-
-            if (type == 'PUT') {
+            if (type == 'POST') {
+                DB.DATA.push(obj)
+            } else if (type == 'PUT') {
                 for( var i = 0; i < DB.DATA.length; i++){ 
-                    console.log(i)
-                    if ( DB.DATA[i]._id == obj._id) { 
+                    console.log(DB.DATA[i]._id, obj._id)
+                    if (DB.DATA[i]._id == obj._id) { 
                         DB.DATA[i] = obj
                     }
                 }
+            }  else if (type == 'DELETE') {
+                DB.DATA = DB.DATA.filter(i=>i._id!=obj._id)
             }
-
-            if (type == 'DELETE')
-                DB.DATA = DB.DATA.filter(i=>i._id==obj._id)
 
         }
 
