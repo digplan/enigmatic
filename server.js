@@ -10,8 +10,6 @@ const options = {
 
 const app = (r, s) => {
 
-    //console.log([r.method, r.url]);
-
     try {
 
         var api = r.url.match(/^\/api\/(.*)/)
@@ -26,24 +24,7 @@ const app = (r, s) => {
             return;
         }
 
-        if (r.method == 'GET') {
-
-            if (r.url == '/' || r.url == '/index.html')
-                return s.end(FS.readFileSync('./index.html').toString());
-
-            if (r.url == '/' || r.url == '/testdb.html')
-                return s.end(FS.readFileSync('./testdb.html').toString());
-
-            else if (r.url == '/index.js')
-                return s.end(FS.readFileSync('./index.js').toString());
-
-            else if (r.url == '/enigmatic.css')
-                return s.end(FS.readFileSync('./enigmatic.css').toString());
-
-            else if (r.url == '/data')
-                return s.end(JSON.stringify(DATA, null, 2))
-
-            else if (r.url == '/events') {
+        if (r.url == '/events') {
                 s.writeHead(200, {
                     'Content-Type': 'text/event-stream',
                     'Cache-Control': 'no-cache',
@@ -61,15 +42,22 @@ const app = (r, s) => {
                     console.log('Client leave')
                     clearInterval(t)
                 })
-            }
+                return;
         }
 
-        if(!r.method.match(/POST|PUT|DELETE/i))
-            return s.end('')
+        if(r.method == 'GET'){
+            const fn = './public' + r.url
+            if(!FS.existsSync(fn))
+              return s.end(404, 'not found')
+            return s.end(FS.readFileSync(fn).toString())
+        }
+
+        return s.end('not implemented')
 
     } catch (e) {
         s.end('Error ' + e.message);
     }
+
 }
 
 const server = PROTOCOL.createServer(options, app).listen(443)
