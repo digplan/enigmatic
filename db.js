@@ -1,7 +1,7 @@
 /*
 
-DB.DATA = {"tablename": [{_id:'sdkjshdkjasd', _type:'tablename'}, {_id:'asdaaaasdadd', _type:'tablename'}], }
-GET /api/tablename
+DB.DATA = [{_id:'sdkjshdkjasd', _type:'tablename'}, {_id:'asdaaaasdadd', _type:'tablename'}]
+GET /api/db/tablename
 POST /api   [{_type:'tablename'}, {_type:'tablename'}]
 PUT /api    [{_id:'sdkjshdkjasd', _type:'tablename'}, {_id:'sdkjshdkjasd', _type:'tablename'}]
 DELETE /api [{_id:'sdkjshdkjasd'}, {_id:'widhgahsgdjasd']
@@ -42,7 +42,7 @@ const DB = {
         let ret = []
 
         for (rec of JSON.parse(obj)) {
-            ret.push(DB.readLine(+new Date(), type, rec, table))
+            ret.push(DB.readLine(+new Date(), type, rec))
             FS.appendFileSync('./data.txt', `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(rec)}`)
         }
 
@@ -54,9 +54,8 @@ const DB = {
 
         for (const obj of arr) {
 
-            if (type == 'POST') {
-                DB.DATA.push(obj)
-            }
+            if (type == 'POST')
+                return DB.DATA.push(obj)
 
             if (type == 'PUT') {
                 for( var i = 0; i < DB.DATA.length; i++){ 
@@ -67,13 +66,8 @@ const DB = {
                 }
             }
 
-            if (type == 'DELETE') {
-                for( var i = 0; i < DB.DATA.length; i++){ 
-                    if ( DB.DATA[i]._id == obj._id) { 
-                        DB.DATA.splice(i, 1); 
-                    }
-                }
-            }
+            if (type == 'DELETE')
+                DB.DATA = DB.DATA.filter(i=>i._id==obj._id)
 
         }
 
