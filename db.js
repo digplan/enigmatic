@@ -12,7 +12,7 @@ DELETE /api [{_id:'sdkjshdkjasd'}, {_id:'widhgahsgdjasd']
 
 const DB = {
 
-    init: (version) => {
+    init: async (version) => {
 
         if (!require('fs').existsSync('./data.txt')) {
             const keys = require('./crypto.js').createKeys()
@@ -27,7 +27,7 @@ const DB = {
             crlfDelay: Infinity
         })
 
-        for (const line of rl) {
+        for await (const line of rl) {
             let [time, type, obj] = line.split('\t')
             if(!obj)
               continue
