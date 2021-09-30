@@ -1,6 +1,7 @@
 const PROTOCOL = require('https')
 const FS = require('fs')
 const DB = require('./db.js')
+
 DB.init()
 
 const options = {
