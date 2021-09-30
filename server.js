@@ -1,41 +1,43 @@
-const PROTOCOL = require('https')
-const FS = require('fs')
-const DB = require('./db.js')
+(async function () {
 
-DB.init()
+    const PROTOCOL = require('https')
+    const FS = require('fs')
+    const DB = require('./db.js')
 
-const options = {
-    cert: FS.readFileSync('./localhost.pem'),
-    key: FS.readFileSync('./localhost-key.pem')
-}
+    await DB.init()
 
-const app = (r, s) => {
+    const options = {
+        cert: FS.readFileSync('./localhost.pem'),
+        key: FS.readFileSync('./localhost-key.pem')
+    }
 
-    try {
+    const app = (r, s) => {
 
-        if(r.method.match(/POST|PUT|DELETE/) && r.url == '/api') {
-            var body = ''
-            r.on('data', (datain) => body += datain)
-            r.on('end', () => {
-                var x = DB.transaction(r.method, body, api[1])
-                s.end(JSON.stringify(x))
-            })
-            return;
-        }
+        try {
 
-        var api = r.url.match(/^\/api\/(.*)/)
-        if(r.method.match(/GET/) && api && api[1])
-            return s.end(DB.query(api[1]))
+            if (r.method.match(/POST|PUT|DELETE/) && r.url == '/api') {
+                var body = ''
+                r.on('data', (datain) => body += datain)
+                r.on('end', () => {
+                    var x = DB.transaction(r.method, body, api[1])
+                    s.end(JSON.stringify(x))
+                })
+                return;
+            }
 
-        if (r.url == '/events') {
+            var api = r.url.match(/^\/api\/(.*)/)
+            if (r.method.match(/GET/) && api && api[1])
+                return s.end(DB.query(api[1]))
+
+            if (r.url == '/events') {
                 s.writeHead(200, {
                     'Content-Type': 'text/event-stream',
                     'Cache-Control': 'no-cache',
                     Connection: 'keep-alive'
                 })
 
-                var t = setInterval(()=>{
-                    DATA = {time: new Date()}
+                var t = setInterval(() => {
+                    DATA = { time: new Date() }
                     s.write(`data: ${JSON.stringify(DATA)}`)
                     s.write('\n\n')
                     console.log(`SENDING EV`)
@@ -46,21 +48,23 @@ const app = (r, s) => {
                     clearInterval(t)
                 })
                 return;
+            }
+
+            if (r.method == 'GET') {
+                const fn = './public' + r.url
+                if (!FS.existsSync(fn))
+                    return s.end(404, 'not found')
+                return s.end(FS.readFileSync(fn).toString())
+            }
+
+            return s.end('not implemented')
+
+        } catch (e) {
+            s.end('Error ' + e.message);
         }
 
-        if(r.method == 'GET'){
-            const fn = './public' + r.url
-            if(!FS.existsSync(fn))
-              return s.end(404, 'not found')
-            return s.end(FS.readFileSync(fn).toString())
-        }
-
-        return s.end('not implemented')
-
-    } catch (e) {
-        s.end('Error ' + e.message);
     }
 
-}
+    PROTOCOL.createServer(options, app).listen(443)
 
-PROTOCOL.createServer(options, app).listen(443)
+})()
