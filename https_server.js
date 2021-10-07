@@ -10,27 +10,48 @@
 
 */
 
+const FS = require('fs')
+
 class HTTPS {
 
     functions = []
 
     listen () {
         const PROTOCOL = require('https')
-        const FS = require('fs')
         const options = {
             cert: FS.readFileSync('./localhost-cert.pem'),
             key: FS.readFileSync('./localhost-key.pem')
         }
         const app = (r, s) => {
             for(let f of this.functions){
-                f(r, s)
+                if(f(r, s))
+                  return
             }
         }
         PROTOCOL.createServer(options, app).listen(443)
     }
 
-    use (f) {
+    use (f, param) {
         this.functions.push(f)
+    }
+
+    STATIC (r, s) {
+        if (r.method == 'GET') {
+            if(r.url == '/')
+              r.url = '/index.html'
+            const fn = `./public/${r.url}`
+            if (!FS.existsSync(fn)){
+                s.writeHeader(404)
+                return s.end()
+            }
+            s.end(FS.readFileSync(fn).toString())
+            return true
+        }
+    }
+
+    NOTFOUND (r, s) {
+        s.writeHeader(404)
+        return s.end()
     }
 
 }
