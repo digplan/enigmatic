@@ -14,6 +14,10 @@ const { createHash, createECDH, createSign, createVerify, randomBytes, createCip
 
 class CRYPTO {
 
+        public = ''
+        public_compressed = ''
+        private = ''
+        
         constructor (privateHex) {
                 const ecdh = createECDH('secp256k1')
                 privateHex ? ecdh.setPrivateKey(privateHex, 'hex') : ecdh.generateKeys()
