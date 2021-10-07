@@ -14,22 +14,27 @@ const FS = require('fs')
 
 class DB {
 
+    filename = ''
     DATA = []
+    idval = 0
+    idcounter = 0
 
-    constructor (filename) {
-        if (FS.existsSync(fn))
-            return this
-
-        const keys = require('./crypto.js').createKeys()
-        FS.writeFileSync(fn, `edb 0.0.1`)
-        console.log(`edb public key is ${mDB.public = keys.public_compressed}`)
-        console.log(`edb private key is ${keys.private}`)
-        this.transaction('POST', `[{"_type": "_identity", "name": "edbroot", "public": "${keys.public_compressed}"}]`)
+    constructor(filename = './data.txt') {
+        this.filename = filename
+        if (!FS.existsSync(filename)) {
+            const CRYPTO = require('./crypto.js')
+            const crypto = new CRYPTO()
+            FS.writeFileSync(filename, `edb 0.0.1`)
+            console.log(`edb public key is ${crypto.public_compressed}`)
+            console.log(`edb private key is ${crypto.private}`)
+            this.transaction('POST', `[{"_type": "_identity", "name": "edbroot", "public": "${crypto.public_compressed}"}]`)
+        }
+        return this
     }
 
-    async init () {
+    async init(version) {
         const rl = require('readline').createInterface({
-            input: require('fs').createReadStream(fn),
+            input: FS.createReadStream(this.filename),
             crlfDelay: Infinity
         })
 
@@ -40,52 +45,71 @@ class DB {
         }
     }
 
-    query (s) {
-        return { query: s, results: mDB.DATA.filter(s) }
+    query(s) {
+        return { query: s, results: this.DATA.filter(s) }
     }
 
-    transaction (type, arr) {
+    transaction(type, arr) {
         if (typeof arr == 'string')
             arr = JSON.parse(arr)
 
         let ret = []
 
-        for (rec of arr) {
-            ret.push(exports.readLine(+new Date(), type, rec))
-            FS.appendFileSync(mDB.filename, `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(rec)}`)
+        for (let rec of arr) {
+            let newid = ''
+            let d = +new Date()
+            if(d == this.idval) {
+                newid = d + '.' + this.idcounter++
+            } else {
+                newid = d
+            }
+            this.idval = d
+
+            if(type == 'POST') rec._id = `${rec._type}.${newid}`
+            delete rec._type
+            ret.push(rec)
+            FS.appendFileSync(this.filename, `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(rec)}`)
         }
 
         return ret
     }
 
-    readLine (time, type, obj) {
+    readLine(time, type, obj) {
         if (type == 'POST') {
-            mDB.DATA.push(obj)
+            this.DATA.push(obj)
         } else if (type == 'PUT') {
-            for (var i = 0; i < DB.DATA.length; i++) {
-                if (mDB.DATA[i]._id == obj._id) {
-                    mDB.DATA[i] = obj
+            for (var i = 0; i < this.DATA.length; i++) {
+                if (this.DATA[i]._id == obj._id) {
+                    this.DATA[i] = obj
                 }
             }
         } else if (type == 'DELETE') {
-            mDB.DATA = mDB.DATA.filter(i => i._id != obj._id)
+            this.DATA = this.DATA.filter(i => i._id != obj._id)
         }
     }
 
-    getToken (idIdentity) {
+    getToken(idIdentity) {
 
     }
 
-    newIdentity () { }
+    newIdentity(name) {
+        this.transaction('POST', [{ _type: '_identity', name: name }])
+    }
 
-    newRole () { }
+    newRole(name) {
+        this.transaction('POST', [{ _type: '_role', name: name }])
+    }
 
-    newIdentityRole () {}
+    newIdentityRole(identity, role) {
+        this.transaction('POST', [{ _type: '_identityrole', identity: identity, role: role }])
+    }
 
-    grant (idFrom, idTo, definition) {
-
+    grant(from, to, definition) {
+        this.transaction('POST', [{ _type: '_grant', from: from, to: to, definition: definition }])
     }
 }
+
+module.exports = DB
 
 /*****************
        Tests  
@@ -104,16 +128,16 @@ async function tests() {
     const DB = require('./db.js')
     const db = new DB(`./TESTING-eDB.txt`)
     await db.init()
-    console.log(`db is located at ${DB.filename} and has ${DB.DATA.length} records`)
+    console.log(`db is located at ${db.filename} and has ${db.DATA.length} records`)
 
     const newid = db.newIdentity('chris')
     const newrole = db.newRole('users')
     const newidrole = db.newIdentityRole('chris', 'users')
     const grant = db.grant('users', '_type=="users"')
-    const id = db.transaction('POST', {_type:'fruit', name:'apples'})ß
-    const txPut = db.transaction('PUT', {_id: id, color: 'red'})
-    const idd = db.transaction('POST', {_type:'fruit', name:'orange'})
-    const txDelete = db.transaction('DELETE', {_id: idd})
+    const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
+    const txPut = db.transaction('PUT', [{ _id: id, color: 'red' }])
+    const idd = db.transaction('POST', [{ _type: 'fruit', name: 'orange' }])[0]._id
+    const txDelete = db.transaction('DELETE', [{ _id: idd }])
     const root = db.query(new Function('i', 'return i._type=="fruit"'))
-    
+
 }
