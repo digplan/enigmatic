@@ -11,20 +11,19 @@
 */
 
 const FS = require('fs')
+const CRYPTO = require('./crypto.js')
+const crypto = new CRYPTO()
 
 class DB {
 
     filename = ''
     DATA = []
-    idval = 0
-    idcounter = 0
     txEvent = ()=>{}
+    lastline = ''
 
     constructor(filename = './data.txt') {
         this.filename = filename
         if (!FS.existsSync(filename)) {
-            const CRYPTO = require('./crypto.js')
-            const crypto = new CRYPTO()
             FS.writeFileSync(filename, `edb 0.0.1`)
             console.log(`edb public key is ${crypto.public_compressed}`)
             console.log(`edb private key is ${crypto.private}`)
@@ -57,25 +56,23 @@ class DB {
         let ret = []
 
         for (let rec of arr) {
-            let newid = ''
-            let d = +new Date()
-            if(d == this.idval) {
-                newid = d + '.' + this.idcounter++
-            } else {
-                newid = d
-            }
-            this.idval = d
+            const hash = crypto.hash(this.lastline + JSON.stringify(rec)).slice(32).toUpperCase()
+            const id = hash.substring(0, 6)
 
             let obj = {}
             if(type == 'POST') 
-              obj._id = `${rec._type}.${newid}`
+              obj._id = `${rec._type}.${id}`
             delete rec._type
+
+            obj._hash = hash
             for(let i in rec)
               obj[i] = rec[i]
             ret.push(obj)
+
             const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}`
             FS.appendFileSync(this.filename, `\r\n${txLine}`)
             this.txEvent(txLine)
+            this.lastline = txLine
         }
 
         return ret
