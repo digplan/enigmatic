@@ -1,17 +1,12 @@
-(async function () {
+const DB = require('./db.js')
+await DB.init()
 
-    const PROTOCOL = require('https')
-    const FS = require('fs')
-    const DB = require('./db.js')
+const HTTPS = require('./https_server.js')
+const server = new HTTPS()
+server.use(app)
+server.listen()
 
-    await DB.init()
-
-    const options = {
-        cert: FS.readFileSync('./localhost.pem'),
-        key: FS.readFileSync('./localhost-key.pem')
-    }
-
-    const app = (r, s) => {
+const app = (r, s) => {
 
         try {
 
@@ -63,8 +58,4 @@
             s.end('Error ' + e.message);
         }
 
-    }
-
-    PROTOCOL.createServer(options, app).listen(443)
-
-})()
+}
