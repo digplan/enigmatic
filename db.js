@@ -16,23 +16,26 @@ const crypto = new CRYPTO()
 
 class DB {
 
+    dbversion = 'v0.0.1'
     filename = ''
     DATA = []
     txEvent = ()=>{}
     lastline = ''
 
-    constructor(filename = './data.txt') {
+    constructor (filename = './data.txt') {
         this.filename = filename
         if (!FS.existsSync(filename)) {
-            FS.writeFileSync(filename, `edb 0.0.1`)
-            console.log(`edb public key is ${crypto.public_compressed}`)
+            FS.writeFileSync(filename, `edb ${this.dbversion}`)
+            console.log(`edb public key is ${crypto.public}`)
+            console.log(`edb public key (compressed) is ${crypto.public_compressed}`)
             console.log(`edb private key is ${crypto.private}`)
             this.transaction('POST', `[{"_type": "_identity", "name": "edbroot", "public": "${crypto.public_compressed}"}]`)
         }
         return this
     }
 
-    async init(version) {
+    async init (version) {
+        this.DATA = []
         const rl = require('readline').createInterface({
             input: FS.createReadStream(this.filename),
             crlfDelay: Infinity
@@ -41,15 +44,16 @@ class DB {
         for await (const line of rl) {
             let [time, type, obj] = line.split('\t')
             if (obj && (!version || (new Date(time) <= new Date(version))))
-                this.readLine(time, type, JSON.parse(obj))
+                this.buildStep(type, JSON.parse(obj))
         }
     }
 
-    query(s) {
-        return { query: s, results: this.DATA.filter(s) }
+    query (field, rx) {
+        const f = new Function('i', `return i.${field}&&i.${field}.match(/${rx}/)`)
+        return this.DATA.filter(f)
     }
 
-    transaction(type, arr) {
+    transaction (type, arr) {
         if (typeof arr == 'string')
             arr = JSON.parse(arr)
 
@@ -60,7 +64,7 @@ class DB {
             const id = hash.substring(0, 6)
 
             let obj = {}
-            if(type == 'POST') 
+            if(type == 'POST')
               obj._id = `${rec._type}.${id}`
             delete rec._type
 
@@ -71,6 +75,7 @@ class DB {
 
             const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}`
             FS.appendFileSync(this.filename, `\r\n${txLine}`)
+            this.buildStep(type, obj)
             this.txEvent(txLine)
             this.lastline = txLine
         }
@@ -78,37 +83,37 @@ class DB {
         return ret
     }
 
-    readLine(time, type, obj) {
-        if (type == 'POST') {
+    buildStep (type, obj) {
+        if (type === 'POST') {
             this.DATA.push(obj)
-        } else if (type == 'PUT') {
+        } else if (type === 'PUT') {
             for (var i = 0; i < this.DATA.length; i++) {
                 if (this.DATA[i]._id == obj._id) {
                     this.DATA[i] = obj
                 }
             }
-        } else if (type == 'DELETE') {
+        } else if (type === 'DELETE') {
             this.DATA = this.DATA.filter(i => i._id != obj._id)
         }
     }
 
-    getToken(idIdentity) {
+    getToken (idIdentity) {
 
     }
 
-    newIdentity(name) {
+    newIdentity (name) {
         this.transaction('POST', [{ _type: '_identity', name: name }])
     }
 
-    newRole(name) {
+    newRole (name) {
         this.transaction('POST', [{ _type: '_role', name: name }])
     }
 
-    newIdentityRole(identity, role) {
+    newIdentityRole (identity, role) {
         this.transaction('POST', [{ _type: '_identityrole', identity: identity, role: role }])
     }
 
-    grant(from, to, definition) {
+    grant (from, to, definition) {
         this.transaction('POST', [{ _type: '_grant', from: from, to: to, definition: definition }])
     }
 }
@@ -133,6 +138,7 @@ async function tests() {
     const db = new DB(`./TESTING-eDB.txt`)
     await db.init()
     console.log(`db is located at ${db.filename} and has ${db.DATA.length} records`)
+    console.log(JSON.stringify(db.DATA, null, 2))
 
     const newid = db.newIdentity('chris')
     const newrole = db.newRole('users')
@@ -142,6 +148,7 @@ async function tests() {
     const txPut = db.transaction('PUT', [{ _id: id, color: 'red' }])
     const idd = db.transaction('POST', [{ _type: 'fruit', name: 'orange' }])[0]._id
     const txDelete = db.transaction('DELETE', [{ _id: idd }])
-    const root = db.query(new Function('i', 'return i._type=="fruit"'))
+    const root = db.query(new Function('i', 'return i._id.match(/role/)'))
+    console.log(root)
 
 }

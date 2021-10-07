@@ -2,8 +2,12 @@
 // main.js
 
 const DBAPI = (r, s, DB) => {
-    if (r.url === '/api' && r.method === 'GET')
-        return s.end(JSON.stringify(DB.DATA))
+    const q = r.url.match(/\/api\/(.*)/)
+    if (q && q[0] && r.method === 'GET'){
+        const [field, rx] = q[1].split('%5E')
+        const ret = DB.query(field, rx)
+        return s.end(JSON.stringify(ret))
+    }
 
     if (r.url === '/api' && r.method.match(/POST|PUT|DELETE/)) {
         var body = ''
