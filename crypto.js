@@ -1,4 +1,15 @@
-const {createHash, createECDH, createSign, createVerify} = require('crypto')
+/*
+  crypto.js
+  
+  Include:
+  const {createKeys, sign, verify, hash} = require('./crypto.js')
+
+  Tests:
+  > node crypto.js
+
+*/
+
+const {createHash, createECDH, createSign, createVerify, randomBytes, createCipheriv, createDecipheriv} = require('crypto')
 
 exports.privateKey = null;
 exports.publicKey = null;
@@ -28,7 +39,7 @@ exports.createKeys = (privateHex) => {
 exports.sign = (s) => {
         const signer = createSign('SHA256')
         signer.update(s)
-        return signer.sign(this.pem).toString('hex')
+        return signer.sign(exports.pem).toString('hex')
 }
   
 exports.verify = (s, sig) => {
@@ -39,3 +50,29 @@ exports.verify = (s, sig) => {
 }
   
 exports.hash = (s) => createHash('sha256').update(s).digest('hex')
+
+exports.encrypt = (s, key, iv = randomBytes(32)) => {
+        const cipher = createCipheriv('aes-256-cbc', key, iv)
+        let encryptedData = cipher.update(s, 'utf-8', 'hex')
+        return {iv: iv, encrypted: cipher.final("hex")}
+}
+
+exports.decrypt = (s, key, iv) => {
+        const cipher = createDecipheriv('aes-256-cbc', key, iv)
+        let encryptedData = cipher.update(s, 'utf-8', 'hex')
+        return cipher.final("hex")
+}
+
+/*****************
+       Tests  
+******************/
+
+if (require.main !== module)
+    return
+
+const {createKeys, sign, verify, hash, encrypt, decrypt} = require('./crypto.js')
+const newKeys = createKeys()
+console.log(newKeys)
+
+let encryptedData = encrypt('mc', newKeys.private)
+console.log("Encrypted message: " + encryptedData);
