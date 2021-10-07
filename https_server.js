@@ -32,7 +32,10 @@ class HTTPS {
     }
 
     use (f, param) {
-        this.functions.push(f)
+        const func = (r, s, p) => {
+            return f(r, s, param)
+        } 
+        this.functions.push(func)
     }
 
     STATIC (r, s) {

@@ -18,6 +18,7 @@ class DB {
     DATA = []
     idval = 0
     idcounter = 0
+    txEvent = ()=>{}
 
     constructor(filename = './data.txt') {
         this.filename = filename
@@ -65,10 +66,16 @@ class DB {
             }
             this.idval = d
 
-            if(type == 'POST') rec._id = `${rec._type}.${newid}`
+            let obj = {}
+            if(type == 'POST') 
+              obj._id = `${rec._type}.${newid}`
             delete rec._type
-            ret.push(rec)
-            FS.appendFileSync(this.filename, `\r\n${new Date().toISOString()}\t${type}\t${JSON.stringify(rec)}`)
+            for(let i in rec)
+              obj[i] = rec[i]
+            ret.push(obj)
+            const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}`
+            FS.appendFileSync(this.filename, `\r\n${txLine}`)
+            this.txEvent(txLine)
         }
 
         return ret
