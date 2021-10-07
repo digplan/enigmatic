@@ -1,51 +1,42 @@
 
 // main.js
 
-const DBAPI = (r, s) => {
-    if (r.url !== '/api')
-        return false
+const DBAPI = (r, s, DB) => {
+    if (r.url === '/api' && r.method === 'GET')
+        return s.end(JSON.stringify(DB.DATA))
 
-    if (r.method == 'GET') {
-        return db.DATA
-    }
-
-    if (r.method.match(/POST|PUT|DELETE/)) {
+    if (r.url === '/api' && r.method.match(/POST|PUT|DELETE/)) {
         var body = ''
         r.on('data', (datain) => body += datain)
         r.on('end', () => {
-            var x = db.transaction(r.method, body, api[1])
+            var x = DB.transaction(r.method, body, api[1])
             s.end(JSON.stringify(x))
         })
+        return true
     }
 
-    s.writeHeader(405) // Method not implemented
-    return s.end()
+    if (r.url === '/events') {
+        s.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        })
+    
+        DB.txEvent = (line) => {
+            s.write(`data: ${line}`)
+            s.write('\n\n')
+        }
+    
+        s.socket.on('close', function () {
+            console.log('Client leave')
+        })
+    
+        return true;
+    }
+
+    return false
 }
 
-const SSE = (r, s) => {
-    if (r.url !== '/events')
-        return false
-
-    s.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-    })
-
-    var t = setInterval(() => {
-        DATA = { time: new Date() }
-        s.write(`data: ${JSON.stringify(DATA)}`)
-        s.write('\n\n')
-        console.log(`SENDING EV`)
-    }, 500)
-
-    s.socket.on('close', function () {
-        console.log('Client leave')
-        clearInterval(t)
-    })
-
-    return true;
-}
 
 (async () => {
     const DATABASE = require('./db.js')
@@ -54,11 +45,13 @@ const SSE = (r, s) => {
 
     const HTTPS = require('./https_server.js')
     const server = new HTTPS()
-
+    
     server.use(DBAPI, db)
-    server.use(SSE)
     server.use(server.STATIC)
     server.use(server.NOTFOUND)
-
     server.listen()
+
+    setInterval(()=>{
+        db.transaction('POST', `[{"_type": "_identity", "name": "testtx"}]`)
+    }, 3000)
 })()
