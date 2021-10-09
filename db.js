@@ -21,6 +21,7 @@ class DB {
     DATA = []
     txEvent = ()=>{}
     lastline = ''
+    tokens = {}
 
     constructor (filename = './data.txt') {
         this.filename = filename
@@ -97,12 +98,20 @@ class DB {
         }
     }
 
-    getToken (idIdentity) {
-
+    getToken (username, pass) {
+        pass = crypto.hash(pass)
+        const finduser = this.query(`name^${username}|pass^${pass}`)
+        if (!finduser[0])
+          return false
+        const token = crypto.hash(Math.random())
+        for(idrole in this.query('identityrole', ))
+          
+        return token
     }
 
-    newIdentity (name) {
-        this.transaction('POST', [{ _type: '_identity', name: name }])
+    newIdentity (name, pass) {
+        pass = crypto.hash(pass)
+        this.transaction('POST', [{ _type: '_identity', name: name, pass: pass }])
     }
 
     newRole (name) {
@@ -148,7 +157,7 @@ async function tests() {
     const txPut = db.transaction('PUT', [{ _id: id, color: 'red' }])
     const idd = db.transaction('POST', [{ _type: 'fruit', name: 'orange' }])[0]._id
     const txDelete = db.transaction('DELETE', [{ _id: idd }])
-    const root = db.query(new Function('i', 'return i._id.match(/role/)'))
+    const root = db.query()
     console.log(root)
 
 }
