@@ -65,16 +65,14 @@ class DB {
             const id = hash.substring(0, 6)
 
             let obj = {}
-            if(type == 'POST')
-              obj._id = `${rec._type}.${id}`
+            obj._id = (type == 'POST') ? `${rec._type}.${id}` : rec._id
             delete rec._type
 
-            obj._hash = hash
             for(let i in rec)
               obj[i] = rec[i]
             ret.push(obj)
 
-            const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}`
+            const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}\t${hash}`
             FS.appendFileSync(this.filename, `\r\n${txLine}`)
             this.buildStep(type, obj)
             this.txEvent(txLine)
@@ -110,8 +108,10 @@ class DB {
     }
 
     newIdentity (name, pass) {
-        pass = crypto.hash(pass)
-        this.transaction('POST', [{ _type: '_identity', name: name, pass: pass }])
+        let obj = { _type: '_identity', name: name }
+        if(pass)
+            obj.pass = crypto.hash(pass)
+        this.transaction('POST', [obj])
     }
 
     newRole (name) {
