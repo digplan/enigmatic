@@ -30,7 +30,10 @@ class DB {
             console.log(`edb public key is ${crypto.public}`)
             console.log(`edb public key (compressed) is ${crypto.public_compressed}`)
             console.log(`edb private key is ${crypto.private}`)
-            this.transaction('POST', `[{"_type": "_identity", "name": "edbroot", "public": "${crypto.public_compressed}"}]`)
+            this.newIdentity('edbroot')
+            this.newRole('edbroot')
+            this.newIdentityRole('edbroot', 'edbroot')
+            this.grant('edbroot', '_id^.$')
         }
         return this
     }
@@ -49,9 +52,19 @@ class DB {
         }
     }
 
-    query (field, rx) {
-        const f = new Function('i', `return i.${field}&&i.${field}.match(/${rx}/)`)
+    query (s) {
+        const qq = s.split('^')
+        const f = new Function('i', `return i.${qq[0]}&&i.${qq[0]}.match(/^${qq[1]}/)`)
         return this.DATA.filter(f)
+    }
+
+    querystr (s) {
+        const def = s.split('@@')
+        let temp = JSON.parse(JSON.stringify(this.DATA));
+        for(const cond of def) {
+            temp = this.query(cond)
+        }
+        return temp
     }
 
     transaction (type, arr) {
@@ -152,12 +165,14 @@ async function tests() {
     const newid = db.newIdentity('chris')
     const newrole = db.newRole('users')
     const newidrole = db.newIdentityRole('chris', 'users')
-    const grant = db.grant('users', '_type=="users"')
+    const grant = db.grant('edbroot', 'users', '_id^fruit\.')
     const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
     const txPut = db.transaction('PUT', [{ _id: id, color: 'red' }])
     const idd = db.transaction('POST', [{ _type: 'fruit', name: 'orange' }])[0]._id
     const txDelete = db.transaction('DELETE', [{ _id: idd }])
-    const root = db.query()
-    console.log(root)
+
+    console.log(db.DATA)
+    const qr = db.querystr('_id^frui@@color^red$')
+    console.log(qr)
 
 }
