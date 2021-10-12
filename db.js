@@ -3,7 +3,8 @@
   
   Include:
   const DB = require('./db.js')
-  const db = new DB(filename, version)
+  const db = new DB(filename)
+  db.init(version)
 
   Tests:
   > node db.js
@@ -30,10 +31,19 @@ class DB {
             console.log(`edb public key is ${crypto.public}`)
             console.log(`edb public key (compressed) is ${crypto.public_compressed}`)
             console.log(`edb private key is ${crypto.private}`)
-            this.newIdentity('edbroot')
-            this.newRole('edbroot')
-            this.newIdentityRole('edbroot', 'edbroot')
-            this.grant('edbroot', '_id^.$')
+            this.transaction('POST', [
+                {_type: '_schema', name: '_indentity', field: 'name'},
+                {_type: '_schema', name: '_indentity', field: 'public'},
+                {_type: '_schema', name: '_role', field: 'name'},
+                {_type: '_schema', name: '_identityrole', field: 'identity'},
+                {_type: '_schema', name: '_identityrole', field: 'role'},
+                {_type: '_schema', name: '_grant', field: 'role'},
+                {_type: '_schema', name: '_grant', field: 'permission'},
+                {_type: '_identity', name: 'edbroot', public: ''},
+                {_type: '_role', name: 'edbrole'},
+                {_type: '_identityrole', identity: 'edbroot', role: 'edbrole'},
+                {_type: '_grant', role: 'edbrole', field: 'id^.*$'}              
+            ])
         }
         return this
     }
