@@ -78,10 +78,17 @@ class DB {
     validate (arr) {
         for (let rec of arr) {
            const type = rec._id.split('.')[0]
-           const valid = this.schema[rec.type]
-           for (let f of Object.keys(rec)) {
-               if (!f in valid)
-                  return f + ' not in ' + valid
+           const validfields = this.schema[rec.type]
+           const fields = Object.keys(rec)
+           for (let f of fields) {
+               if (!validfields.includes(f))
+                 return 'bad field ' + f
+           }
+           for (let v of validfields) {
+               if (!v.startsWith('!'))
+                  continue
+               if (!fields.includes('!' + v))
+                  return 'required field ' + v
            }
         }
         return false
