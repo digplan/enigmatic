@@ -146,7 +146,7 @@ class DB {
         }
     }
 
-    getToken(username, pass) {
+    getToken (username, pass) {
         pass = crypto.hash(pass)
         const finduser = this.query(`name^${username}|pass^${pass}`)
         if (!finduser[0])
@@ -157,7 +157,7 @@ class DB {
             return token
     }
 
-    listen(port = 443) {
+    listen (port = 443) {
         const PROTOCOL = require('https')
         const options = {
             cert: FS.readFileSync('./localhost-cert.pem'),
@@ -176,11 +176,18 @@ class DB {
         PROTOCOL.createServer(options, app).listen(port)
     }
 
-    use(f) {
+    use (f) {
         const func = (r, s, p) => {
             return f(r, s)
         }
         this.functions.push(func)
+    }
+
+    logout (r, s) {
+        if(r.url !== '/logout')
+          return false
+        const token = r.headers.authorization.split('BEARER ')[1]
+        delete this.tokens[token]
     }
 
     token (r, s) {
@@ -192,10 +199,11 @@ class DB {
         if(!q || !q[1])
           return false
         const token = crypto.hash(+new Date()+Math.random())
+        this.tokens[token] = q[1]
         return s.end(`[{"token": "${token}"}]`)
     }
 
-    q(r, s) {
+    q (r, s) {
         const mat = r.url.match(/\/q\/<?query>(.*)/)
         if (!mat.groups.query || r.method !== 'GET')
             return false
@@ -203,7 +211,7 @@ class DB {
         return s.end(JSON.stringify(ret))
     }
 
-    api(r, s) {
+    api (r, s) {
         if (r.url !== '/api' || !r.method.match(/POST|PUT|DELETE/))
             return false
         let body = ''
@@ -215,7 +223,7 @@ class DB {
         return true
     }
 
-    events(r, s) {
+    events (r, s) {
         if (r.url !== '/events')
             return false
         s.writeHead(200, {
