@@ -23,6 +23,7 @@ class DB {
     txEvent = ()=>{}
     lastline = ''
     tokens = {}
+    schema = {}
 
     constructor (filename = './data.txt') {
         this.filename = filename
@@ -32,14 +33,11 @@ class DB {
             console.log(`edb public key (compressed) is ${crypto.public_compressed}`)
             console.log(`edb private key is ${crypto.private}`)
             this.transaction('POST', [
-                {_type: '_schema', name: '_indentity', field: 'name'},
-                {_type: '_schema', name: '_indentity', field: 'public'},
-                {_type: '_schema', name: '_role', field: 'name'},
-                {_type: '_schema', name: '_identityrole', field: 'identity'},
-                {_type: '_schema', name: '_identityrole', field: 'role'},
-                {_type: '_schema', name: '_grant', field: 'role'},
-                {_type: '_schema', name: '_grant', field: 'permission'},
-                {_type: '_identity', name: 'edbroot', public: ''},
+                {_type: '_schema', name: '_indentity', field: ['name', 'public']},
+                {_type: '_schema', name: '_role', field: ['name']},
+                {_type: '_schema', name: '_identityrole', field: ['identity', 'role']},
+                {_type: '_schema', name: '_grant', field: ['role', 'permission']},
+                {_type: '_identity', name: 'edbroot', public: crypto.public_compressed},
                 {_type: '_role', name: 'edbrole'},
                 {_type: '_identityrole', identity: 'edbroot', role: 'edbrole'},
                 {_type: '_grant', role: 'edbrole', field: 'id^.*$'}              
@@ -77,12 +75,25 @@ class DB {
         return temp
     }
 
+    validate (arr) {
+        for (let rec of arr) {
+           const type = rec._id.split('.')[0]
+           const valid = this.schema[rec.type]
+           for (let f of Object.keys(rec)) {
+               if (!f in valid)
+                  return f + ' not in ' + valid
+           }
+        }
+        return false
+    }
+
     transaction (type, arr) {
         if (typeof arr == 'string')
             arr = JSON.parse(arr)
 
-        let ret = []
+        validate (arr)
 
+        let ret = []
         for (let rec of arr) {
             const hash = crypto.hash(this.lastline + JSON.stringify(rec)).slice(32).toUpperCase()
             const id = hash.substring(0, 6)
@@ -117,6 +128,14 @@ class DB {
         } else if (type === 'DELETE') {
             this.DATA = this.DATA.filter(i => i._id != obj._id)
         }
+        buildSchema (type, obj)
+    }
+
+    buildSchema (type, obj) {
+        if (type.match(/POST|PUT/))
+           this.schema[obj.name] = obj.fields
+        if (type == 'DELETE')
+           delete this.schema[obj.name]
     }
 
     getToken (username, pass) {
@@ -130,24 +149,6 @@ class DB {
         return token
     }
 
-    newIdentity (name, pass) {
-        let obj = { _type: '_identity', name: name }
-        if(pass)
-            obj.pass = crypto.hash(pass)
-        this.transaction('POST', [obj])
-    }
-
-    newRole (name) {
-        this.transaction('POST', [{ _type: '_role', name: name }])
-    }
-
-    newIdentityRole (identity, role) {
-        this.transaction('POST', [{ _type: '_identityrole', identity: identity, role: role }])
-    }
-
-    grant (from, to, definition) {
-        this.transaction('POST', [{ _type: '_grant', from: from, to: to, definition: definition }])
-    }
 }
 
 module.exports = DB
