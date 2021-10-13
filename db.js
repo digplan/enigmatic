@@ -170,6 +170,7 @@ class DB {
             }
         }
         this.use (this.token)
+        this.use (this.logout)
         this.use (this.q)
         this.use (this.api)
         this.use (this.events)
