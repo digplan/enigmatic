@@ -1,16 +1,14 @@
 /**
-  db.js
-*/
-
-const FS = require('fs')
-const CRYPTO = require('./crypto.js')
-const crypto = new CRYPTO()
-
-/**
+ * db.js
+ * 
  * @example
  * const DB = require('./db.js')
  * const db = new DB([filename])
  */
+
+const FS = require('fs')
+const CRYPTO = require('./crypto.js')
+const crypto = new CRYPTO()
 
 class DB {
 
@@ -44,7 +42,7 @@ class DB {
         return this
     }
 
-    async build(version) {
+    async build (version) {
         this.DATA = []
         const rl = require('readline').createInterface({
             input: FS.createReadStream(this.filename),
@@ -58,22 +56,13 @@ class DB {
         }
     }
 
-    query(s) {
+    query (s) {
         const qq = s.split('^')
         const f = new Function('i', `return i.${qq[0]}&&i.${qq[0]}.match(/^${qq[1]}/)`)
         return this.DATA.filter(f)
     }
 
-    /**
-     * 
-     * @param {String} s - Querystring 
-     * @example
-     * // Search for an identity record with name of chris
-     * db.querystr('_id^_identity\.&&name^chris$')
-     * @returns Array
-     */
-
-    querystr(s) {
+    querystr (s) {
         const def = s.split('@@')
         let temp = []
         temp = JSON.parse(JSON.stringify(this.DATA))
@@ -84,7 +73,7 @@ class DB {
     }
 
     /** */
-    validateTx(arr) {
+    validateTx (arr) {
         for (let rec of arr) {
             const type = rec._id.split('.')[0]
             const validfields = this.schema[rec.type]
@@ -103,8 +92,8 @@ class DB {
         return false
     }
 
-    transaction(type, arr) {
-        if (typeof arr == 'string')
+    transaction (type, arr) {
+        if (typeof arr === 'string')
             arr = JSON.parse(arr)
 
         if (this.validateTx(arr))
@@ -133,19 +122,16 @@ class DB {
         return ret
     }
 
-    buildStep(type, obj) {
+    buildStep (type, obj) {
         if (type === 'POST')
             return this.DATA.push(obj)
         if (type === 'PUT') {
-            for (var i = 0; i < this.DATA.length; i++) {
-                if (this.DATA[i]._id == obj._id) {
-                    this.DATA[i] = obj
-                }
-            }
-            return
+            return this.DATA = this.DATA.map(i =>
+                obj._id === i._id ? { ...obj, completed: true } : obj
+            )
         }
         if (type === 'DELETE')
-            return this.DATA = this.DATA.filter(i => i._id != obj._id)
+            return this.DATA = this.DATA.filter(i => i._id !== obj._id)
 
         if (obj._id.match(/^schema/)) {
             if (type.match(/POST|PUT/))
@@ -155,18 +141,9 @@ class DB {
         }
     }
 
-    getToken(username, pass) {
-        pass = crypto.hash(pass)
-        const finduser = this.query(`name^${username}|pass^${pass}`)
-        if (!finduser[0])
-            return false
-        const token = crypto.hash(Math.random())
-        for (idrole in this.query('identityrole',))
+    /***** Server *****/
 
-            return token
-    }
-
-    listen(port = 443) {
+    listen (port = 443) {
         const PROTOCOL = require('https')
         const options = {
             cert: FS.readFileSync('./localhost-cert.pem'),
@@ -180,27 +157,27 @@ class DB {
         }
         this.use(this.token)
         this.use(this.logout)
-        this.use(this.q)
+        this.use(this.query)
         this.use(this.api)
         this.use(this.events)
         PROTOCOL.createServer(options, app).listen(port)
     }
 
-    use(f) {
+    use (f) {
         const func = (r, s, p) => {
             return f(r, s)
         }
         this.functions.push(func)
     }
 
-    logout(r, s) {
+    logout (r, s) {
         if (r.url !== '/logout')
             return false
         const token = r.headers.authorization.split('BEARER ')[1]
         delete this.tokens[token]
     }
 
-    token(r, s) {
+    token (r, s) {
         const b64 = r.headers.authorization.split(' ')[1]
         const creds = Buffer.from(b64, 'base64').toString('ascii')
         const [user, pass] = creds.split(':')
@@ -213,7 +190,7 @@ class DB {
         return s.end(`[{"token": "${token}"}]`)
     }
 
-    q(r, s) {
+    query (r, s) {
         const mat = r.url.match(/\/q\/<?query>(.*)/)
         if (!mat.groups.query || r.method !== 'GET')
             return false
@@ -221,7 +198,7 @@ class DB {
         return s.end(JSON.stringify(ret))
     }
 
-    api(r, s) {
+    api (r, s) {
         if (r.url !== '/api' || !r.method.match(/POST|PUT|DELETE/))
             return false
         let body = ''
@@ -233,12 +210,6 @@ class DB {
         return true
     }
 
-    /**
-     * 
-     * @param {Request} r 
-     * @param {Response} s 
-     * @returns
-     */
     events(r, s) {
         if (r.url !== '/events')
             return false
@@ -259,7 +230,7 @@ class DB {
 
     /**
      * 
-     * @param {Reqyest} a 
+     * @param {Request} a 
      * @param {Response} b 
      * @returns 
      */
