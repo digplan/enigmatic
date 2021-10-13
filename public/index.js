@@ -23,14 +23,14 @@ class DB {
     }
 
     static async get (key, query) {
-       const f = await fetch(`${this.url}/${query}`, headers: {Authorization: `BEARER ${this.token}`})
+       const f = await fetch(`${this.url}/${query}`, {headers: {Authorization: `BEARER ${this.token}`}})
        const resp = await f.json()
        this.DATA[key] = resp
     }
     
     static async method (method, key, data) {
         if(!data._id) throw {DBException: 'method needs a _id'}
-        const f = await fetch(this.url, {method: method, body: data, headers: {Authorization: `BEARER ${this.token}`})
+        const f = await fetch(this.url, {method: method, body: data, headers: {Authorization: `BEARER ${this.token}`}})
         const resp = await f.json()
         this.DATA[key] = resp
     }
