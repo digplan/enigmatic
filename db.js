@@ -1,19 +1,16 @@
-/*
+/**
   db.js
-  
-  Include:
-  const DB = require('./db.js')
-  const db = new DB(filename)
-  db.init(version)
-
-  Tests:
-  > node db.js
-
 */
 
 const FS = require('fs')
 const CRYPTO = require('./crypto.js')
 const crypto = new CRYPTO()
+
+/**
+ * @example
+ * const DB = require('./db.js')
+ * const db = new DB([filename])
+ */
 
 class DB {
 
@@ -47,7 +44,7 @@ class DB {
         return this
     }
 
-    async init(version) {
+    async build(version) {
         this.DATA = []
         const rl = require('readline').createInterface({
             input: FS.createReadStream(this.filename),
@@ -67,15 +64,26 @@ class DB {
         return this.DATA.filter(f)
     }
 
+    /**
+     * 
+     * @param {String} s - Querystring 
+     * @example
+     * // Search for an identity record with name of chris
+     * db.querystr('_id^_identity\.&&name^chris$')
+     * @returns Array
+     */
+
     querystr(s) {
         const def = s.split('@@')
-        let temp = JSON.parse(JSON.stringify(this.DATA));
+        let temp = []
+        temp = JSON.parse(JSON.stringify(this.DATA))
         for (const cond of def) {
             temp = this.query(cond)
         }
         return temp
     }
 
+    /** */
     validateTx(arr) {
         for (let rec of arr) {
             const type = rec._id.split('.')[0]
@@ -99,7 +107,8 @@ class DB {
         if (typeof arr == 'string')
             arr = JSON.parse(arr)
 
-        validateTx(arr)
+        if (this.validateTx(arr))
+            return false
 
         let ret = []
         for (let rec of arr) {
@@ -146,7 +155,7 @@ class DB {
         }
     }
 
-    getToken (username, pass) {
+    getToken(username, pass) {
         pass = crypto.hash(pass)
         const finduser = this.query(`name^${username}|pass^${pass}`)
         if (!finduser[0])
@@ -157,7 +166,7 @@ class DB {
             return token
     }
 
-    listen (port = 443) {
+    listen(port = 443) {
         const PROTOCOL = require('https')
         const options = {
             cert: FS.readFileSync('./localhost-cert.pem'),
@@ -169,42 +178,42 @@ class DB {
                     return
             }
         }
-        this.use (this.token)
-        this.use (this.logout)
-        this.use (this.q)
-        this.use (this.api)
-        this.use (this.events)
+        this.use(this.token)
+        this.use(this.logout)
+        this.use(this.q)
+        this.use(this.api)
+        this.use(this.events)
         PROTOCOL.createServer(options, app).listen(port)
     }
 
-    use (f) {
+    use(f) {
         const func = (r, s, p) => {
             return f(r, s)
         }
         this.functions.push(func)
     }
 
-    logout (r, s) {
-        if(r.url !== '/logout')
-          return false
+    logout(r, s) {
+        if (r.url !== '/logout')
+            return false
         const token = r.headers.authorization.split('BEARER ')[1]
         delete this.tokens[token]
     }
 
-    token (r, s) {
-        const b64 =  r.headers.authorization.split(' ')[1]
+    token(r, s) {
+        const b64 = r.headers.authorization.split(' ')[1]
         const creds = Buffer.from(b64, 'base64').toString('ascii')
         const [user, pass] = creds.split(':')
         const passhashed = crypto.hash(crypto.hash(pass))
         const q = this.query(`_id^_identity\.&&pass_hash^${passhashed}$`)
-        if(!q || !q[1])
-          return false
-        const token = crypto.hash(+new Date()+Math.random())
+        if (!q || !q[1])
+            return false
+        const token = crypto.hash(+new Date() + Math.random())
         this.tokens[token] = q[1]
         return s.end(`[{"token": "${token}"}]`)
     }
 
-    q (r, s) {
+    q(r, s) {
         const mat = r.url.match(/\/q\/<?query>(.*)/)
         if (!mat.groups.query || r.method !== 'GET')
             return false
@@ -212,7 +221,7 @@ class DB {
         return s.end(JSON.stringify(ret))
     }
 
-    api (r, s) {
+    api(r, s) {
         if (r.url !== '/api' || !r.method.match(/POST|PUT|DELETE/))
             return false
         let body = ''
@@ -224,7 +233,13 @@ class DB {
         return true
     }
 
-    events (r, s) {
+    /**
+     * 
+     * @param {Request} r 
+     * @param {Response} s 
+     * @returns
+     */
+    events(r, s) {
         if (r.url !== '/events')
             return false
         s.writeHead(200, {
@@ -242,9 +257,19 @@ class DB {
         return true;
     }
 
+    /**
+     * 
+     * @param {Reqyest} a 
+     * @param {Response} b 
+     * @returns 
+     */
+    test(a /*something*/, b) {
+        return true
+    }
 }
 
 module.exports = DB
+
 
 /*****************
        Tests  
@@ -263,35 +288,38 @@ async function tests() {
 
     const DB = require('./db.js')
     const db = new DB(`./TESTING-eDB.txt`)
+    const d = new DB()
 
     // Build
-    await db.init()
+    await db.build()
     console.log(`db is located at ${db.filename} and has ${db.DATA.length} records`)
     console.log(JSON.stringify(db.DATA, null, 2))
+
+    // Transaction types
+    //const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
+    //const txPut = db.transaction('PUT', [{ _id: id, color: 'red' }])
+    //const idd = db.transaction('POST', [{ _type: 'fruit', name: 'orange' }])[0]._id
+    //const txDelete = db.transaction('DELETE', [{ _id: idd }])
+
+    // Invalid Transaction Types
 
     // New user
 
     // Grant to new user
 
-    // Transaction types
-    const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
-    const txPut = db.transaction('PUT', [{ _id: id, color: 'red' }])
-    const idd = db.transaction('POST', [{ _type: 'fruit', name: 'orange' }])[0]._id
-    const txDelete = db.transaction('DELETE', [{ _id: idd }])
-
     // Schema
 
     // Query
-    console.log(db.DATA)
-    const qr = db.querystr('_id^frui@@color^red$')
-    console.log(qr)
+    //console.log(db.DATA)
+    //const qr = db.querystr('_id^frui@@color^red$')
+    //console.log(qr)
 
     // Server
-    db.listen()
+    //db.listen()
 
-    // New user
+    // Get Token Success
 
-    // Get token
+    // Get Token Fail
 
     // Server query
 
@@ -300,5 +328,7 @@ async function tests() {
     // Server events
 
     // Server query with version
+
+    // Logout
 
 }
