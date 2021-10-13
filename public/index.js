@@ -1,14 +1,90 @@
-const controls = {
-    helloworld: (e) => e.innerHTML = 'Hello World!',
-    youtube: (e) => {
+class DB {
+    
+    url = '/api'
+
+    static DATA = new Proxy({}, {
+        set: (obj, prop, value) => {
+            obj[prop] = value
+            document.querySelector(`[data^=${prop}]`).forEach(control => {
+                var newval = value
+                if (control.set) control.set(newval);
+                else control.innerHTML = newval
+            })
+            return prop
+        }
+    })
+
+    static async get (key, query) {
+       const f = await fetch(`${this.url}/${query}`)
+       const resp = await f.toJSON()
+       this.DATA[key] = resp
+    }
+
+    static async post (key, data) {
+        if(!data._type) throw {DBException: 'post needs a _type'}
+        const f = await fetch(this.url, {method: 'POST', body: data})
+        const resp = await f.toJSON()
+        if(resp[0].error) throw 
+        this.DATA[key] = resp
+    }
+    
+    static async put (key, data) {
+        if(!data._id) throw {DBException: 'put needs a _id'}
+        const f = await fetch(this.url, {method: 'PUT', body: data})
+        const resp = await f.toJSON()
+        this.DATA[key] = resp
+    }
+    
+    static async delete (key, data) {
+        if(!data._id) throw {DBException: 'delete needs a _id'}
+        const f = await fetch(this.url, {method: 'DELETE', body: data})
+        const resp = await f.toJSON()
+        this.DATA[key] = resp
+    }
+
+    static eventsource (url) {
+        const ev = new window.EventSource(url)
+
+        ev.onopen = (e) => {
+            console.log(`e ======> eventsource opened`)
+        }  
+        
+        ev.onmessage = (e) => {
+            console.log(`e ======> Event data in: ${e.data}`)
+            let obj = JSON.parse(e.data)
+            for (k in obj) data[k] = obj[k]
+        }    
+        
+        ev.onerror = (e) => {
+            if(!this.debug) return;
+            if (this.readyState == EventSource.CONNECTING)
+              return console.log(`e ======> eventsource connecting`)
+            if (this.readyState == EventSource.OPEN)
+              return console.log(`e ======> eventsource open`)
+            if (this.readyState == EventSource.CLOSED)
+              return console.log(`e ======> eventsource closed`)             
+        }
+    }
+
+}
+
+class CONTROLS {
+
+    static helloworld (e) {
+        e.innerHTML = 'Hello World!'
+    }
+
+    static youtube (e) {
         const id = e.getAttribute('id') || 'MlDx9s-zJMM'
         e.innerHTML = `<embed src='//www.youtube.com/embed/${id}?rel=0&amp;controls=0&amp;showinfo=0' style='height:100%;width:100%' />`
-    },
-    mapembed: (e) => {
+    }
+
+    static mapembed (e) {
         const id = e.getAttribute('id')
         e.innerHTML = `<iframe height='100%' width=100% frameborder=0 src="https://maps.google.com/maps?f=q&source=s_q&hl=en&geocode=&q=${id || 'Chicago'}&output=embed"></iframe>`
-    },
-    view: (e) => {
+    }
+
+    static view (e) {
         var agent = e.getAttribute('useragent');
         if (debug)
             console.log(`e ======> View ${e.id} useragent: ${navigator.userAgent}`)
@@ -27,134 +103,90 @@ const controls = {
             });
         }
     }
-}
-window.controls = controls
 
-const classes = {
-    "post": async (e) => {
-        e.onclick = async ()=>{
-          var resp = await fetch('/data/post', {method:'POST', body:''})
-          alert(resp)
+}
+
+class CLASSES {
+    static print (e) {
+        e.onclick = () => {
+          print ()
         }
     }
 }
-window.classes = classes
 
-const load = s => {
-    return new Promise(r => {
-        var iscss = s.match(/css$/);
-        if (!iscss) {
-            for (var i = 0; i < document.scripts.length; i++)
-                if (document.scripts[i].src == s) return r()
-        }
-        var e = document.createElement(iscss ? 'link' : 'script')
-        if (iscss) e.rel = "stylesheet"
-        e[iscss ? 'href' : 'src'] = s
-        document.body.appendChild(e)
-        e.onload = r
-    })
-}
-window.load = load
+class ENIGMATIC {
 
-const data = new Proxy({}, {
-    set: (obj, prop, value) => {
-        if (window.debug)
-            console.log('e ======> SETTING DATA OBJECT .' + prop + ' = ' + JSON.stringify(value))
-        obj[prop] = value
-        const controls = $(`[data^=${prop}]`)
-        controls.forEach(control => {
-            var newval = value
-            if(window.debug)
-                console.log(`e ======> DATA SETTING CONTROL ${control.getAttribute('control') || control.tagName.toLowerCase()} ${prop} ${value}`)
-            if (control.set) control.set(newval);
-            else control.innerHTML = newval
+    version = 'v.0.9.2'
+    controls = CONTROLS
+    classes = CLASSES
+    db = EDB
+    debug
+
+    render () {
+        this.debug = document.querySelectorAll('body')[0].hasAttribute('debug');
+        const $ = document.querySelectorAll
+
+        $('[control]').forEach(e => {
+            const name = e.getAttribute('control') || e.tagName.toLowerCase()
+            if(this.controls[name])
+                this.controls[name](e)
         })
-        return prop
+
+        for(let name in this.classes){
+            const es = document.getElementsByClassName(name)
+            Array.from(es).forEach(e => {
+                this.classes[name](e)
+            })
+        }
+
+        const datasrc = $('body')[0].getAttribute('datasrc')
+        if(datasrc)
+          EDB.get(datasrc)
+
+        const events = $('body')[0].getAttribute('events')
+        if(events)
+          EDB.eventsource(events)
+
+        return this
     }
+
+    static $ (selector) {
+        return document.querySelectorAll (selector)
+    }
+
+    static load (s) {
+        return new Promise(r => {
+            var iscss = s.match(/css$/);
+            if (!iscss) {
+                for (var i = 0; i < document.scripts.length; i++)
+                    if (document.scripts[i].src == s) return r()
+            }
+            var e = document.createElement(iscss ? 'link' : 'script')
+            if (iscss) e.rel = "stylesheet"
+            e[iscss ? 'href' : 'src'] = s
+            document.body.appendChild(e)
+            e.onload = r
+        })
+    }
+
+    static child (parent, type) {
+      const e = document.createElement(type || 'div')
+      parent.appendChild(e)
+      return es
+    }
+
+    static css (id, rules) {
+        var style = document.createElement("style")
+        document.head.appendChild(style)
+        const rule = `#${id} { ${rules} }`
+        style.sheet.insertRule(rule)
+        return rules
+    }
+
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    ENIGMATIC.render()
+    if(window.ready)
+      window.ready()
 })
-window.data = data
-
-const child = (parent, type) => {
-    const e = document.createElement(type || 'div')
-    parent.appendChild(e)
-    return es
-}
-window.child = child
-
-const css = (id, rules) => {
-    var style = document.createElement("style")
-    document.head.appendChild(style)
-    const rule = `#${id} { ${rules} }`
-    style.sheet.insertRule(rule)
-    return rules
-}
-window.css = css
-
-const enigmatic = {
-    "version": 'v0.9.1',
-    "start": async x => {
-
-        console.log(`\r\ne ======> ${window.enigmatic.version} : ${new Date()}`);
-
-        window.$ = document.querySelectorAll
-        window.debug = $('body')[0].hasAttribute('debug');
-
-        let controls = $('[control]')
-        for (let i = 0; i < controls.length; i++) {
-            let e = controls[i]
-            let name = e.getAttribute('control') || e.tagName.toLowerCase()
-            if (name in window.controls){
-                console.log(`e ======> Found Control: ${name} ${e.id} ${e}`)
-                await window.controls[name](e)
-            }
-        }
-
-        for(let name in window.classes){
-            let es = document.getElementsByClassName(name)
-            for(let i = 0; i<es.length; i++){
-                window.classes[name](es[i])
-            }
-        }
-
-        let datasrc = $('body')[0].getAttribute('datasrc');
-        if (datasrc) {
-            if(window.debug)
-              console.log(`e ======> Body Datasrc is set: ${datasrc}`)
-            let d = await (await fetch(datasrc)).json()
-            if(window.debug)
-              console.log(`e ======> Body Datasrc: ${datasrc}, data: ${JSON.stringify(d)}`)
-            for (k in d) data[k] = d[k];
-        }
-
-        let events = $('body')[0].getAttribute('events');
-        if (events) {
-            window.events = source = new EventSource(events);
-            if(window.debug) 
-              console.log('e ======> eventsource: ' + events)
-
-            source.onopen = function(e){
-               console.log(`e ======> eventsource opened`)
-            }
-
-            source.onmessage = function(e) {
-                console.log(`e ======> Event data in: ${e.data}`)
-                let obj = JSON.parse(e.data)
-                for (k in obj) data[k] = obj[k]
-            }
-
-            source.onerror = function(e) {
-                if(!window.debug) return;
-                if (this.readyState == EventSource.CONNECTING)
-                  return console.log(`e ======> eventsource connecting`)
-                if (this.readyState == EventSource.OPEN)
-                  return console.log(`e ======> eventsource open`)
-                if (this.readyState == EventSource.CLOSED)
-                  return console.log(`e ======> eventsource closed`)             
-            }
-        }
-
-        if (window.ready) window.ready();
-    }
-}
-
-document.addEventListener('DOMContentLoaded', window.enigmatic.start)
