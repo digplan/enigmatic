@@ -1,6 +1,8 @@
 class DB {
     
     url = '/api'
+    tokenurl = '/api/token'
+    token
 
     static DATA = new Proxy({}, {
         set: (obj, prop, value) => {
@@ -14,31 +16,22 @@ class DB {
         }
     })
 
-    static async get (key, query) {
-       const f = await fetch(`${this.url}/${query}`)
-       const resp = await f.toJSON()
-       this.DATA[key] = resp
+    static async getToken(name, pass) {
+        const f = await fetch(tokenurl)
+        const resp = await f.json()
+        this.token = resp[0].token
     }
 
-    static async post (key, data) {
-        if(!data._type) throw {DBException: 'post needs a _type'}
-        const f = await fetch(this.url, {method: 'POST', body: data})
-        const resp = await f.toJSON()
-        if(resp[0].error) throw 
-        this.DATA[key] = resp
+    static async get (key, query) {
+       const f = await fetch(`${this.url}/${query}`, headers: {Authorization: `BEARER ${this.token}`})
+       const resp = await f.json()
+       this.DATA[key] = resp
     }
     
-    static async put (key, data) {
-        if(!data._id) throw {DBException: 'put needs a _id'}
-        const f = await fetch(this.url, {method: 'PUT', body: data})
-        const resp = await f.toJSON()
-        this.DATA[key] = resp
-    }
-    
-    static async delete (key, data) {
-        if(!data._id) throw {DBException: 'delete needs a _id'}
-        const f = await fetch(this.url, {method: 'DELETE', body: data})
-        const resp = await f.toJSON()
+    static async method (method, key, data) {
+        if(!data._id) throw {DBException: 'method needs a _id'}
+        const f = await fetch(this.url, {method: method, body: data, headers: {Authorization: `BEARER ${this.token}`})
+        const resp = await f.json()
         this.DATA[key] = resp
     }
 
@@ -56,7 +49,6 @@ class DB {
         }    
         
         ev.onerror = (e) => {
-            if(!this.debug) return;
             if (this.readyState == EventSource.CONNECTING)
               return console.log(`e ======> eventsource connecting`)
             if (this.readyState == EventSource.OPEN)
