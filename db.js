@@ -15,11 +15,11 @@ class DB {
     dbversion = 'v0.0.1'
     filename = ''
     DATA = []
-    txEvent = () => { }
-    lastline = ''
+    current = ''
     tokens = {}
     schema = {}
-    functions = []
+    txFunctions = []
+    bsFunctions = []
 
     /**
      * 
@@ -27,7 +27,7 @@ class DB {
      * @returns DB instance
      */
 
-    constructor(filename = './data.txt') {
+    constructor (filename = './data.txt') {
         this.filename = filename
         if (!FS.existsSync(filename)) {
             FS.writeFileSync(filename, `edb ${this.dbversion}`)
@@ -97,7 +97,7 @@ class DB {
         return temp
     }
 
-    validateTx (arr) {
+    validateSchema (arr) {
         for (let rec of arr) {
             if(!rec.method(/POST|PUT|DELETE/))
               return 'Invalid method'
@@ -118,6 +118,20 @@ class DB {
         return false
     }
 
+    useTxFunction (f) {
+        const func = (tx) => {
+            return f (tx)
+        }
+        this.txFunctions.push(func)
+    }
+
+    useBsFunction (f) {
+        const func = (tx) => {
+            return f (tx)
+        }
+        this.bsFunctions.push(func)
+    }
+
     /**
      * 
      * @param {Array} arr 
@@ -126,32 +140,25 @@ class DB {
 
     transaction (arr) {
         if (typeof arr === 'string')
-            arr = JSON.parse(arr)
+            arr = JSON.parse (arr)
 
-        if (this.validateTx(arr))
-            return false
+        this.txFunctions.some((f)=>f(arr))
 
         let ret = []
         for (let rec of arr) {
-            const hash = crypto.hash(this.lastline + JSON.stringify(rec)).slice(32).toUpperCase()
+            const hash = crypto.hash(JSON.stringify(rec)).slice(32).toUpperCase()
             const id = hash.substring(0, 6)
-
             let obj = {}
             obj._id = (rec._method == 'POST') ? `${rec._type}.${id}` : rec._id
             delete rec._type
-
-            this.buildStep (rec)
             delete rec._method
-
             Object.assign(obj, rec)
             ret.push(obj)
-
             const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}\t${hash}`
             FS.appendFileSync(this.filename, `\r\n${txLine}`)
-            this.txEvent(txLine)
-            this.lastline = txLine
         }
 
+        this.bsFunctions.some((f)=>f(arr))
         return ret
     }
 
@@ -176,31 +183,11 @@ class DB {
 
     /***** Server *****/
 
-    listen (port = 443) {
-        const PROTOCOL = require('https')
-        const options = {
-            cert: FS.readFileSync('./localhost-cert.pem'),
-            key: FS.readFileSync('./localhost-key.pem')
-        }
-        const app = (r, s) => {
-            for (let f of this.functions) {
-                if (f(r, s))
-                    return
-            }
-        }
-        this.use(this.token)
-        this.use(this.logout)
-        this.use(this.query)
-        this.use(this.api)
-        this.use(this.events)
-        PROTOCOL.createServer(options, app).listen(port)
-    }
-
-    use (f) {
-        const func = (r, s, p) => {
-            return f(r, s)
-        }
-        this.functions.push(func)
+    listen (port = 444) {
+        const DB_SERVER = require ('https_server.js')
+        const db_server = new DB_SERVER ()
+        [this.token, this.logout, this.query, this.api, this.events].forEach (db_server.use)
+        db_server.listen (port)
     }
 
     logout (r, s) {
@@ -289,6 +276,13 @@ async function tests() {
     await db.build()
     console.log(`db is located at ${db.filename} and has ${db.DATA.length} records`)
     console.log(JSON.stringify(db.DATA, null, 2))
+
+    // Tx func chain
+    db.useTxFunction (db.txValidateSchema)
+    db.useTxFunction (db.txWriteFile)
+
+    // Bs func chain
+    db.useBsFunction (db.buildData)
 
     // Transaction types
     //const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
