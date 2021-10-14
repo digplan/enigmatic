@@ -21,6 +21,12 @@ class DB {
     schema = {}
     functions = []
 
+    /**
+     * 
+     * @param {String} [filename]
+     * @returns DB instance
+     */
+
     constructor(filename = './data.txt') {
         this.filename = filename
         if (!FS.existsSync(filename)) {
@@ -28,19 +34,24 @@ class DB {
             console.log(`edb public key is ${crypto.public}`)
             console.log(`edb public key (compressed) is ${crypto.public_compressed}`)
             console.log(`edb private key is ${crypto.private}`)
-            this.transaction('POST', [
-                { _type: '_schema', name: '_identity', field: ['name', 'public'] },
-                { _type: '_schema', name: '_role', field: ['name'] },
-                { _type: '_schema', name: '_identityrole', field: ['identity', 'role'] },
-                { _type: '_schema', name: '_grant', field: ['role', 'permission'] },
-                { _type: '_identity', name: 'edbroot', public: crypto.public_compressed },
-                { _type: '_role', name: 'edbrole' },
-                { _type: '_identityrole', identity: 'edbroot', role: 'edbrole' },
-                { _type: '_grant', role: 'edbrole', field: 'id^.*$' }
+            this.transaction([
+                { _method: 'POST', _type: '_schema', name: '_identity', field: ['name', 'public'] },
+                { _method: 'POST', _type: '_schema', name: '_role', field: ['name'] },
+                { _method: 'POST', _type: '_schema', name: '_identityrole', field: ['identity', 'role'] },
+                { _method: 'POST', _type: '_schema', name: '_grant', field: ['role', 'permission'] },
+                { _method: 'POST', _type: '_identity', name: 'edbroot', public: crypto.public_compressed },
+                { _method: 'POST', _type: '_role', name: 'edbrole' },
+                { _method: 'POST', _type: '_identityrole', identity: 'edbroot', role: 'edbrole' },
+                { _method: 'POST', _type: '_grant', role: 'edbrole', field: 'id^.*$' }
             ])
         }
         return this
     }
+
+    /**
+     * 
+     * @param {String} version ISO Date String
+     */
 
     async build (version) {
         this.DATA = []
@@ -56,25 +67,40 @@ class DB {
         }
     }
 
-    query (s) {
+    /**
+     * 
+     * @param {String} s 
+     * @param {Boolean} [caseInsensitive]
+     * @returns {Array} Array
+     */
+
+    query (s, caseInsensitive) {
         const qq = s.split('^')
-        const f = new Function('i', `return i.${qq[0]}&&i.${qq[0]}.match(/^${qq[1]}/)`)
+        const f = new Function('i', `return i.${qq[0]}&&i.${qq[0]}.match(/^${qq[1]}/${caseInsensitive?'i':''})`)
         return this.DATA.filter(f)
     }
 
-    querystr (s) {
+    /**
+     * 
+     * @param {String} s
+     * @param {Boolean} [caseInsensitive]
+     * @returns 
+     */
+
+    querystr (s, caseInsensitive ) {
         const def = s.split('@@')
         let temp = []
         temp = JSON.parse(JSON.stringify(this.DATA))
         for (const cond of def) {
-            temp = this.query(cond)
+            temp = this.query(cond, caseInsensitive)
         }
         return temp
     }
 
-    /** */
     validateTx (arr) {
         for (let rec of arr) {
+            if(!rec.method(/POST|PUT|DELETE/))
+              return 'Invalid method'
             const type = rec._id.split('.')[0]
             const validfields = this.schema[rec.type]
             const fields = Object.keys(rec)
@@ -92,7 +118,13 @@ class DB {
         return false
     }
 
-    transaction (type, arr) {
+    /**
+     * 
+     * @param {Array} arr 
+     * @returns 
+     */
+
+    transaction (arr) {
         if (typeof arr === 'string')
             arr = JSON.parse(arr)
 
@@ -105,16 +137,17 @@ class DB {
             const id = hash.substring(0, 6)
 
             let obj = {}
-            obj._id = (type == 'POST') ? `${rec._type}.${id}` : rec._id
+            obj._id = (rec._method == 'POST') ? `${rec._type}.${id}` : rec._id
             delete rec._type
 
-            for (let i in rec)
-                obj[i] = rec[i]
+            this.buildStep (rec)
+            delete rec._method
+
+            Object.assign(obj, rec)
             ret.push(obj)
 
             const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}\t${hash}`
             FS.appendFileSync(this.filename, `\r\n${txLine}`)
-            this.buildStep(type, obj)
             this.txEvent(txLine)
             this.lastline = txLine
         }
@@ -122,15 +155,15 @@ class DB {
         return ret
     }
 
-    buildStep (type, obj) {
-        if (type === 'POST')
+    buildStep (obj) {
+        if (obj._method === 'POST')
             return this.DATA.push(obj)
-        if (type === 'PUT') {
+        if (obj._method === 'PUT') {
             return this.DATA = this.DATA.map(i =>
                 obj._id === i._id ? { ...obj, completed: true } : obj
             )
         }
-        if (type === 'DELETE')
+        if (obj._method === 'DELETE')
             return this.DATA = this.DATA.filter(i => i._id !== obj._id)
 
         if (obj._id.match(/^schema/)) {
@@ -228,15 +261,6 @@ class DB {
         return true;
     }
 
-    /**
-     * 
-     * @param {Request} a 
-     * @param {Response} b 
-     * @returns 
-     */
-    test(a /*something*/, b) {
-        return true
-    }
 }
 
 module.exports = DB
