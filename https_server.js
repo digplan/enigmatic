@@ -1,54 +1,35 @@
-/*
-  https.js
-  
-  Include:
-  const HTTPS = require('./https.js')
-  const https = new HTTPS()
-
-  Tests:
-  > node https.js
-
-*/
-
 const FS = require('fs')
 
-class HTTPS {
+class HTTPS_SERVER {
 
     functions = []
 
-    listen () {
+    listen (port = 443) {
         const PROTOCOL = require('https')
         const options = {
             cert: FS.readFileSync('./localhost-cert.pem'),
             key: FS.readFileSync('./localhost-key.pem')
         }
         const app = (r, s) => {
-            for(let f of this.functions){
-                if(f(r, s))
-                  return
-            }
+            this.functions.some((f)=>f(r,s))
         }
-        PROTOCOL.createServer(options, app).listen(443)
+        PROTOCOL.createServer(options, app).listen(port)
     }
 
-    use (f, param) {
-        const func = (r, s, p) => {
-            return f(r, s, param)
+    use (f) {
+        const func = (r, s) => {
+            return f(r, s)
         } 
-        this.functions.push(func)
+        db.functions.push (func)
     }
 
     STATIC (r, s) {
         if (r.method == 'GET') {
-            if(r.url == '/')
-              r.url = '/index.html'
-            const fn = `./public/${r.url}`
-            if (!FS.existsSync(fn)){
-                s.writeHeader(404)
-                return s.end()
-            }
-            s.end(FS.readFileSync(fn).toString())
-            return true
+            const fn = `./public${(r.url == '/') ? '/index.html' : r.url}`
+            if (FS.existsSync(fn))
+              return s.end(FS.readFileSync(fn).toString())
+            s.writeHeader(404)
+            return s.end()
         }
     }
 
@@ -59,7 +40,7 @@ class HTTPS {
 
 }
 
-module.exports = HTTPS
+module.exports = HTTPS_SERVER
 
 /*****************
        Tests  
@@ -69,8 +50,10 @@ if (require.main === module)
     tests()
 
 async function tests() {
-  const server = new HTTPS()
-  server.use((r, s)=>s.end('test ok'))
-  server.listen()
-  console.log('Go to https://localhost')
+  const server = new HTTPS_SERVER()
+  const f1 = (r, s)=>s.end('test ok')
+  const f2 = (r, s)=>s.end('test ok2')
+  [f1, f2].forEach (server.use)
+  server.listen ()
+  console.log ('Go to https://localhost')
 }
