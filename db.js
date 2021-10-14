@@ -10,6 +10,43 @@ const FS = require('fs')
 const CRYPTO = require('./crypto.js')
 const crypto = new CRYPTO()
 
+class QUERY {
+    static filter(data, s, caseInsensitive) {
+        const arr = s.split('@@')
+        let temp = []
+        temp = JSON.parse(JSON.stringify(data))
+        for (const cond of arr) {
+            const qq = cond.split('^')
+            const f = new Function('i', `return i.${qq[0]}&&i.${qq[0]}.match(/^${qq[1]}/${caseInsensitive ? 'i' : ''})`)
+            temp = temp.filter(f)
+        }
+        return temp
+    }
+}
+
+class SCHEMA {
+    static validate(arr) {
+        for (let rec of arr) {
+            if (!rec.method(/POST|PUT|DELETE/))
+                return 'Invalid method'
+            const type = rec._id.split('.')[0]
+            const validfields = this.schema[rec.type]
+            const fields = Object.keys(rec)
+            for (let f of fields) {
+                if (!validfields.includes(f))
+                    return 'bad field ' + f
+            }
+            for (let v of validfields) {
+                if (!v.startsWith('!'))
+                    continue
+                if (!fields.includes('!' + v))
+                    return 'required field ' + v
+            }
+        }
+        return false
+    }
+}
+
 class DB {
 
     dbversion = 'v0.0.1'
@@ -18,16 +55,10 @@ class DB {
     current = ''
     tokens = {}
     schema = {}
-    txFunctions = []
+    txFunctions = [SCHEMA.validate]
     bsFunctions = []
 
-    /**
-     * 
-     * @param {String} [filename]
-     * @returns DB instance
-     */
-
-    constructor (filename = './data.txt') {
+    constructor(filename = './data.txt') {
         this.filename = filename
         if (!FS.existsSync(filename)) {
             FS.writeFileSync(filename, `edb ${this.dbversion}`)
@@ -48,12 +79,7 @@ class DB {
         return this
     }
 
-    /**
-     * 
-     * @param {String} version ISO Date String
-     */
-
-    async build (version) {
+    async build(version) {
         this.DATA = []
         const rl = require('readline').createInterface({
             input: FS.createReadStream(this.filename),
@@ -67,82 +93,25 @@ class DB {
         }
     }
 
-    /**
-     * 
-     * @param {String} s 
-     * @param {Boolean} [caseInsensitive]
-     * @returns {Array} Array
-     */
-
-    query (s, caseInsensitive) {
-        const qq = s.split('^')
-        const f = new Function('i', `return i.${qq[0]}&&i.${qq[0]}.match(/^${qq[1]}/${caseInsensitive?'i':''})`)
-        return this.DATA.filter(f)
-    }
-
-    /**
-     * 
-     * @param {String} s
-     * @param {Boolean} [caseInsensitive]
-     * @returns 
-     */
-
-    querystr (s, caseInsensitive ) {
-        const def = s.split('@@')
-        let temp = []
-        temp = JSON.parse(JSON.stringify(this.DATA))
-        for (const cond of def) {
-            temp = this.query(cond, caseInsensitive)
-        }
-        return temp
-    }
-
-    validateSchema (arr) {
-        for (let rec of arr) {
-            if(!rec.method(/POST|PUT|DELETE/))
-              return 'Invalid method'
-            const type = rec._id.split('.')[0]
-            const validfields = this.schema[rec.type]
-            const fields = Object.keys(rec)
-            for (let f of fields) {
-                if (!validfields.includes(f))
-                    return 'bad field ' + f
-            }
-            for (let v of validfields) {
-                if (!v.startsWith('!'))
-                    continue
-                if (!fields.includes('!' + v))
-                    return 'required field ' + v
-            }
-        }
-        return false
-    }
-
-    useTxFunction (f) {
+    useTxFunction(f) {
         const func = (tx) => {
-            return f (tx)
+            return f(tx)
         }
         this.txFunctions.push(func)
     }
 
-    useBsFunction (f) {
+    useBsFunction(f) {
         const func = (tx) => {
-            return f (tx)
+            return f(tx)
         }
         this.bsFunctions.push(func)
     }
 
-    /**
-     * 
-     * @param {Array} arr 
-     * @returns 
-     */
-
-    transaction (arr) {
+    transaction(arr) {
         if (typeof arr === 'string')
-            arr = JSON.parse (arr)
+            arr = JSON.parse(arr)
 
-        this.txFunctions.some((f)=>f(arr))
+        this.txFunctions.some((f) => f(arr))
 
         let ret = []
         for (let rec of arr) {
@@ -158,11 +127,12 @@ class DB {
             FS.appendFileSync(this.filename, `\r\n${txLine}`)
         }
 
-        this.bsFunctions.some((f)=>f(arr))
+        this.buildStep (obj)
+        this.bsFunctions.some((f) => f(arr))
         return ret
     }
 
-    buildStep (obj) {
+    buildStep(obj) {
         if (obj._method === 'POST')
             return this.DATA.push(obj)
         if (obj._method === 'PUT') {
@@ -181,23 +151,33 @@ class DB {
         }
     }
 
-    /***** Server *****/
-
-    listen (port = 444) {
-        const DB_SERVER = require ('https_server.js')
-        const db_server = new DB_SERVER ()
-        [this.token, this.logout, this.query, this.api, this.events].forEach (db_server.use)
-        db_server.listen (port)
+    query (str) {
+        return QUERY.filter(str)
     }
 
-    logout (r, s) {
+}
+
+class DBSERVER {
+
+    listen(port = 444) {
+        const DB_SERVER = require('https_server.js')
+        const db_server = new DB_SERVER()
+        db_server.use(this.token)
+        db_server.use(this.logout)
+        db_server.use(this.query)
+        db_server.use(this.api)
+        db_server.use(this.events)
+        return db_server.listen(port)
+    }
+
+    http_logout(r, s) {
         if (r.url !== '/logout')
             return false
         const token = r.headers.authorization.split('BEARER ')[1]
         delete this.tokens[token]
     }
 
-    token (r, s) {
+    http_token(r, s) {
         const b64 = r.headers.authorization.split(' ')[1]
         const creds = Buffer.from(b64, 'base64').toString('ascii')
         const [user, pass] = creds.split(':')
@@ -210,15 +190,15 @@ class DB {
         return s.end(`[{"token": "${token}"}]`)
     }
 
-    query (r, s) {
+    http_query(r, s) {
         const mat = r.url.match(/\/q\/<?query>(.*)/)
         if (!mat.groups.query || r.method !== 'GET')
             return false
-        const ret = DB.query(mat.groups.query)
+        const ret = this.query(mat.groups.query)
         return s.end(JSON.stringify(ret))
     }
 
-    api (r, s) {
+    http_api(r, s) {
         if (r.url !== '/api' || !r.method.match(/POST|PUT|DELETE/))
             return false
         let body = ''
@@ -230,7 +210,7 @@ class DB {
         return true
     }
 
-    events(r, s) {
+    http_events(r, s) {
         if (r.url !== '/events')
             return false
         s.writeHead(200, {
@@ -278,11 +258,11 @@ async function tests() {
     console.log(JSON.stringify(db.DATA, null, 2))
 
     // Tx func chain
-    db.useTxFunction (db.txValidateSchema)
-    db.useTxFunction (db.txWriteFile)
+    db.useTxFunction(db.txValidateSchema)
+    db.useTxFunction(db.txWriteFile)
 
     // Bs func chain
-    db.useBsFunction (db.buildData)
+    db.useBsFunction(db.buildData)
 
     // Transaction types
     //const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
