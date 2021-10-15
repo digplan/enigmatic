@@ -5,6 +5,13 @@
             "name": "https://localhost",
             "request": "launch",
             "url": "https://localhost"
+        },
+        {
+            "type": "node-terminal",
+            "name": "https_server.js - JavaScript Debug Terminal",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "command": "node https_server.js"
         }
     ]
 }

@@ -15,7 +15,7 @@ class HTTPS_SERVER {
     /**
      * @type {Array<Function(r, s)>} 
      */
-    functions = []
+    functions = [this.STATIC, this.EVENTS, this.NOTFOUND]
 
     /**
      * @type {Array<Response>}
@@ -34,9 +34,8 @@ class HTTPS_SERVER {
             cert: FS.readFileSync('./localhost-cert.pem'),
             key: FS.readFileSync('./localhost-key.pem')
         }
-        this.functions.push(this.NOTFOUND)
         const app = (r, s) => {
-            this.functions.some((f) => f.bind(this, r, s))
+            this.functions.some((f) => f (r, s))
         }
         return PROTOCOL.createServer(options, app).listen(port)
     }
@@ -49,7 +48,7 @@ class HTTPS_SERVER {
         const func = (r, s) => {
             return f.bind(this, r, s)
         }
-        this.functions.push(func)
+        this.functions.unshift(func)
     }
 
     /**
@@ -116,12 +115,12 @@ module.exports = HTTPS_SERVER
 if (require.main === module)
     tests()
 
-async function tests() {
+function tests() {
     const server = new HTTPS_SERVER()
-    const f1 = (r, s) => s.end('test ok')
-    server.use(server.EVENTS)
+    const TESTROUTE = (r, s) => { return r.url === '/test' ? s.end('test ok') : false}
+    server.use(TESTROUTE)
     server.listen()
     console.log(server.functions)
     console.log('Go to https://localhost')
-    server.sendEvent('new data')
+    //server.sendEvent('new data')
 }
