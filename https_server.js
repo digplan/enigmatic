@@ -16,7 +16,7 @@ class HTTPS_SERVER {
     /**
      * @type {Array<Function(r, s)>} 
      */
-    functions = [this.STATIC, this.NOTFOUND]
+    functions = [this.EVENTS, this.STATIC, this.NOTFOUND]
 
     /**
      * @type {Array<Response>}
@@ -47,7 +47,7 @@ class HTTPS_SERVER {
 
     use (f) {
         const func = (r, s) => {
-            return f.bind (this, r, s)
+            return f (r, s)
         }
         this.functions.unshift(func)
     }
@@ -106,10 +106,6 @@ if (require.main === module)
 
 function tests () {
     const server = new HTTPS_SERVER()
-    const TESTROUTE = (r, s) => { return r.url === '/test' ? s.end('test ok') : false}
-    server.use(TESTROUTE)
-    server.use(server.EVENTS)
-
     server.listen()
     console.log(server.functions)
     console.log('Go to https://localhost')
