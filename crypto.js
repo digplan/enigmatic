@@ -10,14 +10,15 @@
 
 */
 
-const { createHash, createECDH, createSign, createVerify, randomBytes, createCipheriv, createDecipheriv } = require('crypto')
+const { createHash, createECDH, createSign, createVerify, randomBytes, privateEncrypt, privateDecrypt} = require('crypto')
 
 class CRYPTO {
 
         public = ''
         public_compressed = ''
         private = ''
-        
+        keyObject
+
         constructor (privateHex) {
                 const ecdh = createECDH('secp256k1')
                 privateHex ? ecdh.setPrivateKey(privateHex, 'hex') : ecdh.generateKeys()
@@ -34,33 +35,31 @@ class CRYPTO {
                 this.public = ecdh.getPublicKey('hex')
                 this.public_compressed = ecdh.getPublicKey('hex', 'compressed')
                 this.private = ecdh.getPrivateKey('hex')
+                this.KeyObject = ecdh.KeyObject
                 return this
         }
 
 
         sign (text) {
-                const signer = createSign('SHA256')
-                signer.update(text)
-                return signer.sign(this.pem).toString('hex')
+                const signer = createSign ('SHA256')
+                signer.update (text)
+                signer.end ()
+                return signer.sign (this.pem, 'hex')
         }
 
         verify (text, signature) {
                 if (!signature) throw Error('enter a signature')
                 const verify = createVerify('SHA256')
                 verify.update(text)
-                return verify.verify(this.pem, Buffer.from(signature))
+                return verify.verify(this.pem, signature, 'hex')
         }
 
         hash (s) {
                 return createHash('sha256').update(s).digest('hex')
         }
 
-        encrypt (text, key = this.private, iv = randomBytes(16)) {
-                key = Buffer.from(key).slice(32)
-                console.log(iv)
-                const cipher = createCipheriv('aes-256-cbc', key, iv)
-                cipher.update(text, 'utf-8', 'hex')
-                return iv.toString('hex') + ':' + cipher.final("hex")
+        encrypt (text) {
+                return privateEncrypt (this.pem, Buffer.from(text))
         }
 
         decrypt (ivtext) {
@@ -81,27 +80,33 @@ module.exports = CRYPTO
 ******************/
 
 if (require.main === module)
-        tests()
+        tests ()
 
-function tests() {
+function tests () {
 
         const CRYPTO = require('./crypto.js');
 
-        const crypto = new CRYPTO()
-        console.log(`${JSON.stringify(crypto)}`)
+        // Create keys with provided private key
+        const crypto = new CRYPTO('844a4f5aaeef10dd522761264ae08ebe7b1a50d5dfaa18f48979c78b0e9a0f33')
+        console.log(`1 New Keys: ${JSON.stringify(crypto, null, 2)}`)
 
+        // Sign a message
         const sig = crypto.sign('this message')
-        console.log(`signing message. sig = ${sig}`)
+        console.log(`2 Signing message. sig = ${sig}`)
 
+        // Verify a message
         const verified = crypto.verify('this message', sig)
-        console.log(`is verified: ${verified}`)
+        console.log(`3 Verify message: ${verified}`)
 
+        // Hash a message
         const hashed = crypto.hash('cb')
-        console.log(`hash a value: ${hashed}`)
+        console.log(`4 Hash a value: ${hashed}`)
 
+        // Encrypt a string
         let encryptedData = crypto.encrypt('text to hide')
-        console.log(`encrypt some data ${encryptedData}`)
-
-        //let deryptedData = crypto.decrypt(encryptedData)
-        //console.log(decryptedData)
+        console.log(`5 Encrypt some data ${encryptedData}`)
+    
+        // Decrypt a string
+        //let decryptedData = crypto.decrypt(encryptedData)
+        //console.log(`6 Decrypt some data ${decryptedData}`)
 }
