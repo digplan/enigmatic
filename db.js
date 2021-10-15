@@ -160,13 +160,13 @@ class DB {
 class DBSERVER {
 
     listen(port = 444) {
-        const DB_SERVER = require('https_server.js')
-        const db_server = new DB_SERVER()
+        const HTTPS_SERVER = require('https_server.js')
+        const db_server = new HTTPS_SERVER()
         db_server.use(this.token)
         db_server.use(this.logout)
         db_server.use(this.query)
         db_server.use(this.api)
-        db_server.use(this.events)
+        db_server.use(HTTPS_SERVER.EVENTS)
         return db_server.listen(port)
     }
 
@@ -210,24 +210,6 @@ class DBSERVER {
             s.end(JSON.stringify(x))
         })
         return true
-    }
-
-    http_events(r, s) {
-        if (r.url !== '/events')
-            return false
-        s.writeHead(200, {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive'
-        })
-        DB.txEvent = (line) => {
-            s.write(`data: ${line}`)
-            s.write('\n\n')
-        }
-        s.socket.on('close', function () {
-            console.log('Client leave')
-        })
-        return true;
     }
 
 }
