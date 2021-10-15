@@ -23,7 +23,7 @@ class HTTPS_SERVER {
      * @returns {PROTOCOL.Server}
      */
 
-    listen (port = 443) {
+    listen(port = 443) {
         const FS = require('fs')
         const PROTOCOL = require('https')
         const options = {
@@ -31,7 +31,7 @@ class HTTPS_SERVER {
             key: FS.readFileSync('./localhost-key.pem')
         }
         const app = (r, s) => {
-            this.functions.some((f)=>f(r,s))
+            this.functions.some((f) => f(r, s))
         }
         return PROTOCOL.createServer(options, app).listen(port)
     }
@@ -40,11 +40,11 @@ class HTTPS_SERVER {
      * @param {Function} f
      */
 
-    use (f) {
+    use(f) {
         const func = (r, s) => {
             return f(r, s)
-        } 
-        this.functions.push (func)
+        }
+        this.functions.push(func)
     }
 
     /**
@@ -53,13 +53,12 @@ class HTTPS_SERVER {
      * @returns {Boolean} Returning true will end the middleware
      */
 
-    STATIC (r, s) {
-        if (r.method !== 'GET') {
-          return false
-        }
+    STATIC(r, s) {
+        if (r.method === 'GET')
+            return false)
         const fn = `./public${(r.url == '/') ? '/index.html' : r.url}`
         if (FS.existsSync(fn)) {
-          return s.end(FS.readFileSync(fn).toString())
+            return s.end(FS.readFileSync(fn).toString())
         }
         s.writeHeader(404)
         return s.end()
@@ -72,7 +71,7 @@ class HTTPS_SERVER {
      * @returns {Boolean} Returning true will end the middleware
      */
 
-    NOTFOUND (r, s) {
+    NOTFOUND(r, s) {
         s.writeHeader(404)
         return s.end()
     }
@@ -89,12 +88,12 @@ if (require.main === module)
     tests()
 
 async function tests() {
-  const server = new HTTPS_SERVER ()
-  const f1 = (r, s)=>s.end('test ok')
-  const f2 = (r, s)=>s.end('test ok2')
-  server.use (f1)
-  server.use (f2)
-  console.log (server.functions)
-  server.listen ()
-  console.log ('Go to https://localhost')
+    const server = new HTTPS_SERVER()
+    const f1 = (r, s) => s.end('test ok')
+    const f2 = (r, s) => s.end('test ok2')
+    server.use(f1)
+    server.use(f2)
+    console.log(server.functions)
+    server.listen()
+    console.log('Go to https://localhost')
 }

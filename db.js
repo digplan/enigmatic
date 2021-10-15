@@ -180,7 +180,9 @@ class DBSERVER {
     http_token(r, s) {
         const b64 = r.headers.authorization.split(' ')[1]
         const creds = Buffer.from(b64, 'base64').toString('ascii')
-        const [user, pass] = creds.split(':')
+        const [user, pass] = creds?.split(':')
+        if(!user || !pass)
+          return false
         const passhashed = crypto.hash(crypto.hash(pass))
         const q = this.query(`_id^_identity\.&&pass_hash^${passhashed}$`)
         if (!q || !q[1])
