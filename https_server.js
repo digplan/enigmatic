@@ -10,12 +10,13 @@
  * node http_server.js
 **/
 
+const FS = require ('fs')
 class HTTPS_SERVER {
 
     /**
      * @type {Array<Function(r, s)>} 
      */
-    functions = [this.STATIC, this.EVENTS, this.NOTFOUND]
+    functions = [this.STATIC, this.NOTFOUND]
 
     /**
      * @type {Array<Response>}
@@ -27,7 +28,7 @@ class HTTPS_SERVER {
      * @returns {PROTOCOL.Server}
      */
 
-    listen(port = 443) {
+    listen (port = 443) {
         const FS = require('fs')
         const PROTOCOL = require('https')
         const options = {
@@ -44,9 +45,9 @@ class HTTPS_SERVER {
      * @param {Function} f
      */
 
-    use(f) {
+    use (f) {
         const func = (r, s) => {
-            return f.bind(this, r, s)
+            return f.bind (this, r, s)
         }
         this.functions.unshift(func)
     }
@@ -57,18 +58,14 @@ class HTTPS_SERVER {
      * @returns {Boolean} Returning true will end the middleware
      */
 
-    STATIC(r, s) {
-        if (r.method === 'GET')
+    STATIC (r, s) {
+        if (r.method !== 'GET')
             return false
         const fn = `./public${(r.url == '/') ? '/index.html' : r.url}`
-        if (FS.existsSync(fn)) {
-            return s.end(FS.readFileSync(fn).toString())
-        }
-        s.writeHeader(404)
-        return s.end()
+        return FS.existsSync(fn) ? s.end(FS.readFileSync(fn).toString()) : false
     }
 
-    EVENTS(r, s) {
+    EVENTS (r, s) {
         if (r.url !== '/events')
             return false
         console.log('new sse client')
@@ -77,7 +74,7 @@ class HTTPS_SERVER {
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive'
         })
-        HTTPS_SERVER.sse_clients.push(s)
+        this.sse_clients.push(s)
         console.log(this.clients)
         s.socket.on('close', function () {
             console.log('Client leave')
@@ -85,23 +82,15 @@ class HTTPS_SERVER {
         return true;
     }
 
-    sendEvent(data) {
+    NOTFOUND (r, s) {
+        s.writeHead(404).end()
+    }
+
+    sendEvent (data) {
         if(!this.sse_clients.length)
           return
         for (let client of this.sse_clients)
             client.write(`data: ${data}\n\n`)
-    }
-
-    /**
-     * 
-     * @param {Request} r 
-     * @param {Response} s 
-     * @returns {Boolean} Returning true will end the middleware
-     */
-
-    NOTFOUND(r, s) {
-        s.writeHeader(404)
-        return s.end()
     }
 
 }
@@ -115,10 +104,12 @@ module.exports = HTTPS_SERVER
 if (require.main === module)
     tests()
 
-function tests() {
+function tests () {
     const server = new HTTPS_SERVER()
     const TESTROUTE = (r, s) => { return r.url === '/test' ? s.end('test ok') : false}
     server.use(TESTROUTE)
+    server.use(server.EVENTS)
+
     server.listen()
     console.log(server.functions)
     console.log('Go to https://localhost')
