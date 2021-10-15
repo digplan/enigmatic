@@ -10,7 +10,7 @@
 
 */
 
-const { createHash, createECDH, createSign, createVerify, randomBytes, privateEncrypt, privateDecrypt} = require('crypto')
+const C = require('crypto')
 
 class CRYPTO {
 
@@ -20,7 +20,7 @@ class CRYPTO {
         keyObject
 
         constructor (privateHex) {
-                const ecdh = createECDH('secp256k1')
+                const ecdh = C.createECDH('secp256k1')
                 privateHex ? ecdh.setPrivateKey(privateHex, 'hex') : ecdh.generateKeys()
                 var pemformat = `308201510201010420${ecdh.getPrivateKey('hex')}a081e33081e0020101302c06072a8648ce3d0`
                 pemformat += `101022100fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f3044042000000`
@@ -41,7 +41,7 @@ class CRYPTO {
 
 
         sign (text) {
-                const signer = createSign ('SHA256')
+                const signer = C.createSign ('SHA256')
                 signer.update (text)
                 signer.end ()
                 return signer.sign (this.pem, 'hex')
@@ -49,26 +49,28 @@ class CRYPTO {
 
         verify (text, signature) {
                 if (!signature) throw Error('enter a signature')
-                const verify = createVerify('SHA256')
+                const verify = C.createVerify('SHA256')
                 verify.update(text)
                 return verify.verify(this.pem, signature, 'hex')
         }
 
         hash (s) {
-                return createHash('sha256').update(s).digest('hex')
+                return C.createHash('sha256').update(s).digest('hex')
         }
 
         encrypt (text) {
-                return privateEncrypt (this.pem, Buffer.from(text))
+                const iv = C.randomBytes(16)
+                const cipher = C.createCipheriv('aes-256-ctr', this.private.slice(32), iv)
+                const encrypted = Buffer.concat([cipher.update(text), cipher.final()])
+                return `${iv.toString('hex')}:${encrypted.toString('hex')}`
         }
 
         decrypt (ivtext) {
-                const [siv, s] = ivtext.split(':')
-                const key = Buffer.from(this.private).slice(32)
-                console.log(Buffer.from(siv, 'hex'))
-                const cipher = createDecipheriv('aes-256-cbc', key, Buffer.from(siv, 'hex'))
-                cipher.update(s, 'utf-8', 'hex')
-                return cipher.final('hex')
+                const [iv, encrypted_text] = ivtext.split(':')
+                const decipher = C.createDecipheriv('aes-256-ctr', this.private.slice(32), Buffer.from(iv, 'hex'))
+                const decrpyted = Buffer.concat([decipher.update(Buffer.from(encrypted_text, 'hex')), decipher.final()]);
+            
+                return decrpyted.toString();
         }
 
 }
@@ -104,9 +106,9 @@ function tests () {
 
         // Encrypt a string
         let encryptedData = crypto.encrypt('text to hide')
-        console.log(`5 Encrypt some data ${encryptedData}`)
+        console.log(`5 Encrypt "text to hide": ${JSON.stringify(encryptedData)}`)
     
         // Decrypt a string
-        //let decryptedData = crypto.decrypt(encryptedData)
-        //console.log(`6 Decrypt some data ${decryptedData}`)
+        let decryptedData = crypto.decrypt(encryptedData)
+        console.log(`6 Decrypt some data: ${decryptedData}`)
 }
