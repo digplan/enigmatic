@@ -21,7 +21,7 @@ class HTTPS_SERVER {
     /**
      * @type {Array<Response>}
      */
-    sse_clients = []
+    sse_clients = {}
 
     /**
      * @param {Number} [port=443]
@@ -36,7 +36,7 @@ class HTTPS_SERVER {
             key: FS.readFileSync('./localhost-key.pem')
         }
         const app = (r, s) => {
-            this.functions.some((f) => f (r, s))
+            this.functions.some((f) => f.apply (this, [r, s]))
         }
         return PROTOCOL.createServer(options, app).listen(port)
     }
@@ -46,8 +46,9 @@ class HTTPS_SERVER {
      */
 
     use (f) {
+        const db = this
         const func = (r, s) => {
-            return f (r, s)
+            return f.bind (db, r, s)
         }
         this.functions.unshift(func)
     }
@@ -68,16 +69,18 @@ class HTTPS_SERVER {
     EVENTS (r, s) {
         if (r.url !== '/events')
             return false
-        console.log('new sse client')
+        //console.log('new sse client')
         s.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive'
         })
-        this.sse_clients.push(s)
-        console.log(this.clients)
+        const conn_id = new Date().toISOString() + Math.random()
+        const clients = this.sse_clients
+        clients[conn_id] = s
         s.socket.on('close', function () {
             console.log('Client leave')
+            delete clients[conn_id]
         })
         return true;
     }
@@ -86,11 +89,10 @@ class HTTPS_SERVER {
         s.writeHead(404).end()
     }
 
-    sendEvent (data) {
-        if(!this.sse_clients.length)
-          return
-        for (let client of this.sse_clients)
-            client.write(`data: ${data}\n\n`)
+    sendBroadcast (data) {
+        const clients = this.sse_clients
+        for(let client in clients)
+            clients[client].write (`data: ${data}\n\n`)
     }
 
 }
@@ -109,5 +111,5 @@ function tests () {
     server.listen()
     console.log(server.functions)
     console.log('Go to https://localhost')
-    //server.sendEvent('new data')
+    setInterval(()=>server.sendBroadcast('new data'), 1000)
 }
