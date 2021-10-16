@@ -89,10 +89,10 @@ class HTTPS_SERVER {
         s.writeHead(404).end()
     }
 
-    sendBroadcast (data) {
+    sendBroadcast (text) {
         const clients = this.sse_clients
         for(let client in clients)
-            clients[client].write (`data: ${data}\n\n`)
+            clients[client].write (`data: ${text}\n\n`)
     }
 
 }
