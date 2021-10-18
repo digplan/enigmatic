@@ -1,8 +1,6 @@
 /**
  * @example
  * const server = new HTTPS_SERVER ()
- * server.use (server.STATIC)
- * server.use (server.NOTFOUND)
  * server.listen ()
  * 
  * @example
@@ -111,5 +109,7 @@ function tests () {
     server.listen()
     console.log(server.functions)
     console.log('Go to https://localhost')
+    console.log('Go to https://localhost/events')
+    console.log('Go to https://localhost/badurl')
     setInterval(()=>server.sendBroadcast('new data'), 1000)
 }
