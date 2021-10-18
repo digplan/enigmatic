@@ -9,6 +9,7 @@
 const FS = require('fs')
 const CRYPTO = require('./crypto.js')
 const crypto = new CRYPTO()
+const HTTPS_SERVER = require('./https_server.js')
 
 class QUERY {
     static filter(data, s, caseInsensitive) {
@@ -55,10 +56,8 @@ class DB {
     current = ''
     tokens = {}
     schema = {}
-    txFunctions = [SCHEMA.validate]
-    bsFunctions = []
 
-    constructor(filename = './data.txt') {
+    constructor (filename = './data.txt') {
         this.filename = filename
         if (!FS.existsSync(filename)) {
             FS.writeFileSync(filename, `edb ${this.dbversion}`)
@@ -79,7 +78,7 @@ class DB {
         return this
     }
 
-    async build(version) {
+    async build (version) {
         this.DATA = []
         const rl = require('readline').createInterface({
             input: FS.createReadStream(this.filename),
@@ -88,67 +87,56 @@ class DB {
 
         for await (const line of rl) {
             let [time, type, obj] = line.split('\t')
-            if (obj && (!version || (new Date(time) <= new Date(version))))
-                this.buildStep(type, JSON.parse(obj))
+            if (obj && (!version || (new Date(time) <= new Date(version)))) {
+                this.buildStep(obj)
+            }
         }
     }
 
-    useTxFunction(f) {
-        const func = (tx) => {
-            return f(tx)
-        }
-        this.txFunctions.push(func)
+    preTransaction (arr) {
+
     }
-
-    useBsFunction(f) {
-        const func = (tx) => {
-            return f(tx)
+    
+    transaction (arr) {
+        if (typeof arr === 'string') {
+            arr = JSON.parse (arr)
         }
-        this.bsFunctions.push(func)
-    }
 
-    transaction(arr) {
-        if (typeof arr === 'string')
-            arr = JSON.parse(arr)
+        for (let step of arr) {
+            step._hash = crypto.hash(JSON.stringify(step)).slice(32).toUpperCase()
+            if (step._method == 'POST') step._id = `${step._type}.${step._hash.substring(0, 6)}`
+        }
 
-        this.txFunctions.some((f) => f(arr))
+        for (let step of arr) {
+          this.buildStep (step)
+        }
 
         let ret = []
         for (let rec of arr) {
-            const hash = crypto.hash(JSON.stringify(rec)).slice(32).toUpperCase()
-            const id = hash.substring(0, 6)
-            let obj = {}
-            obj._id = (rec._method == 'POST') ? `${rec._type}.${id}` : rec._id
-            delete rec._type
-            delete rec._method
-            Object.assign(obj, rec)
-            ret.push(obj)
-            const txLine = `${new Date().toISOString()}\t${type}\t${JSON.stringify(obj)}\t${hash}`
+            const txLine = `${new Date().toISOString()}\t${JSON.stringify(rec)}`
             FS.appendFileSync(this.filename, `\r\n${txLine}`)
+            ret.push(rec)
         }
-
-        this.buildStep (obj)
-        this.bsFunctions.some((f) => f(arr))
         return ret
     }
 
-    buildStep(obj) {
-        if (obj._method === 'POST')
-            return this.DATA.push(obj)
-        if (obj._method === 'PUT') {
-            return this.DATA = this.DATA.map(i =>
-                obj._id === i._id ? { ...obj, completed: true } : obj
-            )
-        }
-        if (obj._method === 'DELETE')
-            return this.DATA = this.DATA.filter(i => i._id !== obj._id)
+    buildStep (obj) {
+            if (obj._method === 'POST')
+                this.DATA.push(obj)
+            if (obj._method === 'PUT') {
+                return this.DATA = this.DATA.map(i =>
+                    obj._id === i._id ? { ...obj, completed: true } : obj
+                )
+            }
+            if (obj._method === 'DELETE')
+                this.DATA = this.DATA.filter(i => i._id !== obj._id)
 
-        if (obj._id.match(/^schema/)) {
-            if (type.match(/POST|PUT/))
-                this.schema[obj.name] = obj.fields
-            if (type === 'DELETE')
-                delete this.schema[obj.name]
-        }
+            if (obj._id.match(/^schema/)) {
+                if (type.match(/POST|PUT/))
+                    this.schema[obj.name] = obj.fields
+                if (type === 'DELETE')
+                    delete this.schema[obj.name]
+            }
     }
 
     query (str) {
@@ -157,17 +145,19 @@ class DB {
 
 }
 
-class DBSERVER {
+class DBSERVER extends HTTPS_SERVER {
 
-    listen(port = 444) {
-        const HTTPS_SERVER = require('https_server.js')
-        const db_server = new HTTPS_SERVER()
-        db_server.use(this.token)
-        db_server.use(this.logout)
-        db_server.use(this.query)
-        db_server.use(this.api)
-        db_server.use(HTTPS_SERVER.EVENTS)
-        return db_server.listen(port)
+    DB
+
+    constructor(filename) {
+        super()
+        this.DB = new DB(filename)
+    }
+
+    async dblisten() {
+        await DB.build()
+        this.functions = [this.http_api, this.http_logout, this.http_query, this.http_token, this.NOTFOUND]
+        this.listen()
     }
 
     http_logout(r, s) {
@@ -181,8 +171,8 @@ class DBSERVER {
         const b64 = r.headers.authorization.split(' ')[1]
         const creds = Buffer.from(b64, 'base64').toString('ascii')
         const [user, pass] = creds?.split(':')
-        if(!user || !pass)
-          return false
+        if (!user || !pass)
+            return false
         const passhashed = crypto.hash(crypto.hash(pass))
         const q = this.query(`_id^_identity\.&&pass_hash^${passhashed}$`)
         if (!q || !q[1])
@@ -232,21 +222,21 @@ async function tests() {
     if (FS.existsSync(`./TESTING-eDB.txt`))
         FS.unlinkSync(`./TESTING-eDB.txt`)
 
-    const DB = require('./db.js')
-    const db = new DB(`./TESTING-eDB.txt`)
-    const d = new DB()
+    const dbserver = new DBSERVER(`./TESTING-eDB.txt`)
+    dbserver.listen(444)
+
+    const db = dbserver.DB
 
     // Build
-    await db.build()
     console.log(`db is located at ${db.filename} and has ${db.DATA.length} records`)
     console.log(JSON.stringify(db.DATA, null, 2))
 
     // Tx func chain
-    db.useTxFunction(db.txValidateSchema)
-    db.useTxFunction(db.txWriteFile)
+    //db.useTxFunction(db.txValidateSchema)
+    //db.useTxFunction(db.txWriteFile)
 
     // Bs func chain
-    db.useBsFunction(db.buildData)
+    //db.useBsFunction(db.buildData)
 
     // Transaction types
     //const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
