@@ -120,6 +120,10 @@ class DB {
         return ret
     }
 
+    preBuildStep (obj) {
+        // validate schema, build schema?
+    }
+
     buildStep (obj) {
             if (obj._method === 'POST')
                 this.DATA.push(obj)
@@ -130,13 +134,6 @@ class DB {
             }
             if (obj._method === 'DELETE')
                 this.DATA = this.DATA.filter(i => i._id !== obj._id)
-
-            if (obj._id.match(/^schema/)) {
-                if (type.match(/POST|PUT/))
-                    this.schema[obj.name] = obj.fields
-                if (type === 'DELETE')
-                    delete this.schema[obj.name]
-            }
     }
 
     query (str) {
@@ -149,25 +146,27 @@ class DBSERVER extends HTTPS_SERVER {
 
     DB
 
-    constructor(filename) {
+    constructor (filename) {
         super()
         this.DB = new DB(filename)
     }
 
-    async dblisten() {
+    async dblisten () {
         await DB.build()
         this.functions = [this.http_api, this.http_logout, this.http_query, this.http_token, this.NOTFOUND]
         this.listen()
     }
 
-    http_logout(r, s) {
+    http_logout (r, s) {
         if (r.url !== '/logout')
             return false
         const token = r.headers.authorization.split('BEARER ')[1]
         delete this.tokens[token]
     }
 
-    http_token(r, s) {
+    http_token (r, s) {
+        if (r.url !== '/token')
+          return false
         const b64 = r.headers.authorization.split(' ')[1]
         const creds = Buffer.from(b64, 'base64').toString('ascii')
         const [user, pass] = creds?.split(':')
@@ -182,15 +181,17 @@ class DBSERVER extends HTTPS_SERVER {
         return s.end(`[{"token": "${token}"}]`)
     }
 
-    http_query(r, s) {
-        const mat = r.url.match(/\/q\/<?query>(.*)/)
-        if (!mat.groups.query || r.method !== 'GET')
+    http_query (r, s) {
+        if (r.url !== '/query' || r.method !== 'GET')
             return false
-        const ret = this.query(mat.groups.query)
-        return s.end(JSON.stringify(ret))
+        const mat = r.url.match(/\/query\/<?query>(.*)/)
+        if (!mat.groups.query)
+            return false
+        const ret = this.query (mat.groups.query)
+        return s.end(JSON.stringify (ret))
     }
 
-    http_api(r, s) {
+    http_api (r, s) {
         if (r.url !== '/api' || !r.method.match(/POST|PUT|DELETE/))
             return false
         let body = ''
@@ -224,54 +225,77 @@ async function tests() {
 
     const dbserver = new DBSERVER(`./TESTING-eDB.txt`)
     dbserver.listen(444)
-
     const db = dbserver.DB
 
     // Build
     console.log(`db is located at ${db.filename} and has ${db.DATA.length} records`)
     console.log(JSON.stringify(db.DATA, null, 2))
 
-    // Tx func chain
-    //db.useTxFunction(db.txValidateSchema)
-    //db.useTxFunction(db.txWriteFile)
-
-    // Bs func chain
-    //db.useBsFunction(db.buildData)
-
     // Transaction types
-    //const id = db.transaction('POST', [{ _type: 'fruit', name: 'apples' }])[0]._id
-    //const txPut = db.transaction('PUT', [{ _id: id, color: 'red' }])
-    //const idd = db.transaction('POST', [{ _type: 'fruit', name: 'orange' }])[0]._id
-    //const txDelete = db.transaction('DELETE', [{ _id: idd }])
-
-    // Invalid Transaction Types
-
-    // New user
-
-    // Grant to new user
-
-    // Schema
+    const post = db.transaction([{ _method: 'POST', _type: 'fruit', name: 'apple' }])
+    console.log (post)
+    const put = db.transaction([{ _id: post[0]._id, _method: 'PUT', _type: 'fruit', name: 'banana' }])
+    console.log (put)
+    const post2 = db.transaction([{ _method: 'POST', _type: 'fruit', name: 'mango' }])
+    console.log (post2)
+    const del = db.transaction([{ _id: put[0]._id}])
+    console.log (del)
 
     // Query
-    //console.log(db.DATA)
-    //const qr = db.querystr('_id^frui@@color^red$')
-    //console.log(qr)
+    const qr = db.querystr ('_type^fruit$')
+    console.log (qr)
 
-    // Server
-    //db.listen()
+    // Invalid Transaction Types
+    const badt = db.transaction([{ _method: 'OPTIONS', _type: 'fruit', name: 'mango' }])
+    console.log (badt)
+
+    // Validate schema
+    const teams = db.transaction([{ _method: 'POST', _type: '_schema', name: '_teams', field: ['name', 'mascot'] }])
+    const ok = db.transaction([{ _method: 'POST', _type: '_teams', name: 'Phillies', mascot: 'Phanatic' }])
+    console.log (ok)
+    const notok = db.transaction([{ _method: 'POST', _type: '_teams', name: 'Pirates' }])
+    console.log (notok)
+
+    // New user role grant
+    const user = db.transaction([{ _method: 'POST', _type: '_identity', name: 'testuser', pass: 'testpass' },
+    { _method: 'POST', _type: '_role', name: 'myrole' },
+    { _method: 'POST', _type: '_identityrole', identity: 'testuser', role: 'myrole' },
+    { _method: 'POST', _type: '_grant', role: 'edbrole', field: '_type^fruit$' }])
 
     // Get Token Success
+    const f = await fetch ('/token', headers: { Authorization: Buffer.from('testuser:testpass', 'base64') })
+    const token = await f.toJSON()
+    console.log (token)
 
     // Get Token Fail
+    const bf = await fetch ('/token', headers: { Authorization: Buffer.from('testuser:badpass', 'base64') })
+    const bj = await f.toJSON()
+    console.log (bj)
 
     // Server query
-
-    // Server transaction types
-
-    // Server events
+    const q = await fetch ('/query/_type^.$', headers: { Authorization: `BEARER ${token[0].token}`) })
+    const qj = await f.toJSON()
+    console.log (qj)
 
     // Server query with version
+    const q1 = await fetch ('/query/_type^.$', headers: { Authorization: `BEARER ${token[0].token}`) })
+    const qj1 = await f.toJSON()
+    console.log (qj1)
 
+    // Server events
+    const ev = new EventSource ('/events')
+    let i = 0
+    ev.onmessage ((ev) => {
+        console.log(ev)
+        if (i++ > 3)
+          ev.close ()
+    })
+    
     // Logout
-
+    const q2 = await fetch ('/logout', headers: { Authorization: `BEARER ${token[0].token}`) })
+    const qj2 = await f.toJSON()
+    console.log (qj2)
+    const q3 = await fetch ('/query/_type^.$', headers: { Authorization: `BEARER ${token[0].token}`) })
+    const qj3 = await f.toJSON()
+    console.log (qj3)   
 }
