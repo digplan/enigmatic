@@ -93,6 +93,10 @@ class DB {
         }
     }
 
+    getPermissionsForUser (user) {
+
+    }
+    
     preTransaction (arr) {
 
     }
@@ -153,32 +157,19 @@ class DBSERVER extends HTTPS_SERVER {
 
     async dblisten () {
         await DB.build()
-        this.functions = [this.http_api, this.http_logout, this.http_query, this.http_token, this.NOTFOUND]
+        this.authorize = (user, pass) => {
+            const passhashed = crypto.hash(crypto.hash(pass))
+            const q = this.query(`_id^_identity\.&&pass_hash^${passhashed}$`)
+            if (!q || !q[1])
+                return false
+            const token = crypto.hash(+new Date() + Math.random())
+            return {token: token, user: user}
+        }
+        this.permissions = (user) => {
+            return this.getPermissionsForUser (user)
+        } 
+        this.functions = [this.http_api, this.http_query, this.NOTFOUND]
         this.listen()
-    }
-
-    http_logout (r, s) {
-        if (r.url !== '/logout')
-            return false
-        const token = r.headers.authorization.split('BEARER ')[1]
-        delete this.tokens[token]
-    }
-
-    http_token (r, s) {
-        if (r.url !== '/token')
-          return false
-        const b64 = r.headers.authorization.split(' ')[1]
-        const creds = Buffer.from(b64, 'base64').toString('ascii')
-        const [user, pass] = creds?.split(':')
-        if (!user || !pass)
-            return false
-        const passhashed = crypto.hash(crypto.hash(pass))
-        const q = this.query(`_id^_identity\.&&pass_hash^${passhashed}$`)
-        if (!q || !q[1])
-            return false
-        const token = crypto.hash(+new Date() + Math.random())
-        this.tokens[token] = q[1]
-        return s.end(`[{"token": "${token}"}]`)
     }
 
     http_query (r, s) {
