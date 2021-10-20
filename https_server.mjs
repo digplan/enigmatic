@@ -1,19 +1,8 @@
-/**
- * @example
- * const server = new HTTPS_SERVER ()
- * server.listen ()
- * 
- * @example
- * // tests
- * node http_server.js
-**/
+import { existsSync, readFileSync } from 'fs'
+import { createServer } from 'https'
 
-const FS = require('fs')
 class HTTPS_SERVER {
 
-    /**
-     * @type {Array<Function(r, s)>} 
-     */
     functions = [this.AUTH, this.EVENTS, this.STATIC, this.NOTFOUND]
 
     /**
@@ -27,16 +16,14 @@ class HTTPS_SERVER {
      */
 
     listen(port = 443) {
-        const FS = require('fs')
-        const PROTOCOL = require('https')
         const options = {
-            cert: FS.readFileSync('./localhost-cert.pem'),
-            key: FS.readFileSync('./localhost-key.pem')
+            cert: readFileSync('./keys/localhost-cert.pem'),
+            key: readFileSync('./keys/localhost-key.pem')
         }
         const app = (r, s) => {
             this.functions.some((f) => f.apply(this, [r, s]))
         }
-        return PROTOCOL.createServer(options, app).listen(port)
+        return createServer(options, app).listen(port)
     }
 
     /**
@@ -98,7 +85,7 @@ class HTTPS_SERVER {
         if (r.method !== 'GET')
             return false
         const fn = `./public${(r.url == '/') ? '/index.html' : r.url}`
-        return FS.existsSync(fn) ? s.end(FS.readFileSync(fn).toString()) : false
+        return existsSync(fn) ? s.end(readFileSync(fn).toString()) : false
     }
 
     EVENTS(r, s) {
@@ -131,13 +118,13 @@ class HTTPS_SERVER {
 
 }
 
-module.exports = HTTPS_SERVER
+export default HTTPS_SERVER
 
 /*****************
        Tests  
 ******************/
 
-if (require.main === module)
+if (process.argv[1].match('https_server.mjs'))
     tests()
 
 function tests() {
