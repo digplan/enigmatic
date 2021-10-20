@@ -22,7 +22,7 @@ class HTTPS_SERVER {
         return createServer(options, app).listen(port)
     }
 
-    use (f) {
+    use (f: (r: IncomingMessage, s: ServerResponse) => EndMiddleware) {
         const db = this
         const func = (r, s) => {
             return f.bind(db, r, s)
