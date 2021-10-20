@@ -41,22 +41,28 @@ class HTTPS_SERVER {
     AUTH (r: IncomingMessage, s: ServerResponse) : EndMiddleware {
         let [type, val] = r.headers.authorization.split(' ')
         if (type == 'BASIC') {
-            const tup = Buffer.from(val, 'base64').toString('ascii').split(':')
-            const { user, token } = this.authorize(tup)
+            const userpass = Buffer.from(val, 'base64').toString('ascii').split(':')
+            const { user, token } = this.authorize(userpass)
             if (!user || !token) {
                 s.writeHead(401).end()
                 return true
             }
             this.tokens[token] = user
+            s.end (token)
+            return true
         }
         if (type == 'BEARER') {
             if (r.url === '/logout' && this.tokens[val]) {
                 delete this.tokens[val]
                 s.writeHead (302, 'Location: /').end()
+                return true
             }
             const user = this.tokens[val]
-            if (user)
-                s.permissions = this.permissions (user)
+            if (!user) {
+                s.writeHead(401).end()
+                return true
+            }
+            s.permissions = this.permissions (user)
         }
         return false
     }
