@@ -73,6 +73,10 @@ class CRYPTO {
                 return decrpyted.toString();
         }
 
+        quickId () {
+                return this.hash(Math.random()).toUpperCase().substr(0, 6)
+        }
+
 }
 
 module.exports = CRYPTO
