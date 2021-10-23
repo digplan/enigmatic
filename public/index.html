@@ -1,42 +1,25 @@
-
-<script src='index.js'></script>
-<link href='enigmatic.css' rel='stylesheet'>
-
-<style>
-  body {
-	  font-family: Inter,OpenSans,Helvetica,Arial,sans-serif;
-	  display: grid;
-	  grid-template-columns: 20% 1fr 20%;
-	  grid-template-rows: 10% 1fr 10%;
-	  gap: 4px;
-	}
-</style>
-
-<body class='bg-black' datasrc='/data' debug>
-  
-  <h3 id='myid' class='bg-blue' data='time'>hey hey</h3>
-    
-  <view id='view1' control>
-    <div control='youtube'></div>
-  </view> 
-
-  <view id='view2' hidden control>
-    <div class='bg-red'>I AM BIEW 2</div>
-  </view>
+<body datasrc='DataEventSource://events-test-16hsk7tpgefv.runkit.sh/'>
  
-  <div class='bg-green'>
-    <button onclick='view1.show()'>Show view 1</button>
-    <button onclick='view2.show()'>Show view 2</button>
-  </div>
-  
-  <div class='bg-orange'>
-    <input id='myinput' data='names' /><button class='post' target='myinput'>Add record</button>
-  </div>
-  <div class='bg-yellow' control='mapembed'></div>
-  <div class='bg-yellow show'>222</div>
-  
-    <div class='bg-yellow'>222</div>
-    <div class='bg-yellow'>222</div>
-    <div class='bg-yellow'>222</div>
-  
+  <view-panel id='view1' some='element' class='show'>
+    <div class='bg-red' data='time'>I AM VIEW 1</div>
+  </view-panel> 
+
+  <view-panel id='view2' class='hide'>
+    <div class='bg-blue' data='_version'>I AM VIEW 2</div>
+  </view-panel>
+ 
+   <view-panel id='view3' class='hide'>
+    <div class='bg-blue'>I AM VIEW 3</div>
+  </view-panel>
+
+    <button onclick='view1.toggle()'>Toggle view 1</button>
+    <button onclick='view2.toggle()'>Toggle view 2</button>
+    <button onclick='view3.toggle()'>Toggle view 3</button>
+
+    <button onclick='view1.showOnly()'>Show view 1 only</button>
+    <button onclick='view2.showOnly()'>Show view 2 only</button>
+    <button onclick='view3.showOnly()'>Show view 3 only</button>
+
+    <button onclick='DATA.time = +new Date()'>Set Data to time</button>
+    
 </body>

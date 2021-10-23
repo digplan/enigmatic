@@ -3,8 +3,6 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { Http2ServerRequest } from 'http2'
 import { createServer } from 'https'
 
-type EndMiddleware = true|false
-
 class HTTPS_SERVER {
 
     functions = [this.AUTH, this.EVENTS, this.STATIC, this.NOTFOUND]
@@ -62,7 +60,6 @@ class HTTPS_SERVER {
                 s.writeHead(401).end()
                 return true
             }
-            s.permissions = this.permissions (user)
         }
         return false
     }
