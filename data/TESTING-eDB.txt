@@ -1,9 +1,0 @@
-edb v0.0.1
-2021-10-18T19:22:22.668Z	{"_method":"POST","_type":"_schema","name":"_identity","field":["name","public"],"_hash":"48DF980187E2FE1CC06E74C6B4B218EC","_id":"_schema.48DF98"}
-2021-10-18T19:22:22.669Z	{"_method":"POST","_type":"_schema","name":"_role","field":["name"],"_hash":"CD5F56AEFFDE5B35455971BF9BF209C7","_id":"_schema.CD5F56"}
-2021-10-18T19:22:22.669Z	{"_method":"POST","_type":"_schema","name":"_identityrole","field":["identity","role"],"_hash":"2D4D30F4ADD509A00023D246333BA169","_id":"_schema.2D4D30"}
-2021-10-18T19:22:22.669Z	{"_method":"POST","_type":"_schema","name":"_grant","field":["role","permission"],"_hash":"51FD15C4E8DE53A665F54D1AD96F1186","_id":"_schema.51FD15"}
-2021-10-18T19:22:22.670Z	{"_method":"POST","_type":"_identity","name":"edbroot","public":"0392eef6d66880573d51fc6185e75b2fe7938600da1cf204372029b4098091c7af","_hash":"F7A4A6C0BC009D0C483A9108B880C55D","_id":"_identity.F7A4A6"}
-2021-10-18T19:22:22.670Z	{"_method":"POST","_type":"_role","name":"edbrole","_hash":"0E809EB62BD9AF506FA6734800A19A79","_id":"_role.0E809E"}
-2021-10-18T19:22:22.670Z	{"_method":"POST","_type":"_identityrole","identity":"edbroot","role":"edbrole","_hash":"F2266E5E5D1FFCD7929C0DC446A6EF33","_id":"_identityrole.F2266E"}
-2021-10-18T19:22:22.671Z	{"_method":"POST","_type":"_grant","role":"edbrole","field":"id^.*$","_hash":"6DB342A4CDB4ADA191BAC813BEB57DF7","_id":"_grant.6DB342"}
