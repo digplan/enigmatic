@@ -1,0 +1,15 @@
+<script src='https://unpkg.com/enigmatic'></script>
+<script src='online-indicator.js'></script>
+
+1 <online-indicator></online-indicator>
+2 <online-indicator online='On' offline='Off'></online-indicator>
+
+<script>
+    main = async () => {
+        // Promise based offline detection
+        await $('online-indicator').wentOffline()
+        console.log('went offline')
+        await $('online-indicator').wentOnline()
+        console.log('went online')        
+    }
+</script>

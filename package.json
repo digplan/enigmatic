@@ -1,0 +1,12 @@
+{
+  "name": "enigmatic",
+  "description": "Simple web controls",
+  "url": "http://github.com/digplan/enigmatic",
+  "author": "<digplan@outlook.com>",
+  "main": "enigmatic.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/digplan/enigmatic.git"
+  },
+  "version": "0.9.14"
+}

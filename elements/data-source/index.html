@@ -1,0 +1,10 @@
+<script src='https://unpkg.com/enigmatic'></script>
+<script src='data-source.js'></script>
+
+<data-source href='https://randomuser.me/api' target='users' cache></data-source>
+<data-source id='d2' href='https://randomuser.me/api' target='users2' cache wait></data-source>
+
+<e-e data='users.results'>one</e-e>
+<e-e data='users2.results'>Do not load with page</e-e>
+
+<button onclick='d2.fetch()'>Fetch</button>
