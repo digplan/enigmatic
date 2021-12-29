@@ -1,0 +1,176 @@
+<script src='index.js'></script>
+<script type='module' src='elements/index.mjs'></script>
+<link rel='stylesheet' href='index.css'>
+
+<body style='display: grid; place-items: center;'>
+    <test-runner></test-runner>
+</body>
+
+<script>
+    main = async () => {
+        const runner = $('test-runner')
+        const display = $('tr-display')
+        runner.createTests({
+            // dom
+            'Window exists': () => typeof window !== 'undefined',
+            'Document exists': () => typeof document !== 'undefined',
+            'Body exists': () => typeof document.body !== 'undefined',
+            // core js
+            'fetch exists': () => { return fetch },
+            'localStorage exists': () => { return localStorage },
+            // enigmatic core
+            '$ selector': () => { return $.name == 'bound querySelector' },
+            '$$ selector': () => { return $$.name == 'bound querySelectorAll' },
+            'window.loadJS': () => { return window.loadJS },
+            'window.loadCSS': () => { return window.loadCSS },
+            'window.data': () => { return window.data },
+            'window.data object': () => { return window.data._ },
+            'window.data set': () => { return window.data.set },
+            'window.wait': async () => {
+                return new Promise(async (r, j) => {
+                    const time = +new Date()
+                    await wait(100)
+                    const timetaken = +new Date() - time
+                    timetaken > 99 ? r(timetaken) : j(`Wait took ${timetaken}ms`)
+                })
+            },
+            'window.ready': () => { return window.ready },
+            // EE
+            'EnigmaticElement': () => { return EnigmaticElement },
+            'EnigmaticElement create': async () => {
+                return new Promise(async (r, j) => {
+                    const e = $('#trdisplay').child('e-e')
+                    e.id = 'testelement'
+                    e.innerHTML = '<h1>Hello e-e element</h1>'
+                    e.hide()
+                    e.show()
+                    e.setAttribute('data', 'mykey')
+                    r(e)
+                })
+            },
+            'EE-childHTML': () => {
+                const e = $('#trdisplay').childHTML('<span>Im a test</span>')
+                const ret = (e.innerHTML === '<span>Im a test</span>')
+                e.remove()
+                return ret
+            },
+            // Data
+            'window.data set': () => { return window.data.set },
+            'window.data.set(val)': () => { return window.data.set('mykey', 'myval') },
+            'Element data subscribe': () => { return $('#testelement').innerHTML === 'myval' },
+            // Custom elements
+            'Hello World element': async () => {
+                $('#testelement').remove()
+                return new Promise(async (r, j) => {
+                    const hw = $('#trdisplay').child('hello-world')
+                    await wait(500)
+                    $('hello-world').hide()
+                    await wait(500)
+                    $('hello-world').show()
+                    await wait(500)
+                    $('hello-world').hide()
+                    $('hello-world').remove()
+                    r(true)
+                })
+            },
+            'you-tube': async () => {
+                const r = $('#trdisplay').child('you-tube')
+                await wait(1500)
+                r.hide()
+                r.remove()
+                return r
+            },
+            'monaco-editor': async () => {
+                const r = $('#trdisplay').child('monaco-editor')
+                r.set('javascript', 'console.log(1)')
+                await wait(500)
+                await r.hide()
+                r.remove()
+                return r
+            },
+            'online-indicator': async () => {
+                const r = $('#trdisplay').child('online-indicator')
+                await wait(500)
+                if (navigator.onLine && r.innerHTML !== '🟢')
+                    throw Error('online-indicator not online')
+                runner.set('Disconnect your network connection to continue')
+                //await r.wentOffline()
+                if (!navigator.onLine && r.innerHTML !== '🔴')
+                    throw Error('online-indicator not offline')
+                runner.set('Connect your network connection to continue')
+                //await r.wentOnline()               
+                await r.hide()
+                r.remove()
+                return true
+            },
+            'font-awesome': async () => {
+                const r = $('#trdisplay').child('font-awesome')
+                r.set('fas fa-heart')
+                await wait(500)
+                r.set('fas fa-check')
+                await wait(1000)
+                const ret = getComputedStyle($('font-awesome')).fontFamily.match(/Font/i)
+                r.remove()
+                return ret
+            },
+            'view-panel': async () => {
+                const display = $('#trdisplay')
+                const vp = display.child('view-panel')
+                vp.classList.add('show')
+                vp.style.display = 'grid'
+                vp.style.gridTemplate = '1fr / 1fr'
+                const x = vp.child('e-e', 'one')
+                x.style.backgroundColor = 'red'
+                x.innerHTML = '!'
+                const xx = vp.child('div', 'two')
+                xx.style.backgroundColor = 'green'
+                xx.innerHTML = '!'
+                const xxx = vp.child('div', 'three')
+                xxx.style.backgroundColor = 'blue'
+                xxx.innerHTML = '!'
+                const b = display.child('button', 'four')
+                b.textContent = 'Show only one'
+                b.onclick = () => {
+                    vp.showOnly('#one')
+                }
+                const c = display.child('button', 'five')
+                c.textContent = 'Show all'
+                c.onclick = () => {
+                    vp.showAll()
+                    $('#one').hide()
+                }
+                await wait(500)
+                b.click()
+                await wait(500)
+                c.click()
+                await wait(500)
+                b.remove()
+                c.remove()
+                vp.remove()
+                return true
+            },
+            'side-menu': async () => {
+                $('#trdisplay').childHTML(`
+                    <button id='opener' onclick="$('#me').toggle()" style='position: absolute; left: 400px'>Open</button>
+                    <side-menu id='me' toggle-classes='slide-in slide-out'>
+                        <li class=''>
+                            <font-awesome class='fa fa-check'></font-awesome> one
+                        </li>
+                        <li class=''>
+                            <font-awesome class='fa fa-check'></font-awesome> one
+                        </li>
+                        <li class=''>
+                            <font-awesome class='fa fa-check'></font-awesome> one
+                        </li>
+                        <li class=''>
+                            <font-awesome class='fa fa-check'></font-awesome> one
+                        </li>
+                        <li class=''>
+                            <font-awesome class='fa fa-check'></font-awesome> one
+                        </li>
+                    </side-menu>`)
+                return true
+            }
+        })
+    }
+</script>

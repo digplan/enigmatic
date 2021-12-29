@@ -1,0 +1,13 @@
+<script src='//unpkg.com/enigmatic'></script>
+<script src='chart-radial-progress.js'></script>
+<link rel='stylesheet' href='//unpkg.com/enigmatic/index.css'>
+
+<body class='grid' style='--rows: repeat(3, 1fr); --cols: repeat(3, 1fr)'>
+    <chart-radial-progress symbol='%' data='rp' style='--data:10'></chart-radial-progress>
+</body>
+
+<script>
+    main = () => {
+        data.set('rp', 20)
+    }
+</script>

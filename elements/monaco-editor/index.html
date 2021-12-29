@@ -1,0 +1,11 @@
+<script src='//unpkg.com/enigmatic'></script>
+<script type='module' src='monaco-editor.mjs'></script>
+
+<monaco-editor id='me1' estyle="width: 600px; height: 400px; border: 1px solid gray"></monaco-editor>
+<code for='me1' hidden>class HelloWorld extends HTMLElement {
+      connectedCallback() {
+        this.innerHTML = '<div>Hello World!</div>'
+      }
+    }
+    customElements.define('hello-world', HelloWorld)
+</code>
