@@ -1,15 +1,18 @@
 /* layout */
 
-body {
+body, section {
     display: grid;
     font-family: Roboto, Helvetica, sans-serif;
     margin: 0;
     grid-template-columns: var(--cols, 1fr 4fr 1fr);
     grid-template-rows: var(--rows, 1fr 9fr 1fr);
+}
+
+body {
     height: 100vh;
 }
 
-div {
+section, div {
     grid-column: span var(--span, 1);
     grid-row: span var(--span-rows, 1);
 }

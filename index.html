@@ -1,16 +1,10 @@
 <script src='enigmatic.js'></script>
 <link rel='stylesheet' href='enigmatic.css'>
 
-<body style='--rows:1fr 5fr; --cols:1fr 1fr'>
-    <div class='bg-red' data='mykey'></div>
-    <div data='mykey2.k'></div>
-    <div>three</div>
+<body style='--rows:1fr 1fr; --cols:1fr 1fr'>
+    <section style='--rows:1fr 1fr; --cols:1fr 1fr'>
+        <div style='--span:2'>1</div>
+        <div>2</div>
+        <div>3</div>
+    </section>
 </body>
-
-<script>
-    window.main = () => {
-        body.child().innerHTML = 'some text'
-        data.mykey = 'somevalue'
-        data.mykey2 = {k: 'v'}
-    }
-</script>
