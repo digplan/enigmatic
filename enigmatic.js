@@ -1,8 +1,6 @@
-// e-e
+// e 0.9.16
 window.$ = document.querySelector.bind(document)
 window.$$ = document.querySelectorAll.bind(document)
-window.body = document.body
-
 window.loadJS = src => {
     return new Promise((r, j) => {
         if ($(`script[src="${src}"]`))
@@ -13,7 +11,6 @@ window.loadJS = src => {
         document.head.appendChild(s)
     })
 }
-
 window.loadCSS = src => {
     return new Promise((r, j) => {
         const s = document.createElement('link')
@@ -23,26 +20,28 @@ window.loadCSS = src => {
         document.head.appendChild(s)
     })
 }
-
-class Data {
-    _ = {}
-    set (name= new Error('data.set() needs a name'), value) { 
-        this._[name] = value
-        for(const e of $$(`[data*=${name}]`)) {
-            let v = this._
-            for(const k of e.getAttribute('data').split('.')) {
-                v = v[k]
-            }
-            e.set ? e.set(v) : e.textContent = v
-        }
-        const ret = {}
-        ret[name] = value
-        return ret
-    }
-}
-
-window.data = new Data ()
 window.wait = ms => new Promise(r => setTimeout(r, ms))
+window.data = new Proxy({}, {
+    set: (obj, prop, value) => {
+        for (const e of $$(`[data*=${prop}]`)) {
+            const arr = e.getAttribute('data').split('.')
+            arr.shift()
+            for (const p of arr) value = value[p]
+            e.set ? e.set(value) : e.textContent = value
+        }
+        return prop
+    }
+})
+window.ready = async () => {
+    return new Promise(r => {
+        if (document.readyState === 'complete')
+            r(true)
+        document.onreadystatechange = () => {
+            if (document.readyState === 'complete')
+                r()
+        }
+    })
+}
 
 class EnigmaticElement extends HTMLElement {
     constructor () {
@@ -105,27 +104,16 @@ class EnigmaticElement extends HTMLElement {
         return e
     }
 }
+//customElements.define ('e-e', EnigmaticElement)
 
-customElements.define ('e-e', EnigmaticElement)
-
-window.addEventListener('DOMContentLoaded', (event) => {
+(async () => {
+    await window.ready()
     window.body = document.body
-    body.child = (type, id) => {
+    body.child = (type = 'div', id = Math.random()) => {
         const child = document.createElement(type)
-        if(id) child.id = id
+        if (id) child.id = id
         body.appendChild(child)
         return child
     }
-    if(window.main) window.main(document)
-})
-
-window.ready = async () => {
-    return new Promise(r => {
-        if(document.readyState === 'complete')
-            r(true)
-        document.onreadystatechange = () => {
-            if (document.readyState === 'complete')
-                r()
-        }
-    })
-}
+    if (window.main) window.main(document)
+})()

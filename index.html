@@ -1,0 +1,17 @@
+<script src='enigmatic.js'></script>
+<script type='module' src='elements/index.mjs'></script>
+<link rel='stylesheet' href='enigmatic.css'>
+
+<body style='--rows:1fr 1fr; --cols:1fr 1fr'>
+    <div data='mykey'></div>
+    <div data='mykey2.k'></div>
+    <div>three</div>
+</body>
+
+<script>
+    window.main = () => {
+        body.child().innerHTML = 'main'
+        data.mykey = 'somevalue'
+        data.mykey2 = {k: 'v'}
+    }
+</script>
