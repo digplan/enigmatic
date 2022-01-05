@@ -142,7 +142,7 @@ a {
     cursor: default;
 }
 
-.bg-blue {
+.bg-blue, .hover\:bg-blue:hover {
     background-color: #0074d9
 }
 
@@ -295,4 +295,21 @@ li {
 li:hover {
     background-color: rgb(243, 241, 241);
     cursor: pointer;
+}
+
+/** Opacity **/
+.opacity-100 {
+    opacity: 1;
+}
+
+.opacity-25 {
+    opacity: .25;
+}
+
+.opacity-50 {
+    opacity: .5;
+}
+
+.opacity-75 {
+    opacity: .75;
 }
