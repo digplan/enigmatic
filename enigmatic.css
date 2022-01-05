@@ -9,12 +9,9 @@ body {
     height: 100vh;
 }
 
-.span {
-    grid-column: span var(--span, 3);
-}
-
-.span-rows {
-    grid-row: span var(--span-rows, 3);
+div {
+    grid-column: span var(--span, 1);
+    grid-row: span var(--span-rows, 1);
 }
 
 .flex {
