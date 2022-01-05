@@ -104,7 +104,7 @@ class EnigmaticElement extends HTMLElement {
         return e
     }
 }
-//customElements.define ('e-e', EnigmaticElement)
+customElements.define ('e-e', EnigmaticElement)
 
 (async () => {
     await window.ready()
