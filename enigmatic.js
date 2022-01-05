@@ -106,7 +106,7 @@ class EnigmaticElement extends HTMLElement {
 }
 customElements.define ('e-e', EnigmaticElement)
 
-(async () => {
+const start = async () => {
     await window.ready()
     window.body = document.body
     body.child = (type = 'div', id = Math.random()) => {
@@ -116,4 +116,5 @@ customElements.define ('e-e', EnigmaticElement)
         return child
     }
     if (window.main) window.main(document)
-})()
+}
+start()
