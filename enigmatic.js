@@ -1,4 +1,3 @@
-// e 0.9.16
 window.$ = document.querySelector.bind(document)
 window.$$ = document.querySelectorAll.bind(document)
 window.loadJS = src => {
@@ -23,7 +22,7 @@ window.loadCSS = src => {
 window.wait = ms => new Promise(r => setTimeout(r, ms))
 window.data = new Proxy({}, {
     set: (obj, prop, value) => {
-        for (const e of $$(`[data*=${prop}]`)) {
+        for (const e of $$(`[data=${prop}]`)) {
             const arr = e.getAttribute('data').split('.')
             arr.shift()
             for (const p of arr) value = value[p]
@@ -44,67 +43,53 @@ window.ready = async () => {
 }
 
 class EnigmaticElement extends HTMLElement {
-    constructor () {
-        super ()
+    showHideClasses = ['show', 'hide']
+    constructor() {
+        super()
     }
-    connectedCallback () {
-        if (!this.id) 
-            this.id = Math.floor(Math.random() * 5000)
-        for (let attr of this.attributes) {
-            this[attr.name] = attr.value
-        }
+    connectedCallback() {
         this.innerTemplate = this.innerHTML
-    } 
-    async show () {
+    }
+    async showHide(s= 1, h= 0) {
         return new Promise(r => {
-            this.hidden = false
-            this.classList.remove('hide')
-            this.classList.add('show')
+            if(s === 1) this.hidden = false
+            this.classList.remove(this.showHideClasses[h])
+            this.classList.add(this.showHideClasses[s])
             for (const child of this.children) {
-                child.classList.remove('hide')
-                child.classList.add('show')
+                child.classList.remove(this.showHideClasses[s])
+                child.classList.add(this.showHideClasses[h])
             }
             r(true)
         })
     }
-    async hide () {
-        return new Promise(r => {
-            this.classList.remove('show')
-            this.classList.add('hide')
-            for(const child of this.children) {
-              child.classList.remove('show')
-              child.classList.add('hide')
-            }
-            r(true)
-        })
+    async show() {
+        return this.showHide()
     }
-    async toggle (classes = ['show', 'hide']) {
-        const c = this.classList
-        if(!c.contains(classes[0]) && !c.contains(classes[1]))
-            c.add(classes[0])
-        for(const cls of classes) {
-            this.classList.toggle(cls)
-        }
+    async hide() {
+        return this.showHide(0, 1)
     }
-    set (s) {
-        if(typeof s === 'object') {
+    async toggle() {
+        this.classList.contains(this.showHideClasses[0]) ? await this.hide() : await this.show()
+    }
+    set(s) {
+        if (typeof s === 'object') {
             s = JSON.stringify(s)
         }
         this.innerHTML = s
     }
-    child (type = 'e-e', id = Math.random()) {
+    child(type = 'e-e', id = Math.random()) {
         const child = document.createElement(type)
         child.id = id
         this.appendChild(child)
         return child
     }
-    childHTML (html, type = 'e-e', id = Math.random()) {
+    childHTML(html, type = 'e-e', id = Math.random()) {
         const e = this.child(type, id)
         e.innerHTML = html
         return e
     }
 }
-customElements.define ('e-e', EnigmaticElement)
+customElements.define('e-e', EnigmaticElement)
 
 const start = async () => {
     await window.ready()
