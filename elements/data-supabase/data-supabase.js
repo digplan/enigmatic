@@ -1,32 +1,32 @@
-class DataSource extends EnigmaticElement {
-    constructor() {
+class DataSupabase extends EnigmaticElement {
+    attr = {}
+    constructor() { 
         super()
     }
     async connectedCallback() {
-        const isWait = this.hasAttribute('wait')
-        if (!isWait)
-            await this.main()
-    }
-    async main() {
-        await window.ready()
-        this.fetch()
+        for (let attr of this.attributes)
+            this.attr[attr.name] = attr.value
+        this.attr.key = window.supa_anon
+        if (!this.hasAttribute('wait')) {
+            console.log(this.id)
+            await window.ready()
+            this.fetch()
+        }
     }
     async fetch() {
-        const url = this.getAttribute('href')
-        if(!url) return
-        const target = this.getAttribute('target')
-        const key = window.supa_anon
-        let json
+        const {href, key, target, cache} = this.attr
         let hdrs = {
             'apikey': key,
             'Authorization': `Bearer ${key}`
-        }
-        if (this.hasAttribute('cache'))
-            json = await this.cache(url)
+        }, json
+        if (cache)
+            json = await this.cache(href)
         else
-            json = await (await fetch(url, {headers: hdrs})).json()
+            json = await (await fetch(href, {headers: hdrs})).json()
+        if(json.message)
+            throw Error(json.message)
         if (target)
-            window.data.set(this.getAttribute('target'), json)
+            window.data[target] = json
     }
     async cache(url) {
         const cached = localStorage.getItem(url)
@@ -38,4 +38,4 @@ class DataSource extends EnigmaticElement {
     }
 }
 
-customElements.define('data-source', DataSource)
+customElements.define('data-supabase', DataSupabase)

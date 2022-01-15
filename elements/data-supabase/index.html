@@ -1,13 +1,13 @@
-<script src='https://unpkg.com/enigmatic'></script>
+<script src='../../enigmatic.js'></script>
 <script src='data-supabase.js'></script>
 <script>
     window.supa_anon = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQyMjIyMjk0LCJleHAiOjE5NTc3OTgyOTR9.4iO4HAtc2ndhOh0fMMehFvKQLS59rbOl9SDSaittEsY'
 </script>
 
-<data-supabase href='https://jswwnihvfhqtgtndoxui.supabase.co/rest/v1/test?select=*' target='users' cache></data-supabase>
-<data-supabase id='d2' href='https://jswwnihvfhqtgtndoxui.supabase.co/rest/v1/test?select=*' target='users2' cache wait></data-supabase>
+<data-supabase id='d1' href='https://jswwnihvfhqtgtndoxui.supabase.co/rest/v1/test?select=*' target='users'></data-supabase>
+<e-e data='users'>page-load</e-e>
 
-<e-e data='users'>ready</e-e>
-<e-e data='users2'>Do not load with page</e-e>
+<data-supabase id='d2' href='https://jswwnihvfhqtgtndoxui.supabase.co/rest/v1/test?select=*' target='users2' wait></data-supabase>
+<e-e data='users2'>on-demand</e-e>
 
-<button onclick='d2.fetch()'>Fetch</button>
+<button onclick='d2.fetch()'>On-demand Fetch</button>
