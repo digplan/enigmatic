@@ -1,6 +1,6 @@
 # enigmatic
 ![version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&type=6&v=0.9.20&x2=0)
-![size](http://img.badgesize.io/digplan/enigmatic/master/enigmatic.js)
+![size](http://img.badgesize.io/digplan/enigmatic/master/index.js)
 
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
 It aspires to enable faster web app peformance, better reliabilty, and faster development process. 
