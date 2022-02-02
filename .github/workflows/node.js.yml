@@ -1,0 +1,13 @@
+name: Minify JS CSS
+on:
+  push:
+    branches: [ master ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Auto Minify
+      - uses: nizarmah/auto-minify@v2.1
+      - name: Auto committing minified files
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Minify"
+          branch: ${{ github.ref }}
