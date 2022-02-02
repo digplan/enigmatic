@@ -7,9 +7,9 @@ section {
 }
 
 body {
-  font-family: var(--font-primary);
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, sans-serif);
   height: 100vh;
-  background-color: var(--bg-color);
+  background-color: var(--bg-color, #fff);
   padding: .5rem;
 }
 
