@@ -1,6 +1,6 @@
 # enigmatic
-![version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=js&type=6&v=0.9.20&x2=0)
-![size](http://img.badgesize.io/digplan/enigmatic/master/index.js)
+![npm version](https://badge.fury.io/js/enigmatic.svg)
+![size](http://img.badgesize.io/digplan/enigmatic/master/enigmatic.js)
 
 Enigmatic is a JavaScript micro-library for creating web applications using lightweight web components.
 It aspires to enable faster web app peformance, better reliabilty, and faster development process. 
@@ -13,6 +13,7 @@ Just create an HTML page
 ````
 <script src='//unpkg.com/enigmatic'></script>
 <script src='//unpkg.com/enigmatic/elements/hello-world/hello-world.js'></script>
+<link href='//unpkg.com/enigmatic/themes/light.css' rel='stylesheet'>
 <link href='//unpkg.com/enigmatic.css' rel='stylesheet'>
 ````
 
