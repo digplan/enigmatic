@@ -27,14 +27,3 @@ jobs:
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
-  deploy-google:
-    needs: minify
-    runs-on: ubuntu-latest
-    steps:
-      - uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          USERNAME: ${{ secrets.USERNAME }}
-          PORT: ${{ secrets.PORT }}
-          KEY: ${{ secrets.SSHKEY }}
-          script: 'git clone https://github.com/digplan/enigmatic'
