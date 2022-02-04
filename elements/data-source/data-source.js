@@ -36,6 +36,11 @@ class DataSource extends EnigmaticElement {
     login() {
         let f = await fetch(this.url)
     }
+    
+    logout() {
+        fetch(this.url + '/logout) 
+    }
+    
 }
 
 customElements.define('data-source', DataSource)
