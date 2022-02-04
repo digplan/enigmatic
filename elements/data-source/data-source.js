@@ -26,15 +26,15 @@ class DataSource extends EnigmaticElement {
     async fetch() {
         let f = await fetch(this.url)
         if(this.needsAuthentication && this.failedAuthentication(f)) {
-            return this.showLogin()
+            return this.show()
         }
         const json = await f.json()
         if (target)
             window.data.set(this.target, json)
     }
 
-    showLogin() {
-        this.show()
+    login() {
+        let f = await fetch(this.url)
     }
 }
 
