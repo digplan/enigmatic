@@ -1,35 +1,40 @@
 class DataSource extends EnigmaticElement {
-    constructor() {
-        super()
-    }
+    
+    needsAuthentication = true
+    url = ''
+    target = ''
+
     async connectedCallback() {
+        this.hide()
+        const url = this.getAttribute('href')
+        const target = this.getAttribute('target')
+        this.needsAuthentication = !this.hasAtttribute('noauth')
         const isWait = this.hasAttribute('wait')
         if (!isWait)
             await this.main()
     }
+    
     async main() {
         await window.ready()
         this.fetch()
     }
-    async fetch() {
-        const url = this.getAttribute('href')
-        if(!url) return
-        const target = this.getAttribute('target')
-        let json
-        if (this.hasAttribute('cache'))
-            json = await this.cache(url)
-        else
-            json = await (await fetch(url)).json()
-        if (target)
-            window.data.set(this.getAttribute('target'), json)
+    
+    failedAuthentication(f) {
+        return f.status == '401'
     }
-    async cache(url) {
-        const cached = localStorage.getItem(url)
-        if (cached)
-            return JSON.parse(cached)
-        const json = await (await fetch(url)).json()
-        localStorage.setItem(url, JSON.stringify(json))
-        return json
+    
+    async fetch() {
+        let f = await fetch(this.url)
+        if(this.needsAuthentication && this.failedAuthentication(f)) {
+            return this.showLogin()
+        }
+        const json = await f.json()
+        if (target)
+            window.data.set(this.target, json)
+    }
+
+    showLogin() {
+        this.show()
     }
 }
 
