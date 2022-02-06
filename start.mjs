@@ -1,11 +1,13 @@
+#!/usr/bin/env node
+
 import { readFileSync, readdirSync } from 'node:fs';
 import { Server } from 'node:https';
 
 const dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1),
- folder = '/.server',
- cert = './.server/.secrets/server.crt',
- key = './.server/.secrets/server.key'
- 
+    folder = '/.server',
+    cert = './.server/.secrets/server.crt',
+    key = './.server/.secrets/server.key'
+
 if (process.platform !== 'win32')
     dirname = '/' + dirname
 
@@ -15,12 +17,13 @@ class HTTPSServer extends Server {
     functions = {}
 
     constructor() {
-        this.getMiddleware(dirname)
 
         super({
             key: readFileSync(cert),
             cert: readFileSync(key),
         })
+
+        this.getMiddleware(dirname)
 
         this.on('request', (r, s) => {
             let data = ''
@@ -33,7 +36,7 @@ class HTTPSServer extends Server {
                 this.middleware.some((f) => {
                     return f(r, s, data)
                 })
-                if(this.functions[r.url]) {
+                if (this.functions[r.url]) {
                     this.functions[r.url](r, s, data)
                 }
             })
@@ -47,7 +50,7 @@ class HTTPSServer extends Server {
             let furl = 'file://' + dirname + '/middleware/' + model
             let f = await import(furl);
 
-            if(model.startsWith('_')) { 
+            if (model.startsWith('_')) {
                 this.middleware.unshift(f.default)
             } else {
                 const name = model.split('.')[0]
@@ -56,3 +59,5 @@ class HTTPSServer extends Server {
         }
     }
 }
+
+const server = new HTTPSServer()

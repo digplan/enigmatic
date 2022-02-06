@@ -8,5 +8,8 @@
     "type": "git",
     "url": "git://github.com/digplan/enigmatic.git"
   },
+  "scripts": {
+    "start": "node start.mjs"
+  },
   "version": "0.9.22"
 }
