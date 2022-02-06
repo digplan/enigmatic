@@ -1,8 +1,8 @@
 import { JWT } from 'jwt-tiny'
-const secret = (await import(`./.secrets/jwt`)).default;
+const secret = (await import(`./.secrets/jwt.mjs`)).default;
 const jwt = new JWT(secret);
 
-export default token = (r, s, data) => {
+export default (r, s, data) => {
     if (r.headers.authorization) {
         const [type, userpass] = r.headers.authorization.split(' ')
         const [user, pass] = Buffer.from(userpass, 'base64').toString('ascii').split(':')

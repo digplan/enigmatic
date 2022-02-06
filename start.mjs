@@ -1,31 +1,18 @@
-#!/usr/bin/env node
-
 import { readFileSync, readdirSync } from 'node:fs';
 import { Server } from 'node:https';
-
-const dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1),
-    folder = '/.server',
-    cert = './.server/.secrets/server.crt',
-    key = './.server/.secrets/server.key'
-
-if (process.platform !== 'win32')
-    dirname = '/' + dirname
 
 class HTTPSServer extends Server {
 
     middleware = []
     functions = {}
 
-    constructor() {
-
+    constructor(key, cert) {
         super({
-            key: readFileSync(cert),
-            cert: readFileSync(key),
+            key: readFileSync(key),
+            cert: readFileSync(cert),
         })
-
-        this.getMiddleware(dirname)
-
         this.on('request', (r, s) => {
+            console.log('incoming request')
             let data = ''
             r.on('data', (s) => {
                 data += s.toString()
@@ -37,19 +24,18 @@ class HTTPSServer extends Server {
                     return f(r, s, data)
                 })
                 if (this.functions[r.url]) {
-                    this.functions[r.url](r, s, data)
+                    return this.functions[r.url](r, s, data)
                 }
+                return this.functions('/404')
             })
         })
     }
 
-    async getMiddleware(dirname) {
-        for (const model of readdirSync(dirname + folder)) {
+    async getMiddleware(midfolder) {
+        for (const model of readdirSync(midfolder)) {
             if (!model.endsWith('.mjs')) continue
 
-            let furl = 'file://' + dirname + '/middleware/' + model
-            let f = await import(furl);
-
+            let f = await import('file://' + midfolder + '/' + model)
             if (model.startsWith('_')) {
                 this.middleware.unshift(f.default)
             } else {
@@ -57,7 +43,16 @@ class HTTPSServer extends Server {
                 this.functions[`/${name}`] = f.default
             }
         }
+        console.log(this.middleware)
+        console.log(this.functions)
     }
 }
 
-const server = new HTTPSServer()
+const dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
+if (process.platform !== 'win32')  dirname = '/' + dirname
+const port = 8080
+
+const server = new HTTPSServer('./.server/.secrets/server.key', './.server/.secrets/server.crt')
+await server.getMiddleware(dirname + '/.server')
+server.listen(port)
+console.log(`listening on port ${port}`)
