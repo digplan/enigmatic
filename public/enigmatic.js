@@ -29,16 +29,24 @@ w.data = new Proxy(
   {},
   {
     set: (obj, prop, value) => {
-      for (const e of $$(`[data=${prop}]`)) {
+      const debug = d.body.hasAttribute('debug')
+      if(debug)
+        console.log('Updating app state', "'", prop, "'", value)
+      for (const e of $$(`[data*=${prop}]`)) {
         const arr = e.getAttribute('data').split('.');
         arr.shift();
         for (const p of arr) value = value[p];
         e.set ? e.set(value) : (e.textContent = value);
       }
       obj[prop] = value
+      if(debug) {
+        console.log(window.data)
+        console.log(JSON.stringify(window.data._state, null, 2))
+      }
       return value
     },
     get: (obj, prop, receiver) => {
+      if(prop == '_state') return obj
       return obj[prop]
     }
   }
@@ -58,7 +66,7 @@ class EnigmaticElement extends HTMLElement {
   constructor() {
     super()
   }
-  connectedCallback() {
+  async connectedCallback() {
     const props = {}, attrs = this.attributes;
     [...attrs].forEach((attr) => {
       props[attr.name] = attr.value

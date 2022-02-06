@@ -1,12 +1,10 @@
 class DataSource extends EnigmaticElement {
 
-    async render({href, target, noauth, wait}) {
-        this.hide()
-        this.href = href
+    async render({url, target, wait = false}) {
         this.target = target
+        this.url = url
         if (!wait) {
-          await window.ready()
-          const f = await fetch(href)
+          const f = await fetch(this.url = url)
           let json = await f.json()
           window.data[target] = json
         }
@@ -17,10 +15,9 @@ class DataSource extends EnigmaticElement {
     }
     
     async fetch() {
-        const f = await fetch(this.href)
+        const f = await fetch(this.url)
         let json = await f.json()
         window.data[this.target] = json
-        console.log(this.target, window.data[this.target])
     }
 
     async login() {
