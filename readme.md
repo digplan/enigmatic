@@ -18,7 +18,6 @@ Just create an HTML page
 <link href='//unpkg.com/enigmatic.css' rel='stylesheet'>
 ````
 
-
 ## Enigmatic also includes some helpers
 ````
  window.$ -- $([body]) // Query Selector

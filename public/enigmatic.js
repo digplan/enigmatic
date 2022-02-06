@@ -35,8 +35,12 @@ w.data = new Proxy(
         for (const p of arr) value = value[p];
         e.set ? e.set(value) : (e.textContent = value);
       }
-      return prop;
+      obj[prop] = value
+      return value
     },
+    get: (obj, prop, receiver) => {
+      return obj[prop]
+    }
   }
 );
 
@@ -59,8 +63,7 @@ class EnigmaticElement extends HTMLElement {
     [...attrs].forEach((attr) => {
       props[attr.name] = attr.value
     })
-    console.log('rendering')
-    this.render(props)
+    if(this.render) this.render(props)
   }
   async showHide(s = 1, h = 0) {
     return new Promise(r => {

@@ -1,12 +1,10 @@
 class ForList extends EnigmaticElement {
-    innerTemplate = ''
-    constructor(parent, tag, attrs) {
-        super()
+    render() {
+        this.innerTemplate = this.innerHTML
+        this.innerHTML = ''
+        console.log(1)
     }
     set(array) {
-        if(!this.innerTemplate)
-            this.innerTemplate = this.innerHTML
-        this.innerHTML = ''
         for (const rec of array) {
             let addhtml = this.innerTemplate
             for(const m of addhtml.match(/\{\{(.*?)\}\}/g)) {
