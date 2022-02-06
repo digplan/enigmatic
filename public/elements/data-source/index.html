@@ -1,11 +1,14 @@
 <script src='../../enigmatic.js'></script>
 <script src='data-source.js'></script>
 <script src='../for-list/for-list.js'></script>
+<link rel="stylesheet" href="../../styles.css">
 
-<data-source id='noauth' href='https://randomuser.me/api' target='users' noauth></data-source>
+<body>
+<data-source id='noauth' url='https://randomuser.me/api?results=5' target='users' noauth></data-source>
 
 <for-list data='users.results'>
-    <div>{{name.title}} {{name.first}} {{name.last}} {{email}}</div>
+    <div>${rec.name.first}</div>
+    <img class='round' src="${rec.picture.thumbnail}">
 </for-list>
 
 <!--<data-source id='needsauth' href='https://db.digplan.workers.dev' target='users2'>
@@ -15,3 +18,4 @@
 </data-source>-->
 
 <button onclick='noauth.fetch()'>Fetch</button>
+</body>
