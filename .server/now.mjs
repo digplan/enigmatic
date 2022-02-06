@@ -1,3 +1,3 @@
-export default now = () =>{
+export default () =>{
   return new Date().toISOString()
 }
