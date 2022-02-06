@@ -1,2 +1,3 @@
 CNAME
-.server/.secrets
+.server/.secrets/server.crt
+.server/.secrets/server.key
