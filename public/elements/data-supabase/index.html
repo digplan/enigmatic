@@ -1,0 +1,17 @@
+<script src='../../enigmatic.js'></script>
+<script src='data-supabase.js'></script>
+<script>
+    window.supa_anon = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQyMjIyMjk0LCJleHAiOjE5NTc3OTgyOTR9.4iO4HAtc2ndhOh0fMMehFvKQLS59rbOl9SDSaittEsY'
+</script>
+
+<data-supabase id='d1' db='jswwnihvfhqtgtndoxui' t='test' q='select=*' target='users'></data-supabase>
+<e-e data='users'>page-load</e-e>
+
+<data-supabase id='d2' db='jswwnihvfhqtgtndoxui' t='test' q='select=*' target='users2' wait></data-supabase>
+<e-e data='users2'>on-demand</e-e>
+
+<button onclick='d2.fetch()'>On-demand Fetch</button>
+
+<input name='field1' update='d1'/>
+<input name='field2' update='d1'/>
+<button onclick='d1.insert()'>insert</button>
