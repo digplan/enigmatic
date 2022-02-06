@@ -1,22 +1,15 @@
 class DataSource extends EnigmaticElement {
-    
-    needsAuthentication = true
-    url = ''
-    target = ''
 
-    async connectedCallback() {
+    async render({href, target, noauth, wait}) {
         this.hide()
-        const url = this.getAttribute('href')
-        const target = this.getAttribute('target')
-        this.needsAuthentication = !this.hasAtttribute('noauth')
-        const isWait = this.hasAttribute('wait')
-        if (!isWait)
-            await this.main()
-    }
-    
-    async main() {
-        await window.ready()
-        this.fetch()
+        this.href = href
+        this.target = target
+        if (!wait) {
+          await window.ready()
+          const f = await fetch(href)
+          let json = await f.json()
+          window.data[target] = json
+        }
     }
     
     failedAuthentication(f) {
@@ -24,21 +17,18 @@ class DataSource extends EnigmaticElement {
     }
     
     async fetch() {
-        let f = await fetch(this.url)
-        if(this.needsAuthentication && this.failedAuthentication(f)) {
-            return this.show()
-        }
-        const json = await f.json()
-        if (target)
-            window.data.set(this.target, json)
+        const f = await fetch(this.href)
+        let json = await f.json()
+        window.data[this.target] = json
+        console.log(this.target, window.data[this.target])
     }
 
-    login() {
+    async login() {
         let f = await fetch(this.url)
     }
     
     logout() {
-        fetch(this.url + '/logout) 
+        fetch(this.url + '/logout') 
     }
     
 }

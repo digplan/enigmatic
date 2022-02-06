@@ -12,12 +12,14 @@ class HTTPSServer extends Server {
             cert: readFileSync(cert),
         })
         this.on('request', (r, s) => {
-            console.log('incoming request')
             let data = ''
             r.on('data', (s) => {
                 data += s.toString()
             })
             r.on('end', () => {
+                s.endJSON = (obj) => {
+                    s.end(JSON.stringify(obj))
+                }
                 try { data = JSON.parse(data) } catch (e) { }
                 r.server = this
                 this.middleware.some((f) => {
@@ -26,22 +28,23 @@ class HTTPSServer extends Server {
                 if (this.functions[r.url]) {
                     return this.functions[r.url](r, s, data)
                 }
-                return this.functions('/404')
+                return this.functions['/404'](r, s)
             })
         })
     }
 
-    async getMiddleware(midfolder) {
-        for (const model of readdirSync(midfolder)) {
+    async getMiddleware(func_folder) {
+        const middleware_folder = `${func_folder}/middleware`
+        for (const model of readdirSync(middleware_folder)) {
             if (!model.endsWith('.mjs')) continue
-
-            let f = await import('file://' + midfolder + '/' + model)
-            if (model.startsWith('_')) {
-                this.middleware.unshift(f.default)
-            } else {
-                const name = model.split('.')[0]
-                this.functions[`/${name}`] = f.default
-            }
+            let f = await import('file://' + middleware_folder + '/' + model)
+            this.middleware.unshift(f.default)
+        }
+        for (const model of readdirSync(func_folder)) {
+            if (!model.endsWith('.mjs')) continue
+            const name = model.split('.')[0]
+            let f = await import('file://' + func_folder + '/' + model)
+            this.functions[`/${name}`] = f.default
         }
         console.log(this.middleware)
         console.log(this.functions)
