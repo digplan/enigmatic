@@ -1,3 +1,5 @@
+import { Supramap } from 'supramap'
+
 const hashpass = (pass) => {
     const hash1 = crypto.createHash('sha256').update(pass).digest('hex')
     return crypto.createHash('sha256').update(hash1).digest('hex')
