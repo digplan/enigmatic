@@ -13,6 +13,7 @@
   },
   "version": "0.9.22",
   "dependencies": {
-    "jwt-tiny": "^1.0.3"
+    "jwt-tiny": "^1.0.3",
+    "supramap": "github:digplan/supramap"
   }
 }

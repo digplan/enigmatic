@@ -1,0 +1,18 @@
+{
+  "Person:Chris": {
+    "_id": "Person:Chris",
+    "name": "Chris",
+    "_created": "2022-02-01T05:32:05.515Z",
+    "_updated": "2022-02-01T05:32:05.515Z",
+    "age": 40,
+    "upd": 1
+  },
+  "Person:Brandon": {
+    "_id": "Person:Brandon",
+    "name": "Brandon",
+    "_created": "2022-02-01T05:32:05.515Z",
+    "_updated": "2022-02-01T05:32:05.515Z",
+    "age": 19,
+    "upd": 2
+  }
+}

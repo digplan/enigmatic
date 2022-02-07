@@ -1,0 +1,18 @@
+{
+  "timezone:one": {
+    "id": "timezone:one",
+    "name": "one",
+    "_created": "2022-02-01T21:33:53.783Z",
+    "_updated": "2022-02-01T21:33:53.783Z",
+    "abbr": "descone",
+    "offset": "offsetone"
+  },
+  "timezone:two": {
+    "id": "timezone:two",
+    "name": "two",
+    "_created": "2022-02-01T21:33:53.784Z",
+    "_updated": "2022-02-01T21:33:53.784Z",
+    "abbr": "desctwo",
+    "offset": "offsettwo"
+  }
+}
