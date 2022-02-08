@@ -145,13 +145,38 @@ w.element = (s) => {
   return new cls()
 }
 
+w.css = (s) => {
+  document.write(`<style>${s}</style>`)
+}
+ 
+w.layout = async (s) => {
+  await window.ready()
+  const [rows, ...cols] = s[0].split(', cols: ')
+  d.body.style = `display: grid; grid-template-rows: ${rows.replace('rows: ', '')}; 
+    grid-template-columns: ${cols.join(' ')}`
+  let cellnum = (rows.split(' ').length - 1) + (cols[0].split(' ').length) 
+  const colors = ['AliceBlue', 'Cornsilk', 'Ivory', 'HoneyDew', 'MistyRose', 'Azure', 'LightYellow']
+  while (d.body.children.length < cellnum) {
+    //console.log(cellnum, d.body.children.length)
+    const child = d.createElement('div')
+    child.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
+    d.body.appendChild(child);    
+  }
+}
+
+w.fetchJSON = async (s) => {
+  const [url, key] = s[0].split(', ')
+  const f = await fetch('https://' + url)
+  let json = await f.json()
+  return data[key] = json
+}
+
 const start = async () => {
   await w.ready();
   w.body = d.body;
   body.child = (type = 'div', id = Math.random()) => {
-    const child = d.createElement(type);
-    if (id) child.id = id;
-    body.appendChild(child);
+    const child = d.createElement('div')
+    d.body.appendChild(child);
     return child;
   };
   if (w.main) w.main(d);

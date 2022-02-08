@@ -1,10 +1,13 @@
 <script src='enigmatic.js'></script>
-<link rel='stylesheet' href='styles.css'>
+<link rel='stylesheet' href='enigmatic.css'>
 
 <script>
-    style`div { color:red }`
-    element`my-element, <div>${Hello}</div>`
-    data`users, //randomuser.me/api/`
+    layout`rows: 1fr 1fr, cols: 1fr 1fr`
+    css`div { color: red }`
+    element`my-e, <div></div>`
+    fetchJSON`//randomuser.me/api/?results=2, users`
 </script>
 
-<my-element id='me' data='users' />
+<body debug>
+ <!-- <my-e data='users'></my-e> -->
+</body>
