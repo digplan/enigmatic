@@ -1,24 +1,10 @@
 <script src='enigmatic.js'></script>
 <link rel='stylesheet' href='styles.css'>
-<link rel='stylesheet' href='yt.css'>
 
-<body style="--rows: 1fr 1.1fr 15fr; --cols: 1fr 24fr">
-  <section nav class="bg-red" style="--span-rows: 3;--rows: repeat(24, 1fr);--cols: 1fr">
-      <nav-explore class="bg-blue">one</nav-explore>
-      <nav-subscriptions class="bg-red"></nav-subscriptions>
-      <nav-originals class="bg-green"></nav-originals>
-      <nav-music class="bg-blue"></nav-music>
-      <nav-library class="bg-red"></nav-library>
-      <nav-downloads class="bg-green"></nav-downloads>
-  </section>
-  <section header style="--rows: 1fr; --cols: 3fr 24fr 1fr 1fr 1fr 1fr">
-    <logo></logo>
-    <search-bar class="bg-blue"></search-bar>
-    <go-live-button class="bg-green"></go-live-button>
-    <apps-button class="bg-yellow"></apps-button>
-    <notifications-button class="bg-blue"></notifications-button>
-    <profile-button class="bg-green"></profile-button>
-  </section>
-  <topics class="bg-yellow"></topics>
-  <home class="bg-green"></home>
-</body>
+<script>
+    style`div { color:red }`
+    element`my-element, <div>${Hello}</div>`
+    data`users, //randomuser.me/api/`
+</script>
+
+<my-element id='me' data='users' />
