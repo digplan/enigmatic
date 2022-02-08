@@ -13,18 +13,7 @@ section {
   grid-template-rows: var(--rows, 1fr 9fr 1fr);
 }
 
-<<<<<<< HEAD:public/styles.css
-=======
-body {
-  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, sans-serif);
-  height: 100vh;
-  background-color: var(--bg-color, #fff);
-  padding: .5rem;
-}
-
->>>>>>> f2e9277b6aa70a665afbe405ee4b5f435e1714e9:enigmatic.css
-section,
-div {
+* {
   grid-column: span var(--span, 1);
   grid-row: span var(--span-rows, 1);
 }
@@ -222,12 +211,22 @@ li:hover {
   opacity: 0.75;
 }
 
-<<<<<<< HEAD:public/styles.css
 .opacity4 {
   opacity: 1;
 }
-=======
-.border {
-  border: 1px solid black;
+
+.bg-red {
+  background-color: red;
 }
->>>>>>> f2e9277b6aa70a665afbe405ee4b5f435e1714e9:enigmatic.css
+
+.bg-blue {
+  background-color: blue;
+}
+
+.bg-yellow {
+  background-color: yellow;
+}
+
+.bg-green {
+  background-color: green;
+}
