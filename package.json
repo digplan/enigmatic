@@ -1,0 +1,13 @@
+{
+    "name": "server-utils",
+    "main": "",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/digplan/server-utils.git"
+    },
+    "version": "0.0.1",
+    "dependencies": {
+        "deta": "^1.0.1",
+        "supramap": "github:digplan/supramap"
+    }
+}

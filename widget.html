@@ -1,0 +1,43 @@
+<script>
+document.write("o");
+
+// interfaces?
+
+function Widget(o) {
+  this._e = document.body.appendChild(document.createElement(o.type));
+
+  this.setStyle = function(o) {
+    for(i in o) this._e.style[i] = o[i];
+	return this._e;
+  }
+  
+  this.addElement = function(o) {
+	this._e.appendChild(o._e);
+  }
+  return this;
+}
+
+function makeDesktop(imgsrc, l, t, iw) {
+ var x = new Widget({type: 'DIV'});
+ x.setStyle({position:'absolute', width:400, height:300, left:l, top:t, backgroundColor:'black'});
+
+ var pic = new Widget({type: 'DIV'});
+ pic.setStyle({position:'relative', width:iw, height:100, left:'35%', top:100, backgroundImage: imgsrc, 'background-repeat': 'no-repeat'});
+
+ x.addElement(pic);
+
+ var startbtn = new Widget({type: 'BUTTON'});
+ x.addElement(startbtn);
+ startbtn.setStyle({position:'relative',top:'58%'});
+ startbtn._e.value = "Start";
+
+}
+
+makeDesktop('url(logowin.jpg)',0,0,160);
+makeDesktop('url(logoapple.jpg)',420,0,160);
+makeDesktop('url(logolinux.jpg)',0, 320,110);
+makeDesktop('url(logoatari.jpg)',420, 320,140);
+
+//document.write("<img src='logowin.jpg'/>");
+
+</script>
