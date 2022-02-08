@@ -12,8 +12,8 @@
   // fetches immediately
   data`//randomuser.me/api/?results=3, users, :immediate:`;
 
-  // fetches on demand ... await fetchJSON('user')
-  data`//randomuser.me/api, user`;
+  // fetches on demand ... await fetchJSON('user', {n: 3})
+  data`//randomuser.me/api/?results={n}, user`;
 
   console.log(state);
 </script>
