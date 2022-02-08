@@ -1,13 +1,22 @@
-<script src='enigmatic.js'></script>
-<link rel='stylesheet' href='enigmatic.css'>
+<!DOCTYPE html>
 
-<script>
-    layout`rows: 1fr 1fr, cols: 1fr 1fr`
-    css`div { color: red }`
-    element`my-e, <div></div>`
-    fetchJSON`//randomuser.me/api/?results=2, users`
+<script src="//cdn.jsdelivr.net/gh/digplan/enigmatic@element/element.js"></script>
+
+<script type="text/javascript" type="module">
+  // layout the page grid
+  layout`rows: 1fr 1fr, cols: 1fr 1fr`;
+
+  // define elements
+  element`hello-world, <div>Hello {user.name.first} {user.name.last} !</div>`;
+
+  // fetches immediately
+  data`//randomuser.me/api/?results=3, users, :immediate:`;
+
+  // fetches on demand ... await fetchJSON('user')
+  data`//randomuser.me/api, user`;
+
+  console.log(state);
 </script>
 
-<body debug>
- <!-- <my-e data='users'></my-e> -->
-</body>
+<hello-world target="user"></hello-world>
+<button onclick='fetchJSON("user")'>Fetch a user</button>
