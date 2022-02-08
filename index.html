@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
-<script src="//cdn.jsdelivr.net/gh/digplan/enigmatic@element/element.js"></script>
+<script src="element.js"></script>
+<link rel="stylesheet" href="element.css">
 
 <script type="text/javascript" type="module">
   // layout the page grid
@@ -15,8 +16,8 @@
   // fetches on demand ... await fetchJSON('user', {n: 3})
   data`//randomuser.me/api/?results={n}, user`;
 
-  console.log(state);
 </script>
 
-<hello-world target="user"></hello-world>
-<button onclick='fetchJSON("user")'>Fetch a user</button>
+<body>
+
+</body>

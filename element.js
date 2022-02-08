@@ -26,7 +26,7 @@ w.loadCSS = (src) => {
 w.get = async (url, datakey, process) => {
   const f = await fetch(url)
   let json = await f.json()
-  if(process) {
+  if (process) {
     const func = new Function('obj', `return ${process}`)
     json = func(json)
   }
@@ -35,12 +35,12 @@ w.get = async (url, datakey, process) => {
 
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-w.data = new Proxy(
+w.state = new Proxy(
   {},
   {
     set: (obj, prop, value) => {
       const debug = d.body.hasAttribute('debug')
-      if(debug)
+      if (debug)
         console.log('Updating app state', "'", prop, "'", value)
       for (const e of $$(`[data*=${prop}]`)) {
         const arr = e.getAttribute('data').split('.');
@@ -49,14 +49,14 @@ w.data = new Proxy(
         e.set ? e.set(value) : (e.textContent = value);
       }
       obj[prop] = value
-      if(debug) {
+      if (debug) {
         console.log(window.data)
         console.log(JSON.stringify(window.data._state, null, 2))
       }
       return value
     },
     get: (obj, prop, receiver) => {
-      if(prop == '_state') return obj
+      if (prop == '_state') return obj
       return obj[prop]
     }
   }
@@ -81,7 +81,7 @@ class EnigmaticElement extends HTMLElement {
     [...attrs].forEach((attr) => {
       props[attr.name] = attr.value
     })
-    if(this.render) this.render(props)
+    if (this.render) this.render(props)
   }
   async showHide(s = 1, h = 0) {
     return new Promise(r => {
@@ -110,17 +110,6 @@ class EnigmaticElement extends HTMLElement {
     }
     this.innerHTML = s
   }
-  child(type = 'e-e', id = Math.random()) {
-    const child = document.createElement(type)
-    child.id = id
-    this.appendChild(child)
-    return child
-  }
-  childHTML(html, type = 'e-e', id = Math.random()) {
-    const e = this.child(type, id)
-    e.innerHTML = html
-    return e
-  }
 }
 customElements.define('e-e', EnigmaticElement);
 
@@ -133,7 +122,7 @@ w.element = (s) => {
         propx[attr.name] = attr.value
       })
       html = html.replaceAll('{', '${')
-      if(html.match('${'))
+      if (html.match('${'))
         this.hidden = true
       this.innerHTML = html
     }
@@ -148,19 +137,21 @@ w.element = (s) => {
 w.css = (s) => {
   document.write(`<style>${s}</style>`)
 }
- 
+
 w.layout = async (s) => {
   await window.ready()
   const [rows, ...cols] = s[0].split(', cols: ')
   d.body.style = `display: grid; grid-template-rows: ${rows.replace('rows: ', '')}; 
     grid-template-columns: ${cols.join(' ')}`
-  let cellnum = (rows.split(' ').length - 1) + (cols[0].split(' ').length) 
+  console.log(d.body.style)
+  
+  let cellnum = (rows.split(' ').length - 1) + (cols[0].split(' ').length)
   const colors = ['AliceBlue', 'Cornsilk', 'Ivory', 'HoneyDew', 'MistyRose', 'Azure', 'LightYellow']
   while (d.body.children.length < cellnum) {
-    //console.log(cellnum, d.body.children.length)
+    console.log(cellnum, d.body.children.length)
     const child = d.createElement('div')
     child.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
-    d.body.appendChild(child);    
+    d.body.appendChild(child);
   }
 }
 
@@ -173,12 +164,6 @@ w.fetchJSON = async (s) => {
 
 const start = async () => {
   await w.ready();
-  w.body = d.body;
-  body.child = (type = 'div', id = Math.random()) => {
-    const child = d.createElement('div')
-    d.body.appendChild(child);
-    return child;
-  };
   if (w.main) w.main(d);
 }
 
