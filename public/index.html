@@ -1,7 +1,34 @@
 <script src='enigmatic.js'></script>
-<script src='./elements/hello-world/hello-world.js'></script>
 <link rel='stylesheet' href='styles.css'>
 
-<body style="--rows: 1fr 1fr; --cols: 1fr 1fr;">
-  <hello-world name="World"></hello-world>
+<body style="--rows: 1fr 1.1fr 15fr; --cols: 1fr 24fr">
+
+  <section side-nav class='bg-red' style="--span-rows: 3">
+    <section items style="--rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr; --cols: 1fr">
+      <section nav-home class="bg-blue"></section>
+      <section class="bg-green"></section>
+      <nav-subscriptions class="bg-red"></nav-subscriptions>
+      <nav-originals class="bg-green"></nav-originals>
+      <nav-music class="bg-blue"></nav-music>
+      <nav-library class="bg-red"></nav-library>
+      <nav-downloads class="bg-green"></nav-downloads>
+    </section>
+  </section>
+
+  <section header style="--rows: 1fr; --cols: 1.5fr 2.5fr 10fr 4fr">
+    <nav-button class="bg-yellow"></nav-button>
+    <logo class="bg-red"></logo>
+    <search-bar class="bg-blue"></search-bar>
+    <go-live-button class="bg-green"></go-live-button>
+    <apps-button class="bg-yellow"></apps-button>
+    <notifications-button class="bg-blue"></notifications-button>
+    <profile-button class="bg-green"></profile-button>
+  </section>
+
+  <topics class="bg-yellow"></topics>
+
+  <home class="bg-green">
+
+  </home>
+
 </body>

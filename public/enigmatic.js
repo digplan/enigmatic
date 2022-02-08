@@ -23,6 +23,16 @@ w.loadCSS = (src) => {
   });
 };
 
+w.get = async (url, datakey, process) => {
+  const f = await fetch(url)
+  let json = await f.json()
+  if(process) {
+    const func = new Function('obj', `return ${process}`)
+    json = func(json)
+  }
+  return data[datakey] = json
+}
+
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 w.data = new Proxy(
