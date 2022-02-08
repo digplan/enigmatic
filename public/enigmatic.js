@@ -122,8 +122,28 @@ class EnigmaticElement extends HTMLElement {
     return e
   }
 }
-
 customElements.define('e-e', EnigmaticElement);
+
+w.element = (s) => {
+  let [name, html] = s[0].split(', ')
+  const cls = class extends EnigmaticElement {
+    connectedCallback(props) {
+      const propx = {}, attrs = this.attributes;
+      [...attrs].forEach((attr) => {
+        propx[attr.name] = attr.value
+      })
+      html = html.replaceAll('{', '${')
+      if(html.match('${'))
+        this.hidden = true
+      this.innerHTML = html
+    }
+    show(b = true) {
+      this.hidden = !b
+    }
+  }
+  customElements.define(name, cls)
+  return new cls()
+}
 
 const start = async () => {
   await w.ready();
