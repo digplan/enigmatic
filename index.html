@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<style>
+    body {
+        font-family: Inter, OpenSans, Helvetica, Arial, sans-serif;
+    }
+</style>
+
+<script src='index.js'></script>
+<script src='DateTime.js'></script>
+<link href='index.css' rel='stylesheet' />
+
+<h1>date-time</h1>
+<date-time format='toLocaleString' at='now'>datetime</date-time>
+
+<h3>font-awesome</h2>
+<pre>
+    <i is='font-awesome' class="fas fa-camera" style="font-size: 3em; color: Tomato" title='my title'></i>
+    &lt;i is='font-awesome' class="fas fa-camera" style="font-size: 3em; color: Tomato" title='my title'></i>
+</pre>
+
+<h3>map-embed</h2>
+<pre>
+    <map-embed where='lake forest' />
+    &lt;map-embed where='lake forest' />
+</pre>
+
+<h3>you-tube</h3>
+<pre>
+    <you-tube where='lake forest' />
+    &lt;map-embed where='lake forest' />
+</pre>
+
+<h3>view-panel</h3>
+<view-panel id='view1' some='element' class='show'>
+    <div class='bg-red' data='time'>I AM VIEW 1</div>
+</view-panel>
+
+<view-panel id='view2' class='hide'>
+    <div class='bg-blue' data='_version'>I AM VIEW 2</div>
+</view-panel>
+
+<view-panel id='view3' class='hide'>
+    <div class='bg-blue'>I AM VIEW 3</div>
+    <a class='.w3-display-topleft' onclick='view3.removeModal()'>Close modal</a>
+</view-panel>
+
+<button onclick='view1.showOnly()'>show view 1</button>
+
+<h3>simple-menu</h3>
+<ul is='simple-menu' id='mymenu'>
+    <li><a onclick='view1.toggle()'>Toggle view 1</a></li>
+    <li><a onclick='view2.toggle()'>Toggle view 2</a></li>
+    <li><a onclick='view3.toggle()'>Toggle view 3</a></li>
+    <li><a onclick='view1.showOnly()'>Show view 1 only</a></li>
+    <li><a onclick='view2.showOnly()'>Show view 2 only</a></li>
+    <li><a onclick='view3.showOnly()'>Show view 3 only</a></li>
+    <li><a onclick='view3.showModal()'>Show view 3 modal</a></li>
+    <li><a onclick='view3.removeModal()'>Remove view 3 modal</a></li>
+    <li><a onclick='view3.animateTop()'>Animate view 3 modal</a></li>
+</ul>

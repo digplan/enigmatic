@@ -1,0 +1,306 @@
+.bg-navy {
+	background-color: #001f3f
+}
+
+.bg-blue {
+	background-color: #0074d9
+}
+
+.bg-green {
+	background-color: #2ecc40
+}
+
+.bg-yellow {
+	background-color: #ffdc00
+}
+
+.bg-orange {
+	background-color: #ff851b
+}
+
+.bg-red {
+	background-color: #ff4136
+}
+
+.bg-purple {
+	background-color: #b10dc9
+}
+
+.bg-white {
+	background-color: #fff
+}
+
+.bg-gray {
+	background-color: #aaa
+}
+
+.bg-silver {
+	background-color: #ddd
+}
+
+.bg-black {
+	background-color: #111
+}
+
+.bg-ltgray {
+	background-color: #fcfcfc
+}
+
+.navy {
+	color: #001f3f
+}
+
+.blue {
+	color: #0074d9
+}
+
+.green {
+	color: #2ecc40
+}
+
+.yellow {
+	color: #ffdc00
+}
+
+.orange {
+	color: #ff851b
+}
+
+.red {
+	color: #ff4136
+}
+
+.purple {
+	color: #b10dc9
+}
+
+.white {
+	color: #fff
+}
+
+.gray {
+	color: #aaa
+}
+
+.silver {
+	color: #ddd
+}
+
+.black {
+	color: #111
+}
+
+.ltgray {
+	color: #fcfcfc
+}
+
+.center {
+	margin: 0 auto;
+	text-align: center
+}
+
+.left {
+	text-align: left
+}
+
+.right {
+	text-align: right
+}
+
+.twelve {
+	font-size: 12px
+}
+
+.fixed {
+	position: fixed
+}
+
+.center-screen {
+	position: fixed;
+	top: 30%;
+	left: 40%
+}
+
+.faded {
+	opacity: 0.5
+}
+
+.hide {
+	overflow: hidden;
+	opacity: 0;
+	transition: opacity .25s ease-in-out;
+	-moz-transition: opacity .25s ease-in-out;
+	-webkit-transition: opacity .25s ease-in-out
+}
+
+.show {
+	opacity: 1;
+	transition: opacity .25s ease-in-out;
+	-moz-transition: opacity .25s ease-in-out;
+	-webkit-transition: opacity .25s ease-in-out
+}
+
+.hidden {
+	display: none
+}
+
+.block {
+	display: block
+}
+
+.blur {
+	filter: blur(5px);
+	-webkit-filter: blur(5px);
+	transition: 0.2s
+}
+
+.unblur {
+	filter: blur(0px);
+	-webkit-filter: blur(0px);
+	transition: 0.2s
+}
+
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: #fcfcfc;
+	opacity: 0.8;
+	filter: alpha(opacity=80);
+	z-index: 1000;
+}
+
+button {
+	box-shadow: inset 0px 1px 0px 0px #ffffff;
+	background: linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+	background-color: #ffffff;
+	border-radius: 6px;
+	border: 1px solid #dcdcdc;
+	display: inline-block;
+	cursor: pointer;
+	color: #666666;
+	font-size: 15px;
+	padding: 11px 37px;
+	text-decoration: none;
+	text-shadow: 0px 1px 0px #ffffff;
+}
+
+ul {
+	list-style: none;
+}
+
+li {
+	color: black;
+	display: block;
+	padding: 10px;
+	text-decoration: none;
+}
+
+li:hover {
+	box-shadow: inset 0 0 0 1px rgb(229, 231, 231);
+}
+
+li button {
+	width: 100%
+}
+
+.fixed {
+	position: fixed;
+	top: 30px;
+	left: 30px;
+	z-index: 100;
+}
+
+a {
+	cursor: default
+}
+
+a.onmouseover {
+	color: white
+}
+
+.noevents {
+	pointer-events: none;
+}
+
+.w3-display-topleft {
+	position: absolute;
+	left: 0;
+	top: 0
+}
+
+.w3-display-topright {
+	position: absolute;
+	right: 0;
+	top: 0
+}
+
+.w3-display-bottomleft {
+	position: absolute;
+	left: 0;
+	bottom: 0
+}
+
+.w3-display-bottomright {
+	position: absolute;
+	right: 0;
+	bottom: 0
+}
+
+.w3-display-middle {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	-ms-transform: translate(-50%, -50%)
+}
+
+.w3-display-left {
+	position: absolute;
+	top: 50%;
+	left: 0%;
+	transform: translate(0%, -50%);
+	-ms-transform: translate(-0%, -50%)
+}
+
+.w3-display-right {
+	position: absolute;
+	top: 50%;
+	right: 0%;
+	transform: translate(0%, -50%);
+	-ms-transform: translate(0%, -50%)
+}
+
+.w3-display-topmiddle {
+	position: absolute;
+	left: 50%;
+	top: 0;
+	transform: translate(-50%, 0%);
+	-ms-transform: translate(-50%, 0%)
+}
+
+.w3-display-bottommiddle {
+	position: absolute;
+	left: 50%;
+	bottom: 0;
+	transform: translate(-50%, 0%);
+	-ms-transform: translate(-50%, 0%)
+}
+
+.animate-top {
+	position: relative;
+	animation: animatetop 0.3s
+}
+
+@keyframes animatetop {
+	from {
+		top: -300px;
+		opacity: 0
+	}
+	to {
+		top: 0;
+		opacity: 1
+	}
+}

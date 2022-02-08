@@ -1,0 +1,28 @@
+<script src='index.js'></script>
+
+<h1>GET</h1><button onclick='get(this)'>GET</button>
+<br>
+<h1>POST</h1> <input id='postobj' value='{"_kind":"user", "name":"juju"}'><button onclick='post(this)'>POST</button>
+<br>
+<h1>PUT</h1> <input id='putobj' value='{"_id":"xxxxxx", "_kind":"user", "name":"juju2"}'><button onclick='put(this)'>PUT</button>
+<br>
+<h1>DELETE</h1> <input id='deleteobj' value='{"_id":"xxxxxx", "_kind":"user", "name":"juju2"}'><button onclick='del(this)'>DELETE</button>
+
+<br><br>
+<div id='result'></div>
+
+<script>
+    async function get(e){
+        const f = await fetch('/api')
+        result.innerHTML = await f.json()
+    }
+    async function post(e){
+        alert(e)
+    }
+    async function put(e){
+        alert(e)
+    }
+    async function del(e){
+        alert(e)
+    }
+</script>

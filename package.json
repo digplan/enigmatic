@@ -1,13 +1,12 @@
 {
-    "name": "server-utils",
-    "main": "",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/digplan/server-utils.git"
-    },
-    "version": "0.0.1",
-    "dependencies": {
-        "deta": "^1.0.1",
-        "supramap": "github:digplan/supramap"
-    }
+  "name": "enigmatic",
+  "description": "Simple web controls",
+  "url": "http://github.com/digplan/enigmatic",
+  "author": "",
+  "main": "enigmatic.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/digplan/enigmatic.git"
+  },
+  "version": "0.9.20"
 }
