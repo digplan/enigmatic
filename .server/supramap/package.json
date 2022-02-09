@@ -1,0 +1,12 @@
+{
+  "name": "supramap",
+  "description": "Lightweight data store with functions",
+  "url": "http://github.com/digplan/supramap",
+  "main": "supramap.mjs",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/digplan/supramap.git"
+  },
+  "bin": "./test.mjs",
+  "version": "0.1.1"
+}
