@@ -34,7 +34,7 @@ w.state = new Proxy(
         const arr = e.getAttribute('data').split('.');
         arr.shift();
         for (const p of arr) value = value[p];
-        e.set ? e.set(value) : (e.textContent = value);
+        e.set ? e.set(value) : (e.textContent = JSON.stringify(value));
       }
       obj[prop] = value
       return value

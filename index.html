@@ -8,18 +8,17 @@
   layout`rows: 1fr 1fr, cols: 1fr 1fr`;
  
   // define elements
-  element`h-w, {results[0].name.first} {results[0].name.last}`;
-
+  element`hello-world, {results[0].name.first} {results[0].name.last}`;
+ 
   // fetches immediately
   //data`//randomuser.me/api/?results=3, users, :immediate:`
 
-  // saves query to fetch later
-  data`//randomuser.me/api/?results=3, user`
+  // saves query to fetch on command
+  //data`//randomuser.me/api/?results=3, users`
 
   // fetch saved query
   //data`user, {n: 3}`
   ;
 </script>
 
-<h-w data='users'></h-w>
-<button onclick="data`user, {n: 3}`">Click me</button>
+<hello-world data="users"></hello-world>
