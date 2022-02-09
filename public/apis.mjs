@@ -1,10 +1,4 @@
-const api = {
-    "randomusers": {"url": "https://randomuser.me/api/?results=${n}"}
-}
-const html = (s) => {
+const apis = {}
+apis['randomuser.me'] = { "service": "randomuser", "params": [{"n": "3"}], "url": "https://randomuser.me/api/?results=${n}", "options": {}, "directives": {} }
 
-}
-
-html`https://randomuser.me/api/?results=3, {n:3}, <div>${first_name}</div>`
-
-element`my-element, <div>${first_name}</div>`
+export { apis: apis }
