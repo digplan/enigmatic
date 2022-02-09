@@ -9,7 +9,7 @@
     "url": "git://github.com/digplan/enigmatic.git"
   },
   "scripts": {
-    "start": "node start-server.mjs"
+    "start": "node ./.server/start.mjs"
   },
   "version": "0.9.22",
   "dependencies": {
