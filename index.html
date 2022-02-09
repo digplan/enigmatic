@@ -8,16 +8,19 @@
   layout`rows: 1fr 1fr, cols: 1fr 1fr`;
 
   // define elements
-  element`hello-world, <div>Hello {user.name.first} {user.name.last} !</div>`;
+  element`h-w, <div>{results[0].name.first}</div>`;
 
   // fetches immediately
-  data`//randomuser.me/api/?results=3, users, :immediate:`;
+  data`//randomuser.me/api/?results=3, users, :immediate:`
 
-  // fetches on demand ... await fetchJSON('user', {n: 3})
-  data`//randomuser.me/api/?results={n}, user`;
+  // saves query to fetch later
+  //data`//randomuser.me/api/?results={n}, user`
 
+  // fetch saved query
+  //data`user, {n: 3}`
+  ;
 </script>
 
-<body>
-
+<body debug>
+<h-w data='users'></h-w>
 </body>

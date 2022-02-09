@@ -23,25 +23,13 @@ w.loadCSS = (src) => {
   });
 };
 
-w.get = async (url, datakey, process) => {
-  const f = await fetch(url)
-  let json = await f.json()
-  if (process) {
-    const func = new Function('obj', `return ${process}`)
-    json = func(json)
-  }
-  return data[datakey] = json
-}
-
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 w.state = new Proxy(
   {},
   {
     set: (obj, prop, value) => {
-      const debug = d.body.hasAttribute('debug')
-      if (debug)
-        console.log('Updating app state', "'", prop, "'", value)
+      console.log('Updating state', "'", prop, "'", value)
       for (const e of $$(`[data*=${prop}]`)) {
         const arr = e.getAttribute('data').split('.');
         arr.shift();
@@ -49,14 +37,10 @@ w.state = new Proxy(
         e.set ? e.set(value) : (e.textContent = value);
       }
       obj[prop] = value
-      if (debug) {
-        console.log(window.data)
-        console.log(JSON.stringify(window.data._state, null, 2))
-      }
       return value
     },
     get: (obj, prop, receiver) => {
-      if (prop == '_state') return obj
+      if (prop == '_json') return obj
       return obj[prop]
     }
   }
@@ -121,13 +105,15 @@ w.element = (s) => {
       [...attrs].forEach((attr) => {
         propx[attr.name] = attr.value
       })
-      html = html.replaceAll('{', '${')
-      if (html.match('${'))
+      html = html.replaceAll('{', '${o.')
+      if (html.match('${o.'))
         this.hidden = true
       this.innerHTML = html
     }
-    show(b = true) {
-      this.hidden = !b
+    set(o) {
+      console.log(o, this.innerHTML)
+      const m = new Function('o', 'return `' + this.innerHTML + '`')
+      this.innerHTML = m(o)
     }
   }
   customElements.define(name, cls)
@@ -143,23 +129,33 @@ w.layout = async (s) => {
   const [rows, ...cols] = s[0].split(', cols: ')
   d.body.style = `display: grid; grid-template-rows: ${rows.replace('rows: ', '')}; 
     grid-template-columns: ${cols.join(' ')}`
-  console.log(d.body.style)
-  
+  //console.log(d.body.style)
+
   let cellnum = (rows.split(' ').length - 1) + (cols[0].split(' ').length)
   const colors = ['AliceBlue', 'Cornsilk', 'Ivory', 'HoneyDew', 'MistyRose', 'Azure', 'LightYellow']
   while (d.body.children.length < cellnum) {
-    console.log(cellnum, d.body.children.length)
+    //console.log(cellnum, d.body.children.length)
     const child = d.createElement('div')
     child.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
     d.body.appendChild(child);
   }
 }
 
-w.fetchJSON = async (s) => {
-  const [url, key] = s[0].split(', ')
-  const f = await fetch('https://' + url)
-  let json = await f.json()
-  return data[key] = json
+w.queries = {}
+
+w.data = async (s) => {
+  let [url, key, immed] = s[0].split(', ')
+  if (immed) {
+    console.log(`getting ${url} for ${key}`)
+    const f = await fetch('https://' + url)
+    let json = await f.json()
+    return state[key] = json
+  }
+  if(w.queries[url]) {
+    return w.data(`${w.queries[url]}, ${url}, :immediate:`)
+  }
+  w.queries[key] = url
+  console.log(`saved ${key} => ${url}`)
 }
 
 const start = async () => {
