@@ -6,21 +6,20 @@
 <script type="text/javascript" type="module">
   // layout the page grid
   layout`rows: 1fr 1fr, cols: 1fr 1fr`;
-
+ 
   // define elements
-  element`h-w, <div>{results[0].name.first}</div>`;
+  element`h-w, {results[0].name.first} {results[0].name.last}`;
 
   // fetches immediately
   //data`//randomuser.me/api/?results=3, users, :immediate:`
 
   // saves query to fetch later
-  //data`//randomuser.me/api/?results={n}, user`
+  data`//randomuser.me/api/?results=3, user`
 
   // fetch saved query
   //data`user, {n: 3}`
   ;
 </script>
 
-<body debug>
 <h-w data='users'></h-w>
-</body>
+<button onclick="data`user, {n: 3}`">Click me</button>

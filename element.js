@@ -129,12 +129,12 @@ w.layout = async (s) => {
   const [rows, ...cols] = s[0].split(', cols: ')
   d.body.style = `display: grid; grid-template-rows: ${rows.replace('rows: ', '')}; 
     grid-template-columns: ${cols.join(' ')}`
-  //console.log(d.body.style)
 
-  let cellnum = (rows.split(' ').length - 1) + (cols[0].split(' ').length)
+  let cellnum = (rows.split(' ').length - 1) * (cols[0].split(' ').length)
   const colors = ['AliceBlue', 'Cornsilk', 'Ivory', 'HoneyDew', 'MistyRose', 'Azure', 'LightYellow']
+  colors.concat = ['Lavender', 'LavenderBlush', 'MistyRose', 'PapayaWhip', 'BlanchedAlmond', 'Bisque', 'Moccasin']
   while (d.body.children.length < cellnum) {
-    //console.log(cellnum, d.body.children.length)
+    console.log('auto-create div', cellnum, d.body.children.length+1)
     const child = d.createElement('div')
     child.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)]
     d.body.appendChild(child);

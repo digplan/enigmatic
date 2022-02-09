@@ -1,8 +1,14 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, sans-serif);
   height: 100vh;
   background-color: var(--bg-color, #fff);
-  padding: .5rem;
+  justify-content: center;
+  align-content: center;
 }
 
 body,
@@ -25,11 +31,11 @@ section {
 /** positioning ***/
 
 .center {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  margin-top: -50px;
-  margin-left: -100px;
+    margin: 50%;
+}
+
+.center-text {
+    text-align: center;
 }
 
 .right {
