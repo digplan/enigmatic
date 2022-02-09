@@ -5,12 +5,10 @@
     "author": "",
     "main": "https-microservice.js",
     "bin": "./test.mjs",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "dependencies": {
-        "jwt-tiny": "github:digplan/jwt-tiny",
-        "supramap": "github:digplan/supramap"
     },
-    "scripts": {
-        "test": "node test.mjs"
+    "scripts" : {
+        "start": "node start.mjs"
     }
 }

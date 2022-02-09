@@ -1,1 +1,0 @@
-export default 'replace this with your secret key for jwt'
