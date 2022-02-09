@@ -1,11 +1,11 @@
-import { HTTPSRoute } from 'https-microservice'
+import { Route } from 'https-microservice'
 import { Supramap } from 'supramap'
 
 if (!r.server.db)
     r.server.db = new Supramap('./db/db.json')
 const db = r.server.db
 
-export default class extends HTTPSRoute {
+export default class extends Route {
 
     get(r, s) {
         return db[funcname] ? db[funcname](r, s, data) : s.end(db.get[key])
