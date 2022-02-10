@@ -1,24 +1,20 @@
 <!DOCTYPE html>
-
 <script src="element.js"></script>
 <link rel="stylesheet" href="element.css">
 
-<script type="text/javascript" type="module">
-  // layout the page grid
-  layout`rows: 1fr 1fr, cols: 1fr 1fr`;
- 
-  // define elements
-  element`hello-world, {results[0].name.first} {results[0].name.last}`;
- 
-  // fetches immediately
-  //data`//randomuser.me/api/?results=3, users, :immediate:`
-
-  // saves query to fetch on command
-  //data`//randomuser.me/api/?results=3, users`
-
-  // fetch saved query
-  //data`user, {n: 3}`
-  ;
+<script>
+  mockapi`{"city": "San Francisco", "state": "CA"}, locations`
+  layout`rows: 1fr 1fr, cols: 1fr 1fr`
+  css``
+  element`hello-world, {results[0].name.first} {results[0].name.last}`
+  element`mock-e, {city} {state}`
+  data`//randomuser.me/api/?results=3, users, :immediate:`
+  data`//randomuser.me/api/?results=3, users`
 </script>
 
 <hello-world data="users"></hello-world>
+<button onclick='data`users`'>fetch data</button>
+
+<mock-e data='locations'></mock-e>
+<button onclick='data`locations`'>fetch data</button>
+

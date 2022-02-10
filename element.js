@@ -1,8 +1,12 @@
-const w = window, d = document
+window.onerror = function(msg, url, line) {
+  const s = "Error: " + msg + "\nURL: " + url + "\nLine: " + line
+  document.write(`<div style='color:red; display:fixed'>${s}</div>`)
+}
 
+try {
+  const w = window, d = document
 w.$ = d.querySelector.bind(d)
 w.$$ = d.querySelectorAll.bind(d)
-
 w.loadJS = (src) => {
   return new Promise((r, j) => {
     if ($(`script[src="${src}"]`)) return r(true);
@@ -29,12 +33,13 @@ w.state = new Proxy(
   {},
   {
     set: (obj, prop, value) => {
-      console.log('Updating state', "'", prop, "'", value)
+      console.log('Updating state:', prop, value)
       for (const e of $$(`[data*=${prop}]`)) {
         const arr = e.getAttribute('data').split('.');
         arr.shift();
         for (const p of arr) value = value[p];
         e.set ? e.set(value) : (e.textContent = JSON.stringify(value));
+        e.style.opacity = 1
       }
       obj[prop] = value
       return value
@@ -67,32 +72,21 @@ class EnigmaticElement extends HTMLElement {
     })
     if (this.render) this.render(props)
   }
-  async showHide(s = 1, h = 0) {
-    return new Promise(r => {
-      if (s === 1) this.hidden = false
-      this.classList.remove(this.showHideClasses[h])
-      this.classList.add(this.showHideClasses[s])
-      for (const child of this.children) {
-        child.classList.remove(this.showHideClasses[s])
-        child.classList.add(this.showHideClasses[h])
-      }
-      r(true)
-    })
-  }
   async show() {
-    return this.showHide()
+    this.style.opacity = 1
   }
   async hide() {
-    return this.showHide(0, 1)
-  }
-  async toggle() {
-    this.classList.contains(this.showHideClasses[0]) ? await this.hide() : await this.show()
+    this.style.opacity = 0
   }
   set(s) {
     if (typeof s === 'object') {
       s = JSON.stringify(s)
     }
     this.innerHTML = s
+  }
+  css(s) {
+    console.log(s)
+    this.style.cssText = s
   }
 }
 customElements.define('e-e', EnigmaticElement);
@@ -105,19 +99,19 @@ w.element = (s) => {
       [...attrs].forEach((attr) => {
         propx[attr.name] = attr.value
       })
-      html = html.replaceAll('{', '${o.')
-      if (html.match('${o.'))
-        this.hidden = true
+      if (html.match('{')) {
+        this.style.opacity = 0
+        this.template = html.replaceAll('{', '${o.')
+      }
       this.innerHTML = html
     }
     set(o) {
-      console.log(o, this.innerHTML)
-      const m = new Function('o', 'return `' + this.innerHTML + '`')
+      const m = new Function('o', 'return `' + this.template + '`')
       this.innerHTML = m(o)
     }
   }
   customElements.define(name, cls)
-  return new cls()
+  return window
 }
 
 w.css = (s) => {
@@ -152,15 +146,27 @@ w.data = async (s) => {
     return state[key] = json
   }
   if(w.queries[url]) {
-    return w.data(`${w.queries[url]}, ${url}, :immediate:`)
+    console.log(`getting saved ${url}`)
+    if (w.queries[url].startsWith('{'))
+      return state[key] = JSON.parse(w.queries[url])
+    const f = await fetch('https:' + w.queries[url])
+    let json = await f.json()
+    return state[url] = json
   }
   w.queries[key] = url
-  console.log(`saved ${key} => ${url}`)
 }
-
+w.mockapi = async (s) => {
+  const p = s[0].split(', ')
+  const key = p.pop()
+  const obj = p
+  console.log(obj.join(''))
+  w.queries[key] = obj.join('').replace(/\r|\n/g, '')
+}
 const start = async () => {
   await w.ready();
   if (w.main) w.main(d);
 }
-
 start()
+} catch(e) {
+  document.write(`<div style='color:red; display:fixed'>${e.stack}</div>`)
+}
