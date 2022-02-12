@@ -1,6 +1,6 @@
-import { JWT } from 'jwt-tiny'
-const secret = (await import(`../../../.server/.secrets/jwt.mjs`)).default;
-const jwt = new JWT(secret);
+//import { JWT } from 'jwt-tiny'
+//const secret = (await import(`../../../.server/.secrets/jwt.mjs`)).default;
+//const jwt = new JWT(secret);
 
 export default (r, s, data) => {
     if (r.headers.authorization) {
