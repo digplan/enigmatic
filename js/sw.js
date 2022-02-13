@@ -1,3 +1,11 @@
+window.addEventListener('load', function () {
+    const scope = '/'
+    navigator.serviceWorker.register(`.${scope}sw.js`)
+        .then(function (registration) {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+        })
+})
+
 self.addEventListener('install', async (event)=> {
    const inst = async() => {
        const c = await caches.open('app-cache')
