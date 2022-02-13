@@ -11,10 +11,5 @@
   "scripts": {
     "start": "node ./node_modules/https_microservice/start.mjs"
   },
-  "version": "0.9.22",
-  "dependencies": {
-    "https-microservice": "^1.2.0",
-    "jwt-tiny": "^1.0.3",
-    "supramap": "github:digplan/supramap"
-  }
+  "version": "0.9.22"
 }
