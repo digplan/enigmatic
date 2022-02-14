@@ -1,3 +1,8 @@
+window.onerror = function (msg, url, line) {
+  const s = "Error: " + msg + "\nURL: " + url + "\nLine: " + line
+  document.write(`<div style='color:red; display:fixed'>${s}</div>`)
+}
+
 const w = window, d = document
 
 w.$ = d.querySelector.bind(d)
