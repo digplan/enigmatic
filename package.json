@@ -11,5 +11,8 @@
   "scripts": {
     "start": "node ./node_modules/https_microservice/start.mjs"
   },
-  "version": "0.9.22"
+  "version": "0.9.22",
+  "dependencies": {
+    "jwt-tiny": "^1.0.3"
+  }
 }
