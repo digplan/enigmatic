@@ -48,16 +48,9 @@ section {
   top: 0;
 }
 
-.bottom {
-  bottom: 0;
-}
+.bottom { bottom: 0 }
 
-.fill {
-  height: 100vh;
-  width: 100wh;
-}
-
-/** elements **/
+.fill { height: 100vh; width: 100wh }
 
 .hide {
   opacity: 0;
@@ -176,6 +169,12 @@ a {
 }
 
 /** html elements **/
+
+canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+}
 
 ul {
   list-style-type: none;
