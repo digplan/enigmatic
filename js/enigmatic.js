@@ -40,7 +40,7 @@ w.get = async (url, datakey, process) => {
 
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-w.data = new Proxy(
+w.state = new Proxy(
   {},
   {
     set: (obj, prop, value) => {
@@ -131,23 +131,17 @@ customElements.define('e-e', EnigmaticElement);
 
 w.element = (s) => {
   let [name, html] = s[0].split(', ')
-  const cls = class extends EnigmaticElement {
+  const cls = class extends HTMLElement {
     connectedCallback(props) {
-      const propx = {}, attrs = this.attributes;
-      [...attrs].forEach((attr) => {
-        propx[attr.name] = attr.value
-      })
       html = html.replaceAll('{', '${')
-      if(html.match('${'))
-        this.hidden = true
-      this.innerHTML = html
+      this.template = html
     }
-    show(b = true) {
-      this.hidden = !b
+    set(o) {
+      this.innerHTML = this.template
     }
   }
   customElements.define(name, cls)
-  return new cls()
+  //return new cls()
 }
 
 const start = async () => {
