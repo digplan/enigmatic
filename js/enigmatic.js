@@ -131,17 +131,17 @@ customElements.define('e-e', EnigmaticElement);
 
 w.element = (s) => {
   let [name, html] = s[0].split(', ')
-  const cls = class extends HTMLElement {
+  customElements.define(name, class extends HTMLElement {
     connectedCallback(props) {
       html = html.replaceAll('{', '${')
       this.template = html
+      if(!html.match(/\$\{/)) this.innerHTML = html
     }
     set(o) {
-      this.innerHTML = this.template
+      const m = new Function('o', 'return `' + this.template + '`')
+      this.innerHTML = m(o)
     }
-  }
-  customElements.define(name, cls)
-  //return new cls()
+  })
 }
 
 const start = async () => {
