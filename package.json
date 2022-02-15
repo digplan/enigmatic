@@ -13,6 +13,7 @@
   },
   "version": "0.9.22",
   "dependencies": {
+    "https-microservice": "^1.2.5",
     "jwt-tiny": "^1.0.3"
   }
 }

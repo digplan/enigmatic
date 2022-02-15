@@ -1,4 +1,4 @@
 const apis = {}
-apis['randomuser.me'] = { "service": "randomuser", "params": [{"n": "3"}], "url": "https://randomuser.me/api/?results=${n}", "options": {}, "directives": {} }
+apis['randomuser.me'] = 'https://randomuser.me/api/?results=${n}'
 
 export { apis }
