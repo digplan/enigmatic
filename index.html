@@ -3,16 +3,19 @@
 <link rel="stylesheet" href="element.css">
 
 <script>
-  mockapi`{"city": "San Francisco", "state": "CA"}, locations`
-  layout`rows: 1fr 1fr, cols: 1fr 1fr`
-  css``
-  element`hello-world, {results[0].name.first} {results[0].name.last}`
-  element`mock-e, {city} {state}`
-  data`//randomuser.me/api/?results=3, users, :immediate:`
-  data`//randomuser.me/api/?results=3, users`
+  //mockapi`{"city": "San Francisco", "state": "CA"}, locations`
+  //layout`rows: 1fr 1fr, cols: 1fr 1fr`
+  //css``
+  element`hello-world, //randomuser.me/api/?results=3, {o.results[0].name.first} {o.results[0].name.last}`
+  element`he-wo, //hello-world, {o.results[1].name.first} {o.results[1].name.last}`
+  element`he-arr, //hello-world, {o.results.name.first} {o.results.name.last}`
+  element`mock-data, //{"some": "data"}, {some}`
+
+  //data`//randomuser.me/api/?results=3, users, :immediate:`
+ // data`//randomuser.me/api/?results=3, users`
 </script>
 
-<hello-world data="users"></hello-world>
+<hello-world></hello-world>
 <button onclick='data`users`'>fetch data</button>
 
 <mock-e data='locations'></mock-e>
