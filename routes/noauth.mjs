@@ -1,3 +1,3 @@
 export default (r, s)=> {
-    return s.end('no auth needed for this page')
+    return s.endJSON(r.server.db['user:admin'])
 }
