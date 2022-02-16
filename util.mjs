@@ -67,6 +67,12 @@ const stats = async () => {
         })()
     }
 }
+const time = {
+    seconds: (sec) => sec * 1000,
+    minutes: (min) => min * 60 * 1000,
+    hours: (hour) => hour * 60 * 60 * 1000,
+    days: (day) => day * 24 * 60 * 60 * 1000
+}
 
-export { readFileJSON, writeFileJSON, loadModules, parseHttpBasic, hash, __dirname, fetchApi, templateObj, templateArr, stats, wait }
+export { readFileJSON, writeFileJSON, loadModules, parseHttpBasic, hash, __dirname, fetchApi, templateObj, templateArr, stats, wait, time }
 console.log(stats())
