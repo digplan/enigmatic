@@ -28,5 +28,21 @@ const hash = (str) => {
 const __dirname = () => {
     return new URL(filename, import.meta.url).pathname.slice(1)
 }
+const fetchApi = async (str, transform) => {
+    const [url, options, transform] = str.split(', ')
+    const f = await fetch(url, options)
+    const text = await f.text(), json = await f.json()
+    if(transform)
+        return transform(json || text)
+    return json || text
+}
+const templateObj = (str, obj) => {
+    for(let k in obj)
+        str = str.replace(new RegExp(`{${k}}`, 'g'), obj[k])
+    return str
+}
+const templateArr = (str, arr) => {
+    return arr.reduce((p, c) => p += templateObj(str, c), '')
+}
 
-export { readFile, writeFile, loadModules, parseHttpBasic, hash, __dirname }
+export { readFile, writeFile, loadModules, parseHttpBasic, hash, __dirname, fetchApi, templateObj, templateArr}
