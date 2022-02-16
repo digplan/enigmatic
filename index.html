@@ -6,18 +6,18 @@
   //mockapi`{"city": "San Francisco", "state": "CA"}, locations`
   //layout`rows: 1fr 1fr, cols: 1fr 1fr`
   //css``
-  element`hello-world, //randomuser.me/api/?results=3, {o.results[0].name.first} {o.results[0].name.last}`
-  element`he-wo, e://hello-world, {o.results[1].name.first} {o.results[1].name.last}`
-  element`he-array, e://hello-world, {[o.results].name.first} {[o.results].name.last}`
+  //element`hello-world, //randomuser.me/api/?results=3, {results[0].name.first} {results[0].name.last}`
+  element`he-wo, e://hello-world, {name.first} {name.last} , results`
+  element`he-wo2, e://hello-world, {name.first} {name.last} , results`
+  element`he-wo3, e://hello-world, {name.first} {name.last} , results`
+ // element`he-array, e://hello-world, {[o.results].name.first} {[o.results].name.last}`
   //element`mock-data, mock://[{"name": "c"}, {"name": "b"}], {[o].name} `
 
   //data`//randomuser.me/api/?results=3, users, :immediate:`
   // data`//randomuser.me/api/?results=3, users`
 </script>
 
-<hello-world></hello-world>
-<button onclick='data`users`'>fetch data</button>
-
-<mock-e data='locations'></mock-e>
-<button onclick='data`locations`'>fetch data</button>
-
+<hello-world name="yo"></hello-world>
+<he-wo></he-wo>
+<he-wo2 data="hello-world"></he-wo2>
+<he-wo3 fetch="//randomuser.me/api/?results=3"></he-wo3>

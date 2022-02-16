@@ -3,6 +3,8 @@ window.onerror = function(msg, url, line) {
   document.write(`<div style='color:red; display:fixed'>${s}</div>`)
 }
 
+try {
+window.$$ = document.querySelectorAll.bind(document)
 window.state = new Proxy(
   {},
   {
@@ -33,9 +35,9 @@ window.ready = async () => {
     };
   });
 };
-
+ 
 window.element = (s) => {
-  let [name, data, html] = s[0].split(', ')
+  let [name, data, html, arr] = s[0].split(', ')
   const cls = class extends HTMLElement {
     props = {}
     connectedCallback(props) {
@@ -55,12 +57,16 @@ window.element = (s) => {
       this.setAttribute('data', data)
     }
     async fetch(url) {
-      const o = await(await fetch(url)).json()
-      this.state[name] = o
+      const o = await(await fetch(`https://${url}`)).json()
+      state[name] = o
     }
-    set(o) {
-      const m = new Function('o', 'return `' + this.template + '`')
-      this.innerHTML = m(o)
+    set(o) { 
+      console.log('setting', name, o)
+      this.innerHTML = ''
+      if(!arr)
+        return this.innerHTML = (new Function('o', 'return `' + this.template + '`'))(o)
+      else
+        o[arr].forEach((i) => { this.innerHTML += (new Function('o', 'return `' + this.template + '`'))(i) })
     }
   }
   customElements.define(name, cls)
@@ -118,6 +124,11 @@ window.mockapi = async (s) => {
 }
 
 (async () => {
-  await w.ready();
-  if (w.main) w.main(d);
+  await window.ready();
+  if (window.main) w.main(d);
 })()
+
+} catch (e) {
+  const s = "Error: " + msg + "\nURL: " + url + "\nLine: " + line
+  document.write(`<div style='color:red; display:fixed'>${s}</div>`)
+}
