@@ -6,10 +6,12 @@
   //mockapi`{"city": "San Francisco", "state": "CA"}, locations`
   //layout`rows: 1fr 1fr, cols: 1fr 1fr`
   //css``
-  //element`hello-world, //randomuser.me/api/?results=3, {results[0].name.first} {results[0].name.last}`
-  element`he-wo, e://hello-world, {name.first} {name.last} , results`
-  element`he-wo2, e://hello-world, {name.first} {name.last} , results`
-  element`he-wo3, e://hello-world, {name.first} {name.last} , results`
+
+  //element`hello-world, {results[0].name.first} {results[0].name.last}, //randomuser.me/api/?results=3, `
+  element`he-wo, [results] {name.first} {name.last}, e://hello-world, wait`
+  element`he-wo2, {name.first} {name.last}`
+  element`he-wo3, {name.first} {name.last}`
+  
  // element`he-array, e://hello-world, {[o.results].name.first} {[o.results].name.last}`
   //element`mock-data, mock://[{"name": "c"}, {"name": "b"}], {[o].name} `
 
