@@ -16,4 +16,17 @@ const loadModules = async (dirname) => {
     }
     return obj
 }
-export { readFile, writeFile, loadModules }
+const parseHttpBasic = (r) => {
+    if (!r.headers.authorization) return
+    const [type, userpass] = r.headers.authorization.split(' ')
+    return Buffer.from(userpass, 'base64').toString('ascii').split(':')
+}
+const hash = (str) => {
+    return crypto.createHash('sha256').update(str).digest('hex')
+}
+
+const __dirname = () => {
+    return new URL(filename, import.meta.url).pathname.slice(1)
+}
+
+export { readFile, writeFile, loadModules, parseHttpBasic, hash, __dirname }
