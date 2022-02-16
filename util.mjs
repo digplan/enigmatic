@@ -1,9 +1,10 @@
 import { readFileSync, writeFile, existsSync } from 'node:fs'
+import os from 'node:os'
 
-const readFile = (filename) => {
+const readFileJSON = (filename) => {
     return JSON.parse(readFileSync(filename, 'utf8'))
 }
-const writeFile = (filename, data) => {
+const writeFileJSON = (filename, data) => {
     return writeFile(filename, JSON.stringify(data, null, 2), 'utf8')
 }
 const loadModules = async (dirname) => {
@@ -29,7 +30,7 @@ const __dirname = () => {
     return new URL(filename, import.meta.url).pathname.slice(1)
 }
 const fetchApi = async (str, transform) => {
-    const [url, options, transform] = str.split(', ')
+    const [url, options] = str.split(', ')
     const f = await fetch(url, options)
     const text = await f.text(), json = await f.json()
     if(transform)
@@ -44,5 +45,28 @@ const templateObj = (str, obj) => {
 const templateArr = (str, arr) => {
     return arr.reduce((p, c) => p += templateObj(str, c), '')
 }
+const wait = (ms) => new Promise((r) => setTimeout(r, ms))
+const stats = async () => {
+    return {
+        memory: process.memoryUsage(),
+        uptime: process.uptime(),
+        cpu: process.cpuUsage(),
+        pid: process.pid,
+        cwd: process.cwd(),
+        execPath: process.execPath,
+        node_version: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        num_cores: os.cpus().length,
+        memory: (()=>{ 
+            const mu = process.memoryUsage(), ret = {}
+            Object.keys(mu).forEach(k => ret[k] = (mu[k] / 1024 / 1024).toFixed(2) + ' MB')
+            ret['osfree'] = (os.freemem() / 1024 / 1024 / 1024).toFixed(2) + ' GB'
+            ret['ostotal'] = (os.totalmem() / 1024 / 1024 /1024).toFixed(2) + ' GB'
+            return ret
+        })()
+    }
+}
 
-export { readFile, writeFile, loadModules, parseHttpBasic, hash, __dirname, fetchApi, templateObj, templateArr}
+export { readFileJSON, writeFileJSON, loadModules, parseHttpBasic, hash, __dirname, fetchApi, templateObj, templateArr, stats, wait }
+console.log(stats())
