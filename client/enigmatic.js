@@ -67,11 +67,7 @@ w.ready = async () => {
 };
 
 const customElement = (name, props, style, template) => {
-  class EnigmaticElement extends HTMLElement {
-    showHideClasses = ['show', 'hide']
-    constructor() {
-      super()
-    }
+  customEleements.define(name, class e extends HTMLElement {
     async connectedCallback() {
       const props = {}, attrs = this.attributes;
       [...attrs].forEach((attr) => {
@@ -79,8 +75,8 @@ const customElement = (name, props, style, template) => {
       })
       if (this.main) this.main(props)
     }
-    fetch(url) {
-      const json = await(await fetch(url)).json()
+    fetch(url, options) {
+      const json = await(await fetch(url, options)).json()
       state['data-source'] = json
     }
     set(data) {
@@ -90,8 +86,7 @@ const customElement = (name, props, style, template) => {
         this.innerHTML += f(i)
       })
     }
-  }
-  customElements.define(name, EnigmaticElement);
+  })
 }
 
 w.element = (s) => {
