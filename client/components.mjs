@@ -6,10 +6,6 @@ export default {
         main(props) {
             if(props.immediate)
                 this.fetch()
-        },
-        fetch: function(url) {
-            const json = await(await fetch(url)).json()
-            state['data-source'] = json
         }
     },
     'data-viewer': {
