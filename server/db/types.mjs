@@ -21,6 +21,10 @@ class BaseType {
     }
 }
 
+class vastdb extends BaseType {
+    name
+}
+
 class entity extends BaseType {
     // age = 40  // default value
     // Street // required value

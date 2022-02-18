@@ -1,14 +1,13 @@
-import { readFileSync, writeFile, existsSync } from 'node:fs'
-import os from 'node:os'
+import fs from 'node:fs'
 export default {
-    readFileJSON: (filename) => {
-        return JSON.parse(readFileSync(filename, 'utf8'))
+    readJSON: (filename) => {
+        return JSON.parse(fs.readFileSync(filename, 'utf8'))
     },
-    writeFileJSON: (filename, data) => {
+    writeJSON: (filename, data) => {
         return writeFile(filename, JSON.stringify(data, null, 2), 'utf8')
     },
     loadModules: async (dirname) => {
-        if (!existsSync(dirname)) return
+        if (!fs.existsSync(dirname)) return
         const obj = {}
         for (const f of readdirSync(dirname)) {
             if (!f.endsWith('.mjs')) continue
