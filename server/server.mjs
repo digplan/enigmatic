@@ -4,8 +4,6 @@ import { Server } from 'node:https';
 let dir = process.cwd()
 let dir_key = `${dir}/../keys/key.pem`
 let dir_cert = `${dir}/../keys/cert.pem`
-let dir_middleware = `file://${dir}/middleware`
-let dir_routes = `file://${dir}/routes`
 
 class HTTPSServer extends Server {
     middleware = []
@@ -28,23 +26,16 @@ class HTTPSServer extends Server {
                         s.end(JSON.stringify(obj))
                     }
                     try { data = JSON.parse(data) } catch (e) { }
-                    r.server = this
-                    this.middleware.some((f) => {
-                        if (this.debug) console.log(`middleware: ${f.name}`)
-                        return f(r, s, data)
-                    })
                     if (r.url == '/') r.url = '/index.mjs'
+
+                    for(const m of this.middleware)
+                        this.middleware[m](r, s, data, server, this.db)
+
                     const route = this.routes['/' + r.url.split('/')[1]]
-                    if (this.debug) console.log(`route: ${r.url}`)
                     if (!route)
-                        return this.routes['/404'](r, s, data)
-                    if (route.toString().startsWith('class')) {
-                        const f = new route(), method = r.method.toLowerCase()
-                        if (!f[method])
-                            return s.writeHead(405).end()
-                        return f[method](r, s, data)
-                    }
-                    return route(r, s, data)
+                        return s.writeHead(404).end()
+
+                    return route(r, s, data, server, this.db)
                 })
             } catch (e) {
                 console.log(e)
@@ -54,39 +45,11 @@ class HTTPSServer extends Server {
         )
     }
     async getMiddleware() {
-        const mfiles = []
-        if (existsSync('./middleware')) {
-            for (const model of readdirSync('./middleware'))
-                mfiles.push(model)
-            mfiles.sort((a, b) => a.localeCompare(b))
-            for (const model of mfiles) {
-                if (!model.endsWith('.mjs')) continue
-                let f = await import(`${dir_middleware}/${model}`)
-                this.middleware.unshift(f.default)
-            }
-        }
-        if (existsSync('./routes')) {
-            for (const model of readdirSync('./routes')) {
-                if (!model.endsWith('.mjs')) continue
-                const name = model.split('.')[0]
-                let f = (await import(`${dir_routes}/${model}`)).default
-                this.routes[`/${name}`] = f
-            }
-        }
-        if (existsSync('./routes.mjs')) {
-            let f = await import('../routes.mjs')
-            for (const midf in f.default) {
-                midf.startsWith('_') ? this.middleware[midf] = f.default[midf] : this.routes[`/${midf}`] = f.default[midf]
-            }
+        let f = await import('routes.mjs')
+        for (const midf in f.default) {
+            midf.startsWith('_') ? this.middleware[midf] = f.default[midf] : this.routes[`/${midf}`] = f.default[midf]
         }
     }
 }
 
-class Route {
-    constructor(r, s, data) { }
-    route(r, s, data) {
-        this[r.method](r, s, data)
-    }
-}
-
-export { HTTPSServer, Route }
+export { HTTPSServer }
