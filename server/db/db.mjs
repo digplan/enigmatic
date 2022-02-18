@@ -28,18 +28,9 @@ class vast extends Map {
 
     types = Types
 
-    async loadFunctions() {
-        let dirname = new URL(import.meta.url).pathname.split('/').slice(0, -1).join('/').slice(1)
-        if (process.platform !== 'win32')
-            dirname = '/' + dirname
-        this.functions = {}
-        for (const model of fs.readdirSync(dirname + '/functions')) {
-            if (!model.endsWith('.mjs')) continue
-            let furl = 'file://' + dirname + '/functions/' + model
-            console.log('loading function: ' + furl)
-            let f = await import(furl);
-            this.functions[model.replace('.mjs', '')] = f.default;
-        }
+    constructor(filename) {
+        if(!this.load(filename))
+            this.set({'type':'vastdb', 'name':filename}) && this.save(filename)
     }
 
     query(q) {
