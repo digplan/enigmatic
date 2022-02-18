@@ -1,6 +1,7 @@
 export default {
     'data-source': {
         props: 'fetch, immediate',
+        style: '',
         template: 'Hello {results[0].name} !',
         main(props) {
             if(props.immediate)
@@ -13,14 +14,8 @@ export default {
     },
     'data-viewer': {
         props: 'data',
-        template: 'Hello {results[0].name} !',
-        set: function(data) {
-            if (!Array.isArray(data)) data = [data]
-            const f = new Function('o', 'return `' + this.template + '`')
-            this.innerHTML = o[arr].forEach((i) => {
-                this.innerHTML += f(i)
-            })
-        }
+        style: '',
+        template: 'Hello {results[0].name} !'
     },
     'random-users': {
         props: 'fetch, immediate',
@@ -28,3 +23,12 @@ export default {
         template: 'Hello Random user: {results[0].name} !',
     }
 }
+
+/*
+
+<data-source fetch="https://randomuser.me/api/?results=10" immediate></data-source>
+<data-viewer data="data-source"></data-viewer>
+
+<random-users fetch="https://randomuser.me/api/?results=10" immediate></random-users>
+
+*/
