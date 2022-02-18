@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import Types from './types.mjs'
+import util from '../util.mjs'
 
 class vast extends Map {
 
@@ -23,7 +24,8 @@ class vast extends Map {
             o = [o]
         o = o.map(item => {
             console.log(item)
-            const newrec = eval(`new ${Types[item.type]}()`)
+            const fc = `****8 ${JSON.stringify(Types)}`;
+            const newrec = eval(fc)
             newrec.validate(item)
             if (this.has(newrec.id))
                 newrec._created = this.get(newrec.id)._created
@@ -43,14 +45,11 @@ class vast extends Map {
     }
 
     save(filename) {
-        const fp = new URL(filename, import.meta.url).pathname.slice(1)
-        fs.writeFileSync(fp, this.json())
-        return { filename: fp, records: this.size }
+        util.writeJson(filename, this.json())
     }
 
     load(filename) {
-        const fp = new URL(filename, import.meta.url).pathname.slice(1)
-        const data = JSON.parse(fs.readFileSync(fp))
+        const data = util.readJSON(filename)
         for (let rec in data) {
             super.set(rec, data[rec])
         }
