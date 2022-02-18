@@ -8,4 +8,3 @@ await server.getMiddleware()
 server.db = new vast()
 
 server.listen(3000)
-
