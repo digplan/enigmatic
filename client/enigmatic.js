@@ -28,16 +28,6 @@ w.loadCSS = (src) => {
   });
 };
 
-w.get = async (url, datakey, process) => {
-  const f = await fetch(url)
-  let json = await f.json()
-  if(process) {
-    const func = new Function('obj', `return ${process}`)
-    json = func(json)
-  }
-  return data[datakey] = json
-}
-
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 w.state = new Proxy(
@@ -45,7 +35,7 @@ w.state = new Proxy(
   {
     set: (obj, prop, value) => {
       const debug = d.body.hasAttribute('debug')
-      if(debug)
+      if (debug)
         console.log('Updating app state', "'", prop, "'", value)
       for (const e of $$(`[data*=${prop}]`)) {
         const arr = e.getAttribute('data').split('.');
@@ -54,14 +44,14 @@ w.state = new Proxy(
         e.set ? e.set(value) : (e.textContent = value);
       }
       obj[prop] = value
-      if(debug) {
+      if (debug) {
         console.log(window.data)
         console.log(JSON.stringify(window.data._state, null, 2))
       }
       return value
     },
     get: (obj, prop, receiver) => {
-      if(prop == '_state') return obj
+      if (prop == '_state') return obj
       return obj[prop]
     }
   }
@@ -76,58 +66,33 @@ w.ready = async () => {
   });
 };
 
-class EnigmaticElement extends HTMLElement {
-  showHideClasses = ['show', 'hide']
-  constructor() {
-    super()
-  }
-  async connectedCallback() {
-    const props = {}, attrs = this.attributes;
-    [...attrs].forEach((attr) => {
-      props[attr.name] = attr.value
-    })
-    if(this.render) this.render(props)
-  }
-  async showHide(s = 1, h = 0) {
-    return new Promise(r => {
-      if (s === 1) this.hidden = false
-      this.classList.remove(this.showHideClasses[h])
-      this.classList.add(this.showHideClasses[s])
-      for (const child of this.children) {
-        child.classList.remove(this.showHideClasses[s])
-        child.classList.add(this.showHideClasses[h])
-      }
-      r(true)
-    })
-  }
-  async show() {
-    return this.showHide()
-  }
-  async hide() {
-    return this.showHide(0, 1)
-  }
-  async toggle() {
-    this.classList.contains(this.showHideClasses[0]) ? await this.hide() : await this.show()
-  }
-  set(s) {
-    if (typeof s === 'object') {
-      s = JSON.stringify(s)
+const customElement = (name, props, style, template) => {
+  class EnigmaticElement extends HTMLElement {
+    showHideClasses = ['show', 'hide']
+    constructor() {
+      super()
     }
-    this.innerHTML = s
+    async connectedCallback() {
+      const props = {}, attrs = this.attributes;
+      [...attrs].forEach((attr) => {
+        props[attr.name] = attr.value
+      })
+      if (this.main) this.main(props)
+    }
+    fetch(url) {
+      const json = await(await fetch(url)).json()
+      state['data-source'] = json
+    }
+    set(data) {
+      if (!Array.isArray(data)) data = [data]
+      const f = new Function('o', 'return `' + this.template + '`')
+      this.innerHTML = o[arr].forEach((i) => {
+        this.innerHTML += f(i)
+      })
+    }
   }
-  child(type = 'e-e', id = Math.random()) {
-    const child = document.createElement(type)
-    child.id = id
-    this.appendChild(child)
-    return child
-  }
-  childHTML(html, type = 'e-e', id = Math.random()) {
-    const e = this.child(type, id)
-    e.innerHTML = html
-    return e
-  }
+  customElements.define(name, EnigmaticElement);
 }
-customElements.define('e-e', EnigmaticElement);
 
 w.element = (s) => {
   let [name, html] = s[0].split(', ')
@@ -135,7 +100,7 @@ w.element = (s) => {
     connectedCallback(props) {
       html = html.replaceAll('{', '${')
       this.template = html
-      if(!html.match(/\$\{/)) this.innerHTML = html
+      if (!html.match(/\$\{/)) this.innerHTML = html
     }
     set(o) {
       const m = new Function('o', 'return `' + this.template + '`')
