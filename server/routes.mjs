@@ -1,8 +1,7 @@
 import Util from './util.mjs'
-const util = new Util()
 
-const { JWT } = import('jwt-tiny')
-const jwt = new JWT('your-256-bit-secret')
+//const { JWT } = import('jwt-tiny')
+//const jwt = new JWT('your-256-bit-secret')
 
 export default {
 
