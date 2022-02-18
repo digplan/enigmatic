@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { vast } from './server/db/vast.mjs'
+import { vast } from './server/db/db.mjs'
 import { HTTPSServer } from './server/server.mjs'
 
 // Start Server

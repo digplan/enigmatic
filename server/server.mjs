@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync, existsSync, exists } from 'node:fs';
+import fs from 'node:fs';
 import { Server } from 'node:https';
 
 let dir = process.cwd()
@@ -11,8 +11,8 @@ class HTTPSServer extends Server {
     debug = process.env.debug || false
     constructor(key, cert) {
         super({
-            key: readFileSync(dir_key),
-            cert: readFileSync(dir_cert),
+            key: fs.readFileSync(dir_key),
+            cert: fs.readFileSync(dir_cert),
         })
         this.on('request', (r, s) => {
             try {
@@ -45,7 +45,7 @@ class HTTPSServer extends Server {
         )
     }
     async getMiddleware() {
-        let f = await import('routes.mjs')
+        let f = await import('./routes.mjs')
         for (const midf in f.default) {
             midf.startsWith('_') ? this.middleware[midf] = f.default[midf] : this.routes[`/${midf}`] = f.default[midf]
         }
