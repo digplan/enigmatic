@@ -1,4 +1,7 @@
 export default {
+    'hello-world': {
+        template: 'Hello World'
+    },
     'data-source': {
         props: 'fetch, immediate',
         style: '',
