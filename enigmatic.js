@@ -42,7 +42,6 @@ w.state = new Proxy(
       }
       obj[prop] = value
       debug && console.log(window.data)
-      debug && console.log(JSON.stringify(window.data._state, null, 2))
       return value
     },
     get: (obj, prop, receiver) => {
@@ -65,27 +64,35 @@ w.customElement = (name, { props, style, template, onMount, beforeData }) => {
   customElements.define(name, class extends HTMLElement {
     async connectedCallback() {
       const p = [...this.attributes].reduce((p, c) => {p[c.name] = c.value; return p}, {})
+      this.props = p
       if(p.fetch) this.setAttribute('data', this.tagName)
+      this.template = template
       debug && console.log('Connected', this.tagName, p)
       if (onMount) onMount(p)
       debug && console.log('Mounted', this.tagName, p)
+      if(p.immediate !== null && p.fetch) this.fetch()
+
     }
     stream(url, options) {
+      debug && console.log('Streaming', this.tagName, this.props.fetch)
       const ev = new EventSource(url)
       ev.onmessage = (e) => {
         state[this.tagName] = JSON.parse(e.data)
       }
     }
     async fetch(url, options) {
-      const json = await(await fetch(url, options)).json()
+      debug && console.log('Fetching', this.tagName, this.props.fetch)
+      if(!this.props.fetch) return
+      const json = await(await fetch(this.props.fetch, options)).json()
       state[this.tagName] = json
     }
     set(data) {
-      if (!Array.isArray(data)) data = [data]
-      const f = new Function('o', 'return `' + template + '`')
-      this.innerHTML = o[arr].forEach((i) => {
-        this.innerHTML += f(i)
-      })
+      //if (!Array.isArray(data)) data = [data]
+      const f = new Function('o', 'return `' + this.template + '`')
+      //data[arr].forEach((i) => {
+      debug && console.log('Setting', this.tagName, this.template, data, f[data])
+        this.innerHTML += f(data)
+     // })
     }
   })
 }
