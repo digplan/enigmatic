@@ -21,18 +21,13 @@ class vast extends Map {
     query(q = () => false) {
         return [...this].filter(q)
     }
-    set(o) {
-        if(!o.push) o = [o]
-        o = o.map(item => {
-            console.log(o, Types)
-            newrec.validate(item)
-            if (this.has(newrec.id))
-                newrec._created = this.get(newrec.id)._created
-            return newrec
+    set(arr) {
+        if(!arr.push) arr = [arr]
+        arr.map(o => {
+            const c = new Types[o.type]()
+            c.validate(o)
+            super.set(o.id, o)
         })
-        for (const rec of o) {
-            super.set(rec.id, rec)
-        }
     }
     save() {
         fs.writeFileSync(filename, [...this.entries()])
