@@ -1,3 +1,4 @@
+#!/usr/bin / env node
 import fs from 'node:fs'
 import { Server } from 'node:https'
 import routes from './routes.mjs'
@@ -7,7 +8,7 @@ let dir_key = `${dir}/../keys/key.pem`
 let dir_cert = `${dir}/../keys/cert.pem`
 
 class HTTPSServer extends Server {
-    constructor(key, cert) {
+    constructor() {
         super({ key: fs.readFileSync(dir_key), cert: fs.readFileSync(dir_cert) })
         this.on('request', this.handler)
     }
@@ -31,4 +32,7 @@ class HTTPSServer extends Server {
     }
 }
 
-export { HTTPSServer }
+import { vast } from './db/db.mjs'
+const server = new HTTPSServer()
+server.db = new vast()
+server.listen(3000)

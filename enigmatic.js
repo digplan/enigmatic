@@ -3,8 +3,6 @@ window.onerror = function (msg, url, line) {
   document.write(`<div style='color:red; display:fixed'>${s}</div>`)
 }
 
-import Components from './components.mjs';
-
 const w = window, d = document
 w.$ = d.querySelector.bind(d)
 w.$$ = d.querySelectorAll.bind(d)
@@ -35,9 +33,7 @@ w.state = new Proxy(
   {},
   {
     set: (obj, prop, value) => {
-      const debug = d.body.hasAttribute('debug')
-      if (debug)
-        console.log('Updating app state', "'", prop, "'", value)
+      debug && console.log('Updating app state', "'", prop, "'", value)
       for (const e of $$(`[data*=${prop}]`)) {
         const arr = e.getAttribute('data').split('.');
         arr.shift();
@@ -45,10 +41,8 @@ w.state = new Proxy(
         e.set ? e.set(value) : (e.textContent = value);
       }
       obj[prop] = value
-      if (debug) {
-        console.log(window.data)
-        console.log(JSON.stringify(window.data._state, null, 2))
-      }
+      debug && console.log(window.data)
+      debug && console.log(JSON.stringify(window.data._state, null, 2))
       return value
     },
     get: (obj, prop, receiver) => {
@@ -67,12 +61,14 @@ w.ready = async () => {
   });
 };
 
-w.customElement = (name, { props, style, template }) => {
+w.customElement = (name, { props, style, template, onMount, beforeData }) => {
   customElements.define(name, class extends HTMLElement {
     async connectedCallback() {
       const p = [...this.attributes].reduce((p, c) => {p[c.name] = c.value; return p}, {})
       if(p.fetch) this.setAttribute('data', this.tagName)
-      if (this.main) this.main(p)
+      debug && console.log('Connected', this.tagName, p)
+      if (onMount) onMount(p)
+      debug && console.log('Mounted', this.tagName, p)
     }
     stream(url, options) {
       const ev = new EventSource(url)
@@ -94,33 +90,15 @@ w.customElement = (name, { props, style, template }) => {
   })
 }
 
-w.element = (s) => {
-  let [name, html] = s[0].split(', ')
-  customElements.define(name, class extends HTMLElement {
-    connectedCallback(props) {
-      html = html.replaceAll('{', '${')
-      this.template = html
-      if (!html.match(/\$\{/)) this.innerHTML = html
-    }
-    set(o) {
-      const m = new Function('o', 'return `' + this.template + '`')
-      this.innerHTML = m(o)
-    }
-  })
-}
-
 const start = async () => {
+  w.debug = d.body.getAttribute('debug') !== null
+  w.debug && console.log('Starting app')
+  const Components = (await import('./components.mjs')).default
   Object.keys(Components).map(n=> {
+    debug && console.log('Loading component', n, Components[n])
     w.customElement(n, Components[n])
   })
   await w.ready();
-  w.body = d.body;
-  body.child = (type = 'div', id = Math.random()) => {
-    const child = d.createElement(type);
-    if (id) child.id = id;
-    body.appendChild(child);
-    return child;
-  };
   if (w.main) w.main(d);
 }
 
