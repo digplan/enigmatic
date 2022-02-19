@@ -1,21 +1,15 @@
 export default {
     'hello-world': {
-        props: 'name',
         style: 'color: red',
-        template: 'Hello World',
-        onMount: x => console.log(x),
-        beforeData: x => x.name += '!!!!!'
+        template: 'Hello World'
     },
     'random-users': {
-        template: 'Hello Random user: {results[0].name} !',
+        template: 'Hello Random user: {results[0].name.first} {results[0].name.last}',
+        onMount: e => console.log('Mounted', e.tagName, e.props),
+        beforeData: x => x.results[0].name.first = 'John'
+    },
+    'tailwind-example': {
+        template: '<div class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Hello World</div>',
+        onMount: e => loadCSS('https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css')
     }
 }
-
-/*
-
-<data-source fetch="https://randomuser.me/api/?results=10" immediate></data-source>
-<data-viewer data="data-source"></data-viewer>
-
-<random-users fetch="https://randomuser.me/api/?results=10" immediate></random-users>
-
-*/

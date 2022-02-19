@@ -33,15 +33,17 @@ w.state = new Proxy(
   {},
   {
     set: (obj, prop, value) => {
+      //prop = prop.toLowerCase()
       debug && console.log('Updating app state', "'", prop, "'", value)
       for (const e of $$(`[data*=${prop}]`)) {
-        const arr = e.getAttribute('data').split('.');
-        arr.shift();
-        for (const p of arr) value = value[p];
-        e.set ? e.set(value) : (e.textContent = value);
+        console.log('setting e', e)
+        if(!e.set) {
+          e.set = new Function('o', 'return this.innerHTML = `' + e.innerHTML.replaceAll('{', '${o.') + '`')
+          console.log('defaulting set', e.set)
+        }
+        e.set(value)
       }
       obj[prop] = value
-      debug && console.log(window.data)
       return value
     },
     get: (obj, prop, receiver) => {
@@ -60,52 +62,70 @@ w.ready = async () => {
   });
 };
 
-w.customElement = (name, { props, style, template, onMount, beforeData }) => {
+w.customElement = (name, { props, style, template = '', onMount, beforeData }) => {
   customElements.define(name, class extends HTMLElement {
     async connectedCallback() {
-      const p = [...this.attributes].reduce((p, c) => {p[c.name] = c.value; return p}, {})
-      this.props = p
-      if(p.fetch) this.setAttribute('data', this.tagName)
-      this.template = template
-      debug && console.log('Connected', this.tagName, p)
-      if (onMount) onMount(p)
-      debug && console.log('Mounted', this.tagName, p)
-      if(p.immediate !== null && p.fetch) this.fetch()
-
+      this.props = [...this.attributes].reduce((p, c) => {p[c.name] = c.value; return p}, {})
+      if(beforeData) this.beforeData = beforeData
+      this.template = template || this.innerHTML
+      if(template) this.innerHTML = ''
+      if(this.props.fetch || this.props.stream) this.setAttribute('data', this.tagName)
+      this.setf = new Function('o', 'return `' + template.replaceAll('{', '${o.') + '`')
+      if (onMount) onMount(this)
+      if (this.props.immediate !== null && this.props.fetch) this.fetch()
+      if (this.props.immediate !== null && this.props.stream) this.stream()
+      console.log(this.innerHTML = this.template)
     }
     stream(url, options) {
-      debug && console.log('Streaming', this.tagName, this.props.fetch)
+      debug && console.log('Streaming', this.tagName, this.props.stream)
       const ev = new EventSource(url)
       ev.onmessage = (e) => {
-        state[this.tagName] = JSON.parse(e.data)
+        const data = JSON.parse(e.data)
+        if (this.beforeData) {
+          this.beforeData(data)
+          debug && console.log('After transform', data)
+        }
+        state[this.tagName] = data
       }
     }
     async fetch(url, options) {
-      debug && console.log('Fetching', this.tagName, this.props.fetch)
       if(!this.props.fetch) return
       const json = await(await fetch(this.props.fetch, options)).json()
       state[this.tagName] = json
     }
     set(data) {
       //if (!Array.isArray(data)) data = [data]
-      const f = new Function('o', 'return `' + this.template + '`')
       //data[arr].forEach((i) => {
-      debug && console.log('Setting', this.tagName, this.template, data, f[data])
-        this.innerHTML += f(data)
+      debug && console.log('Setting', this.tagName, this.beforeData)
+      if(this.beforeData){
+        this.beforeData(data)
+        debug && console.log('After transform', data)
+      }
+        this.innerHTML += this.setf(data)
      // })
     }
   })
+}
+
+w.defe = async e => {
+  if(!e.id) throw `element ${e.tagName} has no id`
+  if (!e.set) e.set = new Function('o', 'return this.innerHTML = `' + e.innerHTML.replaceAll('{', '${o.') + '`')
+  if (!e.fetch) e.fetch = async x => state[e.id] = (await fetch(e.getAttribute('fetch'))).json()
+  if (!e.stream) e.stream = x => {
+    new EventSource(e.getAttribute('stream')).onmessage = data => state[e.id] = data
+  }
+}
+
+w.decorate = x => {
+  [...$$('*')].map(defe)
 }
 
 const start = async () => {
   w.debug = d.body.getAttribute('debug') !== null
   w.debug && console.log('Starting app')
   const Components = (await import('./components.mjs')).default
-  Object.keys(Components).map(n=> {
-    debug && console.log('Loading component', n, Components[n])
-    w.customElement(n, Components[n])
-  })
-  await w.ready();
+  Object.keys(Components).map(n=> w.customElement(n, Components[n]))
+  await w.ready()
   if (w.main) w.main(d);
 }
 

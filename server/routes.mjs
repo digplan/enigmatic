@@ -10,11 +10,20 @@ export default {
         const jwt = jwt.verify(r.headers.Authorization.split(' ')[1])
         console.log(jwt);  //if(jwt.name) r.user = jwt.name
     },
-    '/stats': (r, s) => {
+    '/': (r, s, data, server) => {
+        s.end(Util.readFileSync('index.html'))
+    },
+    '/enigmatic.js': (r, s, data, server) => {
+        s.writeHead(200, {'Content-Type': 'text/javascript'}).end(Util.readFileSync('enigmatic.js'))
+    },
+    '/components.mjs': (r, s, data, server) => {
+        s.writeHead(200, { 'Content-Type': 'text/javascript' }).end(Util.readFileSync('components.mjs'))
+    },
+    '/events': (r, s) => {
         s.writeHead(200, { 'Content-Type': 'text/event-stream' })
         setInterval(() => {
-            s.write(`data: ${JSON.stringify(util.stats())}\n\n`)
-        }, 5000)
+            s.write(`data: ${JSON.stringify(Util.stats())}\n\n`)
+        }, 1000)
     },
     '/api': {
         get(r, s, data, server) {
