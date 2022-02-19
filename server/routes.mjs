@@ -1,45 +1,36 @@
 import Util from './util.mjs'
-
 //const { JWT } = import('jwt-tiny')
 //const jwt = new JWT('your-256-bit-secret')
-
 export default {
-
     _debug: (r, s, data) => {
         console.log(`Headers: ${JSON.stringify(r.headers, null, 2)}`, `Method: ${r.method}`, `URL: ${r.url}`, `Data: ${JSON.stringify(data, null, 2)}`)
     },
-
-    _user: (r, s, data, server, db) => {
+    _user: (r, s, data, server) => {
         if (!r.headers.Authorization) return
         const jwt = jwt.verify(r.headers.Authorization.split(' ')[1])
         console.log(jwt);  //if(jwt.name) r.user = jwt.name
     },
-
-    stats: (r, s) => {
+    '/stats': (r, s) => {
         return s.endJSON(util.stats())
     },
-
-    api: class {
-        get(r, s, data, server, db) {
+    '/api': {
+        get(r, s, data, server) {
             s.end(db.query())
-        }
-        put(r, s, data, server, db) {
-        }
-        post(r, s, data, server, db) {
+        },
+        post(r, s, data, server) {
             if(this.has(`${o.type}:${o.name}`))
                 s.writeHead(400).end('already exists')
             this.set(data)
             s.writeHead(201).end(JSON.stringify(data))
-        }
-        delete(r, s, data, server, db) {
+        },
+        delete(r, s, data, server) {
             if(!this.has(`${o.type}:${o.name}`))
                 s.writeHead(400).end('does not exist')
             this.set(data)
             s.writeHead(200).end(JSON.stringify(data))
         }
     },
-
-    token: (r, s) => {
+    '/token': (r, s) => {
         const { authorization, cookie } = r.headers
         if (authorization) {
             const [type, userpass] = authorization.split(' ')
@@ -50,5 +41,4 @@ export default {
         }
         return s.writeHead(401).end()
     }
-
 }
