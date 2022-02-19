@@ -6,6 +6,13 @@ export default {
     writeJSON: (filename, data) => {
         return writeFile(filename, JSON.stringify(data, null, 2), 'utf8')
     },
+    writeMap: (map, filename) => {
+        fs.writeFileSync(filename, Array.from(map.entries()))
+    },
+    readMap: (filename, map) => {
+        const data = JSON.parse(fs.readFileSync(filename, 'utf8'))
+        return data.reduce((m, [k, v]) => m.set(k, v), map)
+    },
     loadModules: async (dirname) => {
         if (!fs.existsSync(dirname)) return
         const obj = {}
