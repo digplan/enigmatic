@@ -3,29 +3,40 @@ import Types from './types.mjs'
 import util from '../util.mjs'
 
 class vast extends Map {
-
+    filename = ''
     constructor(filename = './db.json') {
         super()
+        this.filename = filename
         if(!fs.existsSync(filename))
             this.set({'type':'vastdb', 'name':filename}) && this.save(filename)
+        else
+            util.readMap(this.filename, this)
     }
 
-    query(q) {
-        const arr = []
-        for (const [_, v] of this) {
-            if (q(v))
-                arr.push(v)
-        }
-        return arr
+    // All records  .query()
+    // All tables  .query(([k, v]) => k.match(/^users:/))
+    query(q = () => true) { 
+        return [...this].filter(q)
+    }
+
+    post(o) {
+        if (this.has(`${o.type}:${o.name}`))
+            throw new Error(`already exists`)
+        this.set(o)
+        this.save()
+    }
+
+    patch(o) {
+        if (!this.has(`${o.type}:${o.name}`))
+            throw new Error(`doesn't exist`)
+        this.set(o)
+        this.save()   
     }
 
     set(o) {
-        if (!Array.isArray(o))
-            o = [o]
+        if(!o.push) o = [o]
         o = o.map(item => {
-            console.log(item)
-            const fc = `****8 ${JSON.stringify(Types)}`;
-            const newrec = eval(fc)
+            console.log(item.type, Types)
             newrec.validate(item)
             if (this.has(newrec.id))
                 newrec._created = this.get(newrec.id)._created
@@ -36,27 +47,10 @@ class vast extends Map {
         }
     }
 
-    json() {
-        const ret = {}
-        for (const [k, v] of this) {
-            ret[k] = v
-        }
-        return JSON.stringify(ret, null, 2)
-    }
-
-    save(filename) {
-        util.writeJson(filename, this.json())
-    }
-
-    load(filename) {
-        const data = util.readJSON(filename)
-        for (let rec in data) {
-            super.set(rec, data[rec])
-        }
-        return { filename: fp, records: this.size }
+    save() {
+        fs.writeFileSync(filename, [...this.entries()])
     }
 
 }
-
 export { vast }
 
