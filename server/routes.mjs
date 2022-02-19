@@ -19,9 +19,24 @@ export default {
         return s.endJSON(util.stats())
     },
 
-    api: (r, s, data, server, db) => {
-        if(!r.user) return s.writeHead(401).end()
-        console.log(r.user)
+    api: class {
+        get(r, s, data, server, db) {
+            s.end(db.query())
+        }
+        put(r, s, data, server, db) {
+        }
+        post(r, s, data, server, db) {
+            if(this.has(`${o.type}:${o.name}`))
+                s.writeHead(400).end('already exists')
+            this.set(data)
+            s.writeHead(201).end(JSON.stringify(data))
+        }
+        delete(r, s, data, server, db) {
+            if(!this.has(`${o.type}:${o.name}`))
+                s.writeHead(400).end('does not exist')
+            this.set(data)
+            s.writeHead(200).end(JSON.stringify(data))
+        }
     },
 
     token: (r, s) => {

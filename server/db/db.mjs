@@ -15,22 +15,8 @@ class vast extends Map {
 
     // All records  .query()
     // All tables  .query(([k, v]) => k.match(/^users:/))
-    query(q = () => true) { 
+    query(q = () => false) {
         return [...this].filter(q)
-    }
-
-    post(o) {
-        if (this.has(`${o.type}:${o.name}`))
-            throw new Error(`already exists`)
-        this.set(o)
-        this.save()
-    }
-
-    patch(o) {
-        if (!this.has(`${o.type}:${o.name}`))
-            throw new Error(`doesn't exist`)
-        this.set(o)
-        this.save()   
     }
 
     set(o) {
