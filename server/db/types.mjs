@@ -95,16 +95,3 @@ class country {
 class language {
     name
 }
-
-export default {
-    "entity": entity,
-    "person": person,
-    "employee": employee,
-    "group": group,
-    "groupmember": groupmember,
-    "timezone": timezone,
-    "location": location,
-    "keypair": keypair,
-    "country": country,
-    "language": language
-}
