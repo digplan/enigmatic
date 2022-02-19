@@ -67,12 +67,12 @@ w.ready = async () => {
   });
 };
 
-w.customElement = ({ name, props, style, template }) => {
+w.customElement = (name, { props, style, template }) => {
   customElements.define(name, class extends HTMLElement {
     async connectedCallback() {
       const p = [...this.attributes].reduce((p, c) => {p[c.name] = c.value; return p}, {})
-      if(props.fetch) this.setAttribute('data', this.tagName)
-      if (this.main) this.main(props)
+      if(p.fetch) this.setAttribute('data', this.tagName)
+      if (this.main) this.main(p)
     }
     stream(url, options) {
       const ev = new EventSource(url)
@@ -80,7 +80,7 @@ w.customElement = ({ name, props, style, template }) => {
         state[this.tagName] = JSON.parse(e.data)
       }
     }
-    fetch(url, options) {
+    async fetch(url, options) {
       const json = await(await fetch(url, options)).json()
       state[this.tagName] = json
     }
@@ -110,7 +110,9 @@ w.element = (s) => {
 }
 
 const start = async () => {
-  Components.map(w.customElement)
+  Object.keys(Components).map(n=> {
+    w.customElement(n, Components[n])
+  })
   await w.ready();
   w.body = d.body;
   body.child = (type = 'div', id = Math.random()) => {
