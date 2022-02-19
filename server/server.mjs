@@ -13,6 +13,7 @@ class HTTPSServer extends Server {
         this.on('request', this.handler)
     }
     handler(r, s) {
+        console.log(1)
         try {
             if (this.debug) console.log(`${r.method} ${r.url}`)
             let data = ''
@@ -21,7 +22,8 @@ class HTTPSServer extends Server {
                 s.endJSON = (obj) => s.end(JSON.stringify(obj))
                 try { data = JSON.parse(data) } catch (e) { }
                 for (const middleware of Object.keys(routes).filter(n => n.match(/^_/))) {
-                    middleware(r, s, data, this)
+                    console.log(middleware)
+                    routes[middleware](r, s, data, this)
                 }
                 return routes[r.url] ? routes[r.url](r, s, data, server) : s.writeHead(404).end()
             })
@@ -35,4 +37,5 @@ class HTTPSServer extends Server {
 import { vast } from './db/db.mjs'
 const server = new HTTPSServer()
 server.db = new vast()
-server.listen(3000)
+const PORT = process.env.PORT || 3000
+server.listen(PORT, () => console.log(`listening on port ${PORT}`))

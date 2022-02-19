@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 export default {
+    readFileSync: (path) => fs.readFileSync(path, 'utf8'),
     readJSON: (filename) => {
         return JSON.parse(fs.readFileSync(filename, 'utf8'))
     },
