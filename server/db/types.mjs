@@ -1,6 +1,7 @@
 class BaseType {
-    id = ''
-    name = ''
+    id = this.name + ':' + this.type
+    name
+    type
     _created = new Date().toISOString()
     _updated = new Date().toISOString()
     validate(obj) {
@@ -16,82 +17,8 @@ class BaseType {
         }
         this.id = `${mytype}:${obj.name}`
     }
-    json() {
-        return JSON.stringify(this, null, 2)
+}
+export default {
+    vastdb: class extends BaseType {
     }
-}
-
-class vastdb extends BaseType {
-    name
-}
-
-class entity extends BaseType {
-    // age = 40  // default value
-    // Street // required value
-}
-
-class person extends entity {
-    firstname
-    middlename
-    lastname
-    nickname
-    email
-    phone
-    picture
-}
-
-class employee extends person {
-    employeenumber
-    title
-    department
-    company
-    hiredate
-    termdate
-    manager
-    worktype
-}
-
-class group extends entity {
-    name
-    description
-}
-
-class groupmember extends BaseType {
-    group
-    member
-}
-
-class timezone extends BaseType {
-    name
-    abbr
-    offset
-}
-
-class location extends entity {
-    name
-    address
-    city
-    state
-    zip
-    country
-    lat
-    lng
-    timezone
-}
-
-class keypair {
-    name
-    public
-    private
-    type
-}
-
-class country {
-    name
-    abbr
-    code
-}
-
-class language {
-    name
 }

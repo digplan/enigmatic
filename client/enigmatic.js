@@ -3,8 +3,9 @@ window.onerror = function (msg, url, line) {
   document.write(`<div style='color:red; display:fixed'>${s}</div>`)
 }
 
-const w = window, d = document
+import Components from './components.mjs';
 
+const w = window, d = document
 w.$ = d.querySelector.bind(d)
 w.$$ = d.querySelectorAll.bind(d)
 
@@ -66,22 +67,26 @@ w.ready = async () => {
   });
 };
 
-const customElement = (name, props, style, template) => {
-  customEleements.define(name, class e extends HTMLElement {
+w.customElement = ({ name, props, style, template }) => {
+  customElements.define(name, class extends HTMLElement {
     async connectedCallback() {
-      const props = {}, attrs = this.attributes;
-      [...attrs].forEach((attr) => {
-        props[attr.name] = attr.value
-      })
+      const p = [...this.attributes].reduce((p, c) => {p[c.name] = c.value; return p}, {})
+      if(props.fetch) this.setAttribute('data', this.tagName)
       if (this.main) this.main(props)
+    }
+    stream(url, options) {
+      const ev = new EventSource(url)
+      ev.onmessage = (e) => {
+        state[this.tagName] = JSON.parse(e.data)
+      }
     }
     fetch(url, options) {
       const json = await(await fetch(url, options)).json()
-      state['data-source'] = json
+      state[this.tagName] = json
     }
     set(data) {
       if (!Array.isArray(data)) data = [data]
-      const f = new Function('o', 'return `' + this.template + '`')
+      const f = new Function('o', 'return `' + template + '`')
       this.innerHTML = o[arr].forEach((i) => {
         this.innerHTML += f(i)
       })
@@ -105,6 +110,7 @@ w.element = (s) => {
 }
 
 const start = async () => {
+  Components.map(w.customElement)
   await w.ready();
   w.body = d.body;
   body.child = (type = 'div', id = Math.random()) => {

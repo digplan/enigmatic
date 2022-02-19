@@ -11,7 +11,10 @@ export default {
         console.log(jwt);  //if(jwt.name) r.user = jwt.name
     },
     '/stats': (r, s) => {
-        return s.endJSON(util.stats())
+        s.writeHead(200, { 'Content-Type': 'text/event-stream' })
+        setInterval(() => {
+            s.write(`data: ${JSON.stringify(util.stats())}\n\n`)
+        }, 5000)
     },
     '/api': {
         get(r, s, data, server) {
