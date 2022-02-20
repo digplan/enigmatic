@@ -1,12 +1,7 @@
-window.onerror = function (msg, url, line) {
-  const s = "Error: " + msg + "\nURL: " + url + "\nLine: " + line
-  document.write(`<div style='color:red; display:fixed'>${s}</div>`)
-}
+const w = window, d = document;
 
-const w = window, d = document
-
-w.$ = d.querySelector.bind(d)
-w.$$ = d.querySelectorAll.bind(d)
+w.$ = d.querySelector.bind(d);
+w.$$ = d.querySelectorAll.bind(d);
 
 w.loadJS = (src) => {
   return new Promise((r, j) => {
@@ -28,44 +23,7 @@ w.loadCSS = (src) => {
   });
 };
 
-w.get = async (url, datakey, process) => {
-  const f = await fetch(url)
-  let json = await f.json()
-  if(process) {
-    const func = new Function('obj', `return ${process}`)
-    json = func(json)
-  }
-  return data[datakey] = json
-}
-
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms));
-
-w.state = new Proxy(
-  {},
-  {
-    set: (obj, prop, value) => {
-      const debug = d.body.hasAttribute('debug')
-      if(debug)
-        console.log('Updating app state', "'", prop, "'", value)
-      for (const e of $$(`[data*=${prop}]`)) {
-        const arr = e.getAttribute('data').split('.');
-        arr.shift();
-        for (const p of arr) value = value[p];
-        e.set ? e.set(value) : (e.textContent = value);
-      }
-      obj[prop] = value
-      if(debug) {
-        console.log(window.data)
-        console.log(JSON.stringify(window.data._state, null, 2))
-      }
-      return value
-    },
-    get: (obj, prop, receiver) => {
-      if(prop == '_state') return obj
-      return obj[prop]
-    }
-  }
-);
 
 w.ready = async () => {
   return new Promise((r) => {
@@ -144,7 +102,7 @@ w.element = (s) => {
   })
 }
 
-const start = async () => {
+const oldmain = async () => {
   await w.ready();
   w.body = d.body;
   body.child = (type = 'div', id = Math.random()) => {
@@ -156,4 +114,45 @@ const start = async () => {
   if (w.main) w.main(d);
 }
 
-start()
+w.state = new Proxy(
+  {},
+  {
+    set: (obj, prop, value) => {
+      for (const e of es(`[data*=${prop}]`)) {
+        console.log('setting e', e.tagName, e.id, value)
+        if (!e.set) {
+          e.set = new Function('o', 'return this.innerHTML = `' + e.innerHTML.replaceAll('{', '${o.') + '`')
+          console.log(e, 'defaulting set', e.set)
+        }
+        console.log(value)
+        e.set(value)
+      }
+      obj[prop] = value
+      return value
+    },
+    get: (obj, prop, receiver) => {
+      if (prop == '_state') return obj
+      return obj[prop]
+    }
+  }
+)
+
+if (caches) w.sfcache = caches.open('sanfran')
+
+w.f = async (url, key) => {
+  const j = await (await fetch(url)).json()
+  if (key) state[key] = j
+}
+
+w.main = async () => {
+  [...es('div')].map(e => {
+    if (!e.id) e.id = (Math.random() + 1).toString(36).substring(7).toUpperCase()
+    e.pr = {};
+    [...e.attributes].map(a => e.pr[a.name] = a.value)
+    console.log(e.at)
+    if (!e.fetch && e.pr.fetch) e.fetch = f.bind(null, e.pr.fetch, e.id)
+    if ('immediate' in e.pr) e.fetch()
+  })
+}
+
+w.enigmatic = 'loaded'
