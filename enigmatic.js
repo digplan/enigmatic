@@ -107,12 +107,22 @@ w.customElement = (name, { props, style, template = '', onMount, beforeData }) =
   })
 }
 
+if(caches) w.vastcache = caches.open('vast')
+
 w.defe = async e => {
   if(!e.id) throw `element ${e.tagName} has no id`
   if (!e.set) e.set = new Function('o', 'return this.innerHTML = `' + e.innerHTML.replaceAll('{', '${o.') + '`')
   if (!e.fetch) e.fetch = async x => state[e.id] = (await fetch(e.getAttribute('fetch'))).json()
   if (!e.stream) e.stream = x => {
     new EventSource(e.getAttribute('stream')).onmessage = data => state[e.id] = data
+  }
+  if (!e.fetchCache) e.fetchCache = async x => {
+    let match = await vastcache.match(request)
+    if(!match) {
+      match = await fetch(e.getAttribute('fetchCache')).json()
+      await vastcache.put(request, match)
+    }
+    state[e.id] = match
   }
 }
 
