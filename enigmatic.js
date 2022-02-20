@@ -85,7 +85,6 @@ class EnigmaticElement extends HTMLElement {
     return e
   }
 }
-customElements.define('e-e', EnigmaticElement);
 
 w.element = (s) => {
   let [name, html] = s[0].split(', ')

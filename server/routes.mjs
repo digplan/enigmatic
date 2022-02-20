@@ -11,13 +11,7 @@ export default {
         console.log(jwt);  //if(jwt.name) r.user = jwt.name
     },
     '/': (r, s, data, server) => {
-        s.end(Util.readFileSync('index.html'))
-    },
-    '/enigmatic.js': (r, s, data, server) => {
-        s.writeHead(200, {'Content-Type': 'text/javascript'}).end(Util.readFileSync('enigmatic.js'))
-    },
-    '/components.mjs': (r, s, data, server) => {
-        s.writeHead(200, { 'Content-Type': 'text/javascript' }).end(Util.readFileSync('components.mjs'))
+        s.end('public folder')
     },
     '/events': (r, s) => {
         s.writeHead(200, { 'Content-Type': 'text/event-stream' })
