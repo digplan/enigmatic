@@ -1,18 +1,7 @@
-<script src='js/enigmatic.js'></script>
-<link rel='stylesheet' href='css/enigmatic.css'>
- 
-<script type="module" src="./enigmatic.js"></script>
+<script type="module">
+    if(navigator.serviceWorker)
+      navigator.serviceWorker.register('/sw.js')
+</script>
 
-<body debug>
-<!--  <hello-world name="chris"></hello-world>
+<script src='enigmatic.js'></script>
 
-  <random-users
-    fetch="https://randomuser.me/api/?results=10"
-    immediate
-  ></random-users>
-
-  <div data="RANDOM-USERS">{results[0].name.first} {results[0].name.last}</div>
--->
-
-  <tailwind-example></tailwind-example>
-</body>

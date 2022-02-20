@@ -2,7 +2,6 @@ const cache_name = 'e-master'
 const do_not_cache = []
 
 const c = async (req) => {
-
     const cache = await caches.open(cache_name)
     const cached = await cache.match(req)
     if (cached) return cached
