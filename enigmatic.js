@@ -154,4 +154,15 @@ w.main = async () => {
   })
 }
 
+const fetchFromCache = async (url) => {
+  const cache = await caches.open("cache-branch");
+  const response = await cache.match(url);
+  return fetch(url);
+}
+
+const sc = async (s) => {
+  const cache = await caches.open("cache-branch");
+  cache.put(null, new Response('ssss'))
+}
+
 w.enigmatic = 'loaded'
