@@ -56,5 +56,38 @@ export default {
             if (agoms < years(2)) return `${Math.floor(agoms / years(1))} year ago`
             return `${Math.floor(agoms / years(2))} years ago`
         }
+    },
+    replaceChars: (s) => {
+        s = s.replaceAll('=', '');
+        s = s.replaceAll('+', '-');
+        s = s.replaceAll('/', '_');
+        return s;
+    },
+    createJWT: (keystring, user ) => {
+        payload = {user: user, exp: new Date(new Date().getDay() + 7).toISOString()}
+        const alg = '{"typ":"JWT","alg":"HS256"}';
+        const header = this.replaceChars(Buffer.from(alg).toString('base64'));
+        payload = this.replaceChars(Buffer.from(JSON.stringify(payload)).toString('base64'));
+        const signature = this.signJWT(header, payload);
+        return `${header}.${payload}.${signature}`;
+    },
+    signJWT: (keystring, header, payload)=> {
+        let signature = crypto.createHmac('sha256', keystring);
+        return replaceChars(
+            (signature.update(`${header}.${payload}`), signature.digest('base64'))
+        );
+    },
+    verifyJWT: (keystring, jwt)=> {
+        const [header, payload, signature] = jwt.split('.');
+        return this.signJWT(keystring, header, payload) === signature ? Buffer.from(payload, 'base64').toString('utf-8') : false;
+    },
+    authJWT: (r)=> {
+        const {Authorization} = r.headers
+        if (!Authorization) return false
+        const [type, jwt] = Authorization.split(' ')
+        if (type !== 'Bearer') return false
+        const payload = this.verifyJWT(jwt)
+        if (!payload) return false
+        return payload.user
     }
 }
