@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 export default {
-    readFileSync: (path) => fs.readFileSync(path, 'utf8'),
     readJSON: (filename) => {
         return JSON.parse(fs.readFileSync(filename, 'utf8'))
     },
@@ -25,8 +24,8 @@ export default {
         return obj
     },
     parseHttpBasic: (r) => {
-        if (!r.headers.authorization) return
-        const [type, userpass] = r.headers.authorization.split(' ')
+        if (!r.headers.Authorization) return false
+        const [type, userpass] = r.headers.Authorization.split(' ')
         return Buffer.from(userpass, 'base64').toString('ascii').split(':')
     }, 
     hash: (str) => {

@@ -1,18 +1,23 @@
 import Util from './util.mjs'
+import fs from 'node:fs'
 //const { JWT } = import('jwt-tiny')
 //const jwt = new JWT('your-256-bit-secret')
 export default {
     _debug: (r, s, data) => {
-        console.log(`Headers: ${JSON.stringify(r.headers, null, 2)}`, `Method: ${r.method}`, `URL: ${r.url}`, `Data: ${JSON.stringify(data, null, 2)}`)
+        console.log(`Method: ${r.method}`, `URL: ${r.url}`, `Data: ${JSON.stringify(data, null, 2)}`)
     },
     _user: (r, s, data, server) => {
         if (!r.headers.Authorization) return
         const jwt = jwt.verify(r.headers.Authorization.split(' ')[1])
         console.log(jwt);  //if(jwt.name) r.user = jwt.name
     },
-    '/': (r, s, data, server) => {
-        s.end('public folder')
-    },
+    
+    '/': (r, s, data, server) => s.end(fs.readFileSync('index.html', 'utf8')),
+    '/enigmatic.js': (r, s, data, server) => s.end(fs.readFileSync(`./enigmatic.js`, 'utf8')),
+    '/enigmatic.css': (r, s, data, server) => s.end(fs.readFileSync('./enigmatic.css', 'utf8')),
+    '/sw.js': (r, s, data, server) => s.end(fs.readFileSync('./sw.js', 'utf8')),
+    '/components.mjs': (r, s, data, server) => s.end(fs.readFileSync('./components.mjs', 'utf8')),
+
     '/events': (r, s) => {
         s.writeHead(200, { 'Content-Type': 'text/event-stream' })
         setInterval(() => {
@@ -37,14 +42,12 @@ export default {
         }
     },
     '/token': (r, s) => {
-        const { authorization, cookie } = r.headers
-        if (authorization) {
-            const [type, userpass] = authorization.split(' ')
-            const [user, pass] = Buffer.from(userpass, 'base64').toString('ascii').split(':')
-            const hashed = hash(hash(pass))
-            if (hashed !== r.server.db[`user:${user}`].pass) return
-            r.user = user
-        }
-        return s.writeHead(401).end()
+        const [user, pass] = Util.parseHttpBasic(r)
+        if(!user || !pass) 
+          return s.writeHead(401).end()
+        const hashed = hash(hash(pass))
+        if (hashed !== r.server.db[`user:${user}`].pass) 
+          return s.writeHead(401).end()
+        r.user = user
     }
 }
