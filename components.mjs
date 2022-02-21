@@ -1,4 +1,4 @@
-export default {
+window.components = {
     'hello-world': {
         style: 'color: red',
         template: 'Hello World'
@@ -13,3 +13,5 @@ export default {
         onMount: e => loadCSS('https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css')
     }
 }
+
+console.log('components.mjs', components)

@@ -1,8 +1,7 @@
-const w = window, d = document;
+const w = {}, d = document;
 
 w.$ = d.querySelector.bind(d);
 w.$$ = d.querySelectorAll.bind(d);
-
 w.loadJS = (src) => {
   return new Promise((r, j) => {
     if ($(`script[src="${src}"]`)) return r(true);
@@ -12,7 +11,6 @@ w.loadJS = (src) => {
     d.head.appendChild(s);
   });
 };
-
 w.loadCSS = (src) => {
   return new Promise((r, j) => {
     const s = document.createElement('link');
@@ -22,9 +20,7 @@ w.loadCSS = (src) => {
     d.head.appendChild(s);
   });
 };
-
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms));
-
 w.ready = async () => {
   return new Promise((r) => {
     if (document.readyState === 'complete') r(true);
@@ -101,7 +97,7 @@ w.element = (s) => {
   })
 }
 
-const oldmain = async () => {
+w.oldmain = async () => {
   await w.ready();
   w.body = d.body;
   body.child = (type = 'div', id = Math.random()) => {
@@ -136,9 +132,10 @@ w.state = new Proxy(
   }
 )
 
-if (caches) w.sfcache = caches.open('sanfran')
+if (caches) 
+  w.sfcache = caches.open('sanfran')
 
-w.f = async (url, key) => {
+w.fetchJSON = async (url, key) => {
   const j = await (await fetch(url)).json()
   if (key) state[key] = j
 }
@@ -149,20 +146,22 @@ w.main = async () => {
     e.pr = {};
     [...e.attributes].map(a => e.pr[a.name] = a.value)
     console.log(e.at)
-    if (!e.fetch && e.pr.fetch) e.fetch = f.bind(null, e.pr.fetch, e.id)
+    if (!e.fetch && e.pr.fetch) e.fetch = fetchJSON.bind(null, e.pr.fetch, e.id)
     if ('immediate' in e.pr) e.fetch()
   })
 }
 
-const fetchFromCache = async (url) => {
+w.fetchFromCache = async (url) => {
   const cache = await caches.open("cache-branch");
   const response = await cache.match(url);
   return fetch(url);
 }
 
-const sc = async (s) => {
+w.sc = async (s) => {
   const cache = await caches.open("cache-branch");
   cache.put(null, new Response('ssss'))
 }
 
 w.enigmatic = 'loaded'
+console.log('enigmatic.js', w)
+Object.assign(window, w)
