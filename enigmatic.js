@@ -148,10 +148,10 @@ w.start = async () => {
   };
 };
 
-w.enigmatic = { version: '2022-03-01T17:12:33.046Z' }
+w.enigmatic = { version: '2022-03-01T17:12:33.046Z' };
+Object.assign(window, w);
 
-Object.assign(window, w)
-
-(async () => {
+(async() => {
   await w.start()
+  if(w.main) w.main()
 })();
