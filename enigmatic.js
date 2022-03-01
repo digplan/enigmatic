@@ -153,5 +153,5 @@ Object.assign(window, w);
 
 (async() => {
   await w.start()
-  if(w.main) w.main()
+  if(main) main()
 })();
