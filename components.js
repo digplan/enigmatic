@@ -1,6 +1,7 @@
 window.components = {
     'hello-world': {
         style: 'color: red',
+        onMount: async x => console.log('mounted h-w'),
         template: 'Hello World'
     },
     'random-users': {
@@ -9,8 +10,8 @@ window.components = {
         beforeData: x => x.results[0].name.first = 'John'
     },
     'tailwind-example': {
-        template: '<div class="bg-blue-500 text-white font-bold py-2 px-4 rounded">Hello World</div>',
-        onMount: e => loadCSS('https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css')
+        template: '<div class="bg-blue-300 text-white font-bold py-2 px-4 rounded">I am Tailwind</div>',
+        onMount: async e => await loadCSS('https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css')
     }
 }
 

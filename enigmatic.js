@@ -40,16 +40,18 @@ w.child = (type = 'div', html = '') => {
 
 // Custom element
 
-if(window.components) {
-  for(let name in window.components)
-    w.element(name, window.components[name])
-}
 w.element = (name, {onMount = x=>x, beforeData = x=>x, style, template = ''}) => {
   customElements.define(name, class extends HTMLElement {
-    connectedCallback(props) {
-        onMount()
-        if (style) this.innerHTML += `<style>${name} { ${style} }</style>`;
+    async connectedCallback(props) {
+        await onMount()
+        if (style) {
+          const s = document.createElement('style')
+          s.innerHTML = `${name} {${style}}`
+          d.body.appendChild(s);
+        }
         this.template = template;
+        if(!this.template.match('{'))
+          this.innerHTML = this.template
     }
     set(o)  {
       this.innerHTML = ''
@@ -59,6 +61,11 @@ w.element = (name, {onMount = x=>x, beforeData = x=>x, style, template = ''}) =>
       o.map((i) => (this.innerHTML += m(o)));
     }
   })
+}
+
+if (window.components) {
+  for (let name in window.components)
+    w.element(name, window.components[name])
 }
 
 // Data
