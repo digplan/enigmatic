@@ -1,5 +1,4 @@
-const w = {},
-  d = document;
+const w = {}, d = document;
 
 // helpers
 
@@ -32,7 +31,7 @@ w.ready = async () => {
     };
   });
 };
-w.child = (type, html) => {
+w.child = (type = 'div', html = '') => {
   const e = d.createElement(type);
   e.innerHTML = html;
   d.body.appendChild(e);
@@ -41,50 +40,45 @@ w.child = (type, html) => {
 
 // Custom element
 
-w.element = (s, style, onMount = () => { }) => {
-  let [name, html] = s[0].split(', ');
-  customElements.define(
-    name,
-    class extends HTMLElement {
-      connectedCallback(props) {
-        const om = onMount;
-        om();
+if(window.components) {
+  for(let name in window.components)
+    w.element(name, window.components[name])
+}
+w.element = (name, {onMount = x=>x, beforeData = x=>x, style, template = ''}) => {
+  customElements.define(name, class extends HTMLElement {
+    connectedCallback(props) {
+        onMount()
         if (style) this.innerHTML += `<style>${name} { ${style} }</style>`;
-        this.innerHTML += html;
-      }
+        this.template = template;
     }
-  );
-};
+    set(o)  {
+      this.innerHTML = ''
+      o = beforeData(o)
+      if(!Array.isArray(o)) o = [o];
+      const m = new Function('o', 'return `' + this.template + '`');
+      o.map((i) => (this.innerHTML += m(o)));
+    }
+  })
+}
 
 // Data
 
 w.state = new Proxy(
-  {},
-  {
+  {}, {
     set: (obj, prop, value) => {
+      let ret = []
       for (const e of $$(`[data*=${prop}]`)) {
-        console.log('setting e', e.tagName, e.id, value);
-        if (!e.set) {
-          e.set = new Function(
-            'o',
-            'return this.innerHTML = `' +
-            e.innerHTML.replaceAll('{', '${o.') +
-            '`'
-          );
-          console.log(e, 'defaulting set', e.set);
-        }
-        console.log(value);
+        console.log(['setting e', e.tagName, e.id, value])
         e.set(value);
       }
       obj[prop] = value;
-      return value;
     },
     get: (obj, prop, receiver) => {
       if (prop == '_state') return obj;
       return obj[prop];
     },
   }
-);
+)
 
 w.dataEvent = (x) => console.log(`dataevent: ${x}`);
 
@@ -119,39 +113,31 @@ w.start = async () => {
   await w.ready();
   [...$$('div')].map((e) => {
     if (!e.id)
-      e.id = (Math.random() + 1).toString(36).substring(7).toUpperCase();
+      e.id = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 3)
     e.pr = {};
     [...e.attributes].map((a) => (e.pr[a.name] = a.value));
-    if (!e.fetch && e.pr.fetch)
-      e.fetch = fetchJSON.bind(null, e.pr.fetch, e.id);
+    if (e.pr.fetch) e.fetch = fetchJSON.bind(null, e.pr.fetch, e.id);
     if ('immediate' in e.pr) e.fetch();
-    if (!e.stream && e.pr.stream)
-      e.stream = streamJSON.bind(null, e.pr.stream, e.id);
+    if (e.pr.stream) e.stream = streamJSON.bind(null, e.pr.stream, e.id);
     if (e.pr.data) {
-      if (this.innerHTML.contains('{')) {
-        this.template = this.innerHTML.replaceAll('{', '${');
-        this.innerHTML = '';
+      if (e.innerHTML && e.innerHTML.includes('{')) {
+        e.template = e.innerHTML.replaceAll('{', '${');
+        e.innerHTML = '';
       }
-      this.set = (o) => {
+      e.set = (o) => {
+        e.innerHTML = ''
         if (!Array.isArray(o)) o = [o];
-        const m = new Function('o', 'return `' + this.template + '`');
-        o.map((i) => (this.innerHTML += m(o)));
+        const m = new Function('o', 'return `' + e.template + '`');
+        o.map((i) => (e.innerHTML += m(i)));
       };
     }
-  });
-  d.body.child = (html, parent = document.body) => {
-    const ch = document.createElement('div');
-    ch.id = 'testchild';
-    ch.html = html;
-    parent.appendChild(ch);
-    return ch;
-  };
-};
+  })
+}
 
-w.enigmatic = { version: '2022-03-01T17:12:33.046Z' };
+w.enigmatic = { version: '2022-03-05 0.10.2' };
 Object.assign(window, w);
 
 (async() => {
   await w.start()
-  if(main) main()
+  if(window.main) window.main()
 })();
