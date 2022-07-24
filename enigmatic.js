@@ -58,12 +58,13 @@ w.ready = async () => {
 
 w.element = (
   name,
-  { beforeData = (x) => x, style, template = '' }
+  { onMount = x => x, beforeData = (x) => x, style, template = '' }
 ) => {
   customElements.define(
     name,
     class extends HTMLElement {
       connectedCallback(props) {
+        onMount(this)
         if (style) {
           const s = document.createElement('style')
           s.innerHTML = `${name} {${style}}`
@@ -128,11 +129,6 @@ w.stream = async (url, key) => {
 w.start = async () => {
   await w.ready();
   [...$$('div')].map((e) => {
-    if (!e.id)
-      e.id = Math.random()
-        .toString(36)
-        .replace(/[^a-z]+/g, '')
-        .substr(0, 3)
     e.pr = {};
     [...e.attributes].map((a) => (e.pr[a.name] = a.value))
     if (e.pr.fetch) e.fetch = w.get.bind(null, e.pr.fetch, null, window[e.pr.transform], e.id)
