@@ -14,5 +14,3 @@ window.components = {
         onMount: async e => await loadCSS('https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css')
     }
 }
-
-console.log('components.mjs', components)
