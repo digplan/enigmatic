@@ -2,7 +2,7 @@
     enigmatic v 0.11.0 front end js utils
     
     Usage:
-    <div id='mykey' transform='func' fetch='some.site/data' immediate>${name} ${value}</div>
+    <div id='mykey' transform='func1' fetch='some.site/data' immediate>${name} ${value}</div>
     <div id='mykey2' transform='func2' stream='some.site/data'>${name} ${value}</div>
 
     $('selector')
