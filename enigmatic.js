@@ -111,7 +111,7 @@ w.get = async (
 ) => {
   let data = await (await fetch(`https://${url}`, options)).json()
   if (transform) data = transform(data)
-  state.set(key, data)
+  state(key, data)
   return data
 }
 
