@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src='enigmatic.js'></script>
+
+<div id='div1' data="users" fetch="https://randomuser.me/api" immediate>
+ {results[0].name.first} {results[0].name.last} 
+</div>
+
+<button onclick="state.users = {results: [{name: 'first', last: 'last'}]}">Fetch user</button>
+
+<div id='div2' data="users2" type='array' fetch="https://randomuser.me/api">
+  <div>{name.first} {name.last}</div>
+</div>
+
+<div id='div3' data="users2" type='array'>
+  <div>{name.first} {name.last}</div>
+</div>
+
+<button onclick="div2.fetch()">Fetch user</button>
