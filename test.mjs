@@ -4,13 +4,13 @@
 
 import puppeteer from 'puppeteer'
 import { te, tde, tm, wait } from 'instax'
-const host = 'http://localhost:3000'
+const host = 'http://127.0.0.1:8080/index.html'
 
 const browser = await puppeteer.launch({ headless: true })
 const page = await browser.newPage()
 await page.goto(`${host}/test.html`, {
     waitUntil: 'networkidle2',
-    timeout: 10000
+    timeout: 5000
 })
 
 const e = (await page.evaluate("enigmatic"))

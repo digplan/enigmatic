@@ -1,5 +1,12 @@
 {
     "name": "enigmatic",
     "main": "enigmatic.js",
-    "version": "0.11.0"
+    "version": "0.11.0",
+    "scripts": {
+        "test": "node test.mjs"
+    },
+    "devDependencies": {
+        "instax": "^0.1.5",
+        "puppeteer": "^17.1.3"
+    }
 }
