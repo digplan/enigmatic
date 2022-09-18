@@ -129,10 +129,14 @@ w.stream = async (url, key) => {
 w.start = async () => {
   await w.ready();
   [...$$('div')].map((e) => {
-    e.pr = {};
-    [...e.attributes].map((a) => (e.pr[a.name] = a.value))
-    if (e.pr.fetch) e.fetch = w.get.bind(null, e.pr.fetch, null, window[e.pr.transform], e.id)
-    if ('immediate' in e.pr) e.fetch()
+    e.attr = {};
+    [...e.attributes].map((a) => (e.attr[a.name] = a.value))
+    if (e.attr.fetch) {
+      e.fetch = w.get.bind(null, e.pr.fetch, null, window[e.pr.transform], e.id)
+    }
+    if ('immediate' in e.pr) {
+      e.fetch()
+    }
     if (e.pr.stream) e.stream = w.stream.bind(null, e.pr.stream, null, window[e.pr.transform], e.id)
     if (e.pr.data) {
       if (e.innerHTML && e.innerHTML.includes('{')) {
@@ -149,7 +153,7 @@ w.start = async () => {
   })
 }
 
-w.enigmatic = { version: '2022-07-24 0.11.0' }
+w.enigmatic = { version: '2022-09-24 0.11.1' }
 Object.assign(window, w);
 
 (async () => {
