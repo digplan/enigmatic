@@ -91,13 +91,17 @@ if (window.components) {
 
 /////// State, data, and reactivity
 
-w.state = (key, data) => {
+w.state = (key, data, ignore = false) => {
   if (!key && !data)
     return localStorage.clear()
   if (data) {
     const stored_data = { when: new Date().toISOString(), data: data }
     localStorage.setItem(key, JSON.stringify(stored_data))
-    for (const e of $$(`[data*=${key}]`)) e.set(stored_data.data)
+    if(!ignore) {
+      for (const e of $$(`[data*=${key}]`)) {
+        e.set(stored_data.data)
+      }
+    }
     return stored_data
   }
   return JSON.parse(localStorage.getItem(key))
@@ -128,17 +132,23 @@ w.stream = async (url, key) => {
 
 w.start = async () => {
   await w.ready();
-  [...$$('div')].map((e) => {
+  [...$$('*')].map((e) => {
     e.attr = {};
     [...e.attributes].map((a) => (e.attr[a.name] = a.value))
-    if (e.attr.fetch) {
-      e.fetch = w.get.bind(null, e.pr.fetch, null, window[e.pr.transform], e.id)
+    if (e.attr?.fetch) {
+      e.fetch = w.get.bind(null, e.pr?.fetch, null, w[e.pr?.transform], e.id)
     }
-    if ('immediate' in e.pr) {
+    if (e.pr?.immediate) {
       e.fetch()
     }
-    if (e.pr.stream) e.stream = w.stream.bind(null, e.pr.stream, null, window[e.pr.transform], e.id)
-    if (e.pr.data) {
+    if (e.pr?.stream) {
+      e.stream = w.stream.bind(null, e.pr.stream, null, window[e.pr.transform], e.id)
+    }
+    let dta = e.pr?.data
+    if (dta) {
+      if(dta.endsWith('[]')) {
+        dta = dta.replace('[]', '')
+      }
       if (e.innerHTML && e.innerHTML.includes('{')) {
         e.template = e.innerHTML.replaceAll('{', '${')
         e.innerHTML = ''
@@ -148,6 +158,10 @@ w.start = async () => {
         if (!Array.isArray(o)) o = [o]
         const m = new Function('o', 'return `' + e.template + '`')
         o.map((i) => (e.innerHTML += m(i)))
+      }
+      if (e.pr.value) {
+        this.value = { value: e.pr.value }
+        w.state(e.pr.data, this.value)
       }
     }
   })
