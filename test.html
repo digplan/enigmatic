@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <script src='enigmatic.js'></script>
 
+<div id="counter" data="count" value="0">{value}</div>
+<button onclick="state('count', counter.value++, true)">Incr</button>
+
 <div id='div1' data="users" fetch="https://randomuser.me/api" immediate>
  {results[0].name.first} {results[0].name.last} 
 </div>
 
 <button onclick="state.users = {results: [{name: 'first', last: 'last'}]}">Fetch user</button>
 
-<div id='div2' data="users2" type='array' fetch="https://randomuser.me/api">
+<div id='div2' data="users2[]" fetch="https://randomuser.me/api">
   <div>{name.first} {name.last}</div>
 </div>
 
