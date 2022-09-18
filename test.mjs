@@ -4,7 +4,7 @@
 
 import puppeteer from 'puppeteer'
 import { te, tde, tm, wait } from 'instax'
-const host = 'http://127.0.0.1:8080/index.html'
+const host = 'http://127.0.0.1:8080'
 
 const browser = await puppeteer.launch({ headless: true })
 const page = await browser.newPage()
@@ -15,12 +15,12 @@ await page.goto(`${host}/test.html`, {
 
 const e = (await page.evaluate("enigmatic"))
 tm(e.version, /0.11.1/)
+tm(await page.evaluate("$('#div1').template"), /results/)
 
-console.log(await page.evaluate("$('#hello').innerHTML"))
 // get
 // state
 // div
 // custom
-
+await wait(2000)
 await page.close()
 await browser.close()
