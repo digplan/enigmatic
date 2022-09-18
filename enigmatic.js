@@ -91,21 +91,23 @@ if (window.components) {
 
 /////// State, data, and reactivity
 
-w.state = (key, data, ignore = false) => {
-  if (!key && !data)
-    return localStorage.clear()
-  if (data) {
-    const stored_data = { when: new Date().toISOString(), data: data }
-    localStorage.setItem(key, JSON.stringify(stored_data))
-    if(!ignore) {
-      for (const e of $$(`[data*=${key}]`)) {
-        e.set(stored_data.data)
+w.state = new Proxy({}, {
+    set: (obj, prop, value) => {
+      if(this[prop] === value) {
+        return true
       }
+      for (const e of $$(`[data*=${prop}]`)) {
+        if(e.set) e.set(value)
+      }
+      obj[prop] = value
+      return value
+    },
+    get: (obj, prop, receiver) => {
+      if (prop == '_all') return obj
+      return obj[prop]
     }
-    return stored_data
   }
-  return JSON.parse(localStorage.getItem(key))
-}
+)
 
 w.get = async (
   url,
@@ -132,7 +134,7 @@ w.stream = async (url, key) => {
 
 w.start = async () => {
   await w.ready();
-  [...$$('*')].map((e) => {
+  [...$$('*')].map(e => {
     e.attr = {};
     [...e.attributes].map((a) => (e.attr[a.name] = a.value))
     if (e.attr?.fetch) {
