@@ -93,10 +93,11 @@ if (window.components) {
 
 w.state = new Proxy({}, {
     set: (obj, prop, value) => {
+      console.log(prop, value)
       if(this[prop] === value) {
         return true
       }
-      for (const e of $$(`[data*=${prop}]`)) {
+      for (const e of $$(`[data=${prop}]`)) {
         if(e.set) e.set(value)
       }
       obj[prop] = value
@@ -117,7 +118,7 @@ w.get = async (
 ) => {
   let data = await (await fetch(`https://${url}`, options)).json()
   if (transform) data = transform(data)
-  state(key, data)
+  state[key] = data
   return data
 }
 
@@ -125,7 +126,7 @@ w.stream = async (url, key) => {
   const ev = new EventSource(url)
   ev.onmessage = (ev) => {
     const data = JSON.parse(ev.data)
-    state(key, data)
+    w.state[key] = data
     return data
   }
 }
@@ -138,15 +139,17 @@ w.start = async () => {
     e.attr = {};
     [...e.attributes].map((a) => (e.attr[a.name] = a.value))
     if (e.attr?.fetch) {
-      e.fetch = w.get.bind(null, e.pr?.fetch, null, w[e.pr?.transform], e.id)
+      e.fetch = async () => {
+        return w.get(e.attr?.fetch, {}, w[e.attr?.transform], e.attr.data)
+      }
     }
-    if (e.pr?.immediate) {
+    if (e.hasAttribute('immediate')) {
       e.fetch()
     }
-    if (e.pr?.stream) {
+    if (e.attr?.stream) {
       e.stream = w.stream.bind(null, e.pr.stream, null, window[e.pr.transform], e.id)
     }
-    let dta = e.pr?.data
+    let dta = e.attr?.data
     if (dta) {
       if(dta.endsWith('[]')) {
         dta = dta.replace('[]', '')
@@ -157,13 +160,18 @@ w.start = async () => {
       }
       e.set = (o) => {
         e.innerHTML = ''
+        const template = e.template.replaceAll('{', '{rec.')
         if (!Array.isArray(o)) o = [o]
-        const m = new Function('o', 'return `' + e.template + '`')
-        o.map((i) => (e.innerHTML += m(i)))
+        const f = new Function('rec', 'return `' + template + '`')
+        o.map(rec => {
+            if(typeof rec !== 'object') rec = {value: rec}
+            e.innerHTML += f(rec)
+        })
       }
-      if (e.pr.value) {
-        this.value = { value: e.pr.value }
-        w.state(e.pr.data, this.value)
+      if (e.attr?.value) {
+        let o = e.attr.value
+         try { o = JSON.parse(o) } catch(e) {} 
+         w.state[dta] = o
       }
     }
   })
