@@ -1,26 +1,5 @@
-/*
-    enigmatic v 0.11.0 front end js utils
-    
-    Usage:
-    <div id='mykey' transform='func1' fetch='some.site/data' immediate>${name} ${value}</div>
-    <div id='mykey2' transform='func2' stream='some.site/data'>${name} ${value}</div>
-
-    $('selector')
-    $$('selector')
-    await loadJS('sounds.js')
-    await loadCSS('enigmatic.css')
-    await wait(1000)
-    await ready()
-    beep()
-    element(beforeData=>beforeData.field, '<div>${o.mykey}</div>')
-    window.components
-    state
-    await get
-    await stream
-*/
-
-const w = {},
-  d = document
+const w = {}, d = document
+w.enigmatic = { version: '2022-09-24 0.11.2' }
 
 /////// Helpers
 
@@ -177,7 +156,6 @@ w.start = async () => {
   })
 }
 
-w.enigmatic = { version: '2022-09-24 0.11.1' }
 Object.assign(window, w);
 
 (async () => {
