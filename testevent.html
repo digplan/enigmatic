@@ -1,0 +1,16 @@
+<script>
+customElements.define('is-online', class IsOnline extends HTMLElement {
+    connectedCallback() {
+        this.setAttribute('rel', 'icon')
+        this.setAttribute('href', "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>")
+    }
+})
+</script>
+
+<link rel="stylesheet" href="enigmatic.css">
+<body style="--cols:1fr 6fr 1fr; --rows:1fr 10fr">
+<my-e>hey</my-e>
+<my-e>hey</my-e>
+<my-e>hey</my-e>
+<my-e>hey</my-e>
+<my-e>hey</my-e>
