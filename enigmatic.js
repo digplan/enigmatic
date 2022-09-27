@@ -89,6 +89,14 @@ w.state = new Proxy({}, {
   }
 )
 
+w.save = (obj, name) => {
+  return localStorage.setItem(name, JSON.stringify(obj))
+}
+
+w.load = (name) => {
+  return localStorage.getItem(name)
+}
+
 w.get = async (
   url,
   options = null,
