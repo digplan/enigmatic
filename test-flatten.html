@@ -6,6 +6,7 @@
 
 <button onclick='window.testone()'>Test one</button>
 <button onclick='window.testtwo()'>Test two</button>
+<button onclick='window.testthree()'>Test three</button>
 
 <script type="module">
     window.testone = () => {
@@ -19,6 +20,13 @@
         const testt = {
             "k1": { name: 'myname3', value: 'myvalue3' },
             "k2": { name: 'myname4', value: 'myvalue4' },
+        }
+        state.akey = testt
+    }
+    window.testthree = () => {
+        const testt = {
+            "k1": 'val1',
+            "k2": 'val2',
         }
         state.akey = testt
     }
