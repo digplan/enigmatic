@@ -70,7 +70,7 @@ w.element = (
       }
       set(o) {
         o = beforeData(o)
-        w.flatten(o, this.template)
+        this.innerHTML = w.flatten(o, this.template)
         return o
       }
     }
