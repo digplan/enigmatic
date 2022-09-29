@@ -1,0 +1,25 @@
+<script src='enigmatic.js'></script>
+
+<div id='templ' data="akey">
+    {$key}: {_key_} : {_val_}, name = {name}, value = {value} <br>
+</div>
+
+<button onclick='window.testone()'>Test one</button>
+<button onclick='window.testtwo()'>Test two</button>
+
+<script type="module">
+    window.testone = () => {
+        const testone = [
+            { name: 'myname', value: 'myvalue' },
+            { name: 'myname2', value: 'myvalue2' },
+        ]
+        state.akey = testone
+    }
+    window.testtwo = () => {
+        const testt = {
+            "k1": { name: 'myname3', value: 'myvalue3' },
+            "k2": { name: 'myname4', value: 'myvalue4' },
+        }
+        state.akey = testt
+    }
+</script>
