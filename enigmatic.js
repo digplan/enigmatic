@@ -83,22 +83,22 @@ if (window.components) {
 
 /////// State, data, and reactivity
 w.state = new Proxy({}, {
-    set: (obj, prop, value) => {
-      console.log(prop, value)
-      if(this[prop] === value) {
-        return true
-      }
-      for (const e of $$(`[data=${prop}]`)) {
-        if(e.set) e.set(value)
-      }
-      obj[prop] = value
-      return value
-    },
-    get: (obj, prop, receiver) => {
-      if (prop == '_all') return obj
-      return obj[prop]
+  set: (obj, prop, value) => {
+    console.log(prop, value)
+    if (this[prop] === value) {
+      return true
     }
+    for (const e of $$(`[data=${prop}]`)) {
+      if (e.set) e.set(value)
+    }
+    obj[prop] = value
+    return value
+  },
+  get: (obj, prop, receiver) => {
+    if (prop == '_all') return obj
+    return obj[prop]
   }
+}
 )
 
 w.save = (obj, name) => {
@@ -145,19 +145,21 @@ w.start = async () => {
     let dta = e.attr?.data
     if (dta) {
       console.log(`processing ${e}`)
-      if (e.innerHTML) {
-        e.template = e.innerHTML
-        if(e.innerHTML.match('{')) {
-          e.innerHTML = ''
+      if (!e.set) {
+        if (e.innerHTML) {
+          e.template = e.innerHTML
+          if (e.innerHTML.match('{')) {
+            e.innerHTML = ''
+          }
+        }
+        e.set = (o) => {
+          e.innerHTML = w.flatten(o, e.template)
         }
       }
-      e.set = (o) => {
-        e.innerHTML = w.flatten(o, e.template)
-      }
       if (e.attr?.value) {
-         let o = e.attr.value
-         try { o = JSON.parse(o) } catch(e) {} 
-         w.state[dta] = o
+        let o = e.attr.value
+        try { o = JSON.parse(o) } catch (e) { }
+        w.state[dta] = o
       }
     }
   })
