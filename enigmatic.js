@@ -41,8 +41,9 @@ w.flatten = (obj, text) => {
   for (let k in obj) {
     let html = text.replaceAll('{$key}', k)
     for (let j in obj[k]) {
-      html = html.replaceAll('{_key_}', j).replaceAll('{_val_}', obj[k][j])
-      html = html.replaceAll(`{${j}}`, obj[k][j])
+      const val = typeof obj[k] === 'object' ? obj[k][j] : obj[k]
+      html = html.replaceAll('{_key_}', j).replaceAll('{_val_}', val)
+      html = html.replaceAll(`{${j}}`, val)
     }
     htmls += html
   }
@@ -68,12 +69,9 @@ w.element = (
         if (!this.template.match('{')) this.innerHTML = this.template
       }
       set(o) {
-        this.innerHTML = ''
         o = beforeData(o)
-        if (!Array.isArray(o)) o = [o]
-        const m = new Function('o', 'return `' + this.template + '`')
-        o.map((i) => (this.innerHTML += m(i)))
-        return true
+        w.flatten(o, this.template)
+        return o
       }
     }
   )
