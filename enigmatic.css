@@ -276,3 +276,11 @@ li:hover {
 .bg-green {
   background-color: green;
 }
+
+.bg-black {
+  background-color: black;
+}
+
+.white {
+  color: white;
+}
