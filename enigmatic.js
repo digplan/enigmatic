@@ -131,9 +131,10 @@ w.start = async () => {
   [...$$('*')].map(e => {
     e.attr = {};
     [...e.attributes].map((a) => (e.attr[a.name] = a.value))
-    if (e.attr?.fetch) {
+    if (e.attr.fetch) {
       e.fetch = async () => {
-        return w.get(e.attr?.fetch, {}, w[e.attr?.transform], e.attr.data)
+        console.log(`fetching ${e.attr.fetch}`)
+        return w.get(e.attr.fetch, {}, w[e.attr.transform], e.attr.data)
       }
     }
     if (e.hasAttribute('immediate')) {
@@ -153,10 +154,10 @@ w.start = async () => {
           }
         }
         e.set = (o) => {
-          e.innerHTML = w.flatten(o, e.template)
+          e.innerHTML = w.flatten(o, e.template) || o
         }
       }
-      if (e.attr?.value) {
+      if (e.attr.value) {
         let o = e.attr.value
         try { o = JSON.parse(o) } catch (e) { }
         w.state[dta] = o
