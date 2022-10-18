@@ -1,5 +1,11 @@
 <script src='enigmatic.js'></script>
 
-<div data="users" fetch="//randomuser.me/api" immediate>
-    <div>{name} {name.last}</div>
+<script>
+    function process(json) {
+        return console.log(json.results)
+    }
+</script>
+
+<div data="users" fetch="randomuser.me/api" immediate>
+    <div>{nat}</div>
 </div>
