@@ -1,6 +1,10 @@
 const w = {}, d = document
 w.enigmatic = { version: '2022-09-24 0.11.2' }
 
+window.onerror = (err, l, n) => {
+  document.write(`<h2 style="border:8px solid Tomato;">${[l, 'line: ' + n, err].join('<br>')}</h2>`)
+}
+
 /////// Helpers
 
 w.$ = d.querySelector.bind(d)
@@ -38,12 +42,12 @@ w.ready = async () => {
 w.flattenMap = (obj, text) => {
   let template = ''
   if (text.match(/\$key|\$val/i)) {
-    for(let k in obj) {
+    for (let k in obj) {
       template += text.replaceAll('{$key}', k).replaceAll('{$val}', obj[k])
-    } 
+    }
     return template
   }
-  for(let k in obj) {
+  for (let k in obj) {
     text = text.replaceAll(`{${k}}`, obj[k])
   }
   return text
