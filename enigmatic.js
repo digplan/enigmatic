@@ -35,14 +35,31 @@ w.ready = async () => {
 
 // Template a string, using {$key}, {_key_}, {_val_}
 // ie.. {key1: {name: 'value'}, key2: {name: 'value2'}} OR [{name: 'value'}, {name: 'value2'}]
+w.flattenMap = (obj, text) => {
+  let template = ''
+  if (text.match(/\$key|\$val/i)) {
+    for(let k in obj) {
+      template += text.replaceAll('{$key}', k).replaceAll('{$val}', obj[k])
+    } 
+    return template
+  }
+  for(let k in obj) {
+    text = text.replaceAll(`{${k}}`, obj[k])
+  }
+  return text
+}
+
 w.flatten = (obj, text) => {
+  if (!(obj instanceof Array) && typeof Object.values(obj)[0] === 'string') {
+    return w.flattenMap(obj, text)
+  }
   let htmls = ''
   if (obj instanceof Array) obj = { ...obj }
   for (let k in obj) {
     let html = text.replaceAll('{$key}', k)
     for (let j in obj[k]) {
       const val = typeof obj[k] === 'object' ? obj[k][j] : obj[k]
-      html = html.replaceAll('{_key_}', j).replaceAll('{_val_}', val)
+      html = html.replaceAll('{_key_}', j).replaceAll('{$val}', val)
       html = html.replaceAll(`{${j}}`, val)
     }
     htmls += html
@@ -149,7 +166,7 @@ w.start = async () => {
       if (!e.set) {
         if (e.innerHTML) {
           e.template = e.innerHTML
-          if (e.innerHTML.match('{')) {
+          if (e.innerHTML.match('{') && !e.attr.preserve) {
             e.innerHTML = ''
           }
         }
