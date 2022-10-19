@@ -1,11 +1,9 @@
 const w = {}, d = document
-w.enigmatic = { version: '2022-09-24 0.11.2' }
+w.enigmatic = { version: '2022-10-19 0.12.0' }
 
 window.onerror = (err, l, n) => {
   document.write(`<h2 style="border:8px solid Tomato;">${[l, 'line: ' + n, err].join('<br>')}</h2>`)
 }
-
-/////// Helpers
 
 w.$ = d.querySelector.bind(d)
 w.$$ = d.querySelectorAll.bind(d)
@@ -18,6 +16,7 @@ w.loadJS = (src) => {
     d.head.appendChild(s)
   })
 }
+
 w.loadCSS = (src) => {
   return new Promise((r, j) => {
     const s = document.createElement('link')
@@ -27,7 +26,9 @@ w.loadCSS = (src) => {
     d.head.appendChild(s)
   })
 }
+
 w.wait = (ms) => new Promise((r) => setTimeout(r, ms))
+
 w.ready = async () => {
   return new Promise((r) => {
     if (document.readyState === 'complete') r(true)
@@ -37,8 +38,6 @@ w.ready = async () => {
   })
 }
 
-// Template a string, using {$key}, {_key_}, {_val_}
-// ie.. {key1: {name: 'value'}, key2: {name: 'value2'}} OR [{name: 'value'}, {name: 'value2'}]
 w.flattenMap = (obj, text) => {
   let template = ''
   if (text.match(/\$key|\$val/i)) {
@@ -71,7 +70,6 @@ w.flatten = (obj, text) => {
   return htmls
 }
 
-/////// Custom element
 w.element = (
   name,
   { onMount = x => x, beforeData = (x) => x, style, template = '' }
@@ -102,7 +100,6 @@ if (window.components) {
   for (let name in window.components) w.element(name, window.components[name])
 }
 
-/////// State, data, and reactivity
 w.state = new Proxy({}, {
   set: (obj, prop, value) => {
     console.log(prop, value)
@@ -122,14 +119,6 @@ w.state = new Proxy({}, {
 }
 )
 
-w.save = (obj, name) => {
-  return localStorage.setItem(name, JSON.stringify(obj))
-}
-
-w.load = (name) => {
-  return localStorage.getItem(name)
-}
-
 w.get = async (url, options = {}, transform, key) => {
   let data = await (await fetch(`https://${url}`, options)).json()
   if (transform) data = transform(data)
@@ -146,7 +135,6 @@ w.stream = async (url, key) => {
   }
 }
 
-/////// Startup
 w.start = async () => {
   await w.ready();
   [...$$('*')].map(e => {
