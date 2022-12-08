@@ -102,7 +102,7 @@ if (window.components) {
 
 w.state = new Proxy({}, {
   set: (obj, prop, value) => {
-    console.log(prop, value)
+    console.log('state change:', prop, value)
     if (this[prop] === value) {
       return true
     }
@@ -120,8 +120,12 @@ w.state = new Proxy({}, {
 )
 
 w.get = async (url, options = {}, transform, key) => {
+  console.log(`fetching ${url}`)
   let data = await (await fetch(`https://${url}`, options)).json()
-  if (transform) data = transform(data)
+  if (transform) {
+    console.log('transforming ' + data)
+    data = transform(data)
+  }
   if (key) w.state[key] = data
   return data
 }
@@ -142,8 +146,7 @@ w.start = async () => {
     [...e.attributes].map((a) => (e.attr[a.name] = a.value))
     if (e.attr.fetch) {
       e.fetch = async () => {
-        console.log(`fetching ${e.attr.fetch}`)
-        return w.get(e.attr.fetch, {}, w[e.attr.transform], e.attr.data)
+        return w.get(e.attr.fetch, {}, null, e.attr.data)
       }
     }
     if (e.hasAttribute('immediate')) {
@@ -154,7 +157,7 @@ w.start = async () => {
     }
     let dta = e.attr?.data
     if (dta) {
-      console.log(`processing ${e}`)
+      console.log(`reactive ${e}`)
       if (!e.set) {
         if (e.innerHTML) {
           e.template = e.innerHTML
