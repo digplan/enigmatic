@@ -1,5 +1,9 @@
 <script src='../enigmatic.js'></script>
 
-<div data="users" fetch="randomuser.me/api" immediate>
-    <div>{}</div>
+<script>
+    get('randomuser.me/api', null, x=>x.results, 'users')
+</script> 
+
+<div data="users">
+    <div>{gender} {picture}</div>
 </div>
