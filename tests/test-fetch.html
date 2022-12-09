@@ -1,9 +1,26 @@
 <script src='../enigmatic.js'></script>
 
+<!-- HTML declarative -->
+<div data='users_declare' fetch='toydb-687z3zxxqk0r.runkit.sh/' immediate>{test_message}</div>
+
+<!-- Not immediate -->
+<div id='f' data='users_declare2' fetch='toydb-687z3zxxqk0r.runkit.sh/'>Delayed: {test_message}</div>
+<button onclick='f.fetch()'>Fetch</button>
+
+<!-- Transform results -->
 <script>
     get('randomuser.me/api', null, x=>x.results, 'users')
-</script> 
-
+</script>
 <div data="users">
     <div>{gender} {picture}</div>
 </div>
+
+<!-- Component -->
+<script>
+    element('my-c', {
+        onmount: e=>e.style.border='1px solid black',
+        template: 'is: {gender}', 
+        style: 'color:red'})
+</script>
+
+<my-c data='users_component'></my-c>
