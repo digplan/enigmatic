@@ -1,5 +1,40 @@
-// Create
+ArrayBuffer.from = (string) => Uint8Array.from(string.split('').map(e => e.charCodeAt(0))).buffer
 
+const webauthn = async () => {
+    const op = {}
+    op.attestation = 'direct'
+    op.authenticatorSelection = {
+        authenticatorAttachment: 'platform',
+        requireResidentKey: false,
+        userVerification: 'discouraged'
+    }
+    op.challenge = ArrayBuffer.from('challenge')
+    op.pubKeyCredParams = []
+    op.rp = { id: location.hostname, name: location.hostname }
+    op.timeout = 60000,
+        op.user = { name: 'cb', displayName: 'cb', id: ArrayBuffer.from('cb') }
+
+    return {
+        async makeCredential() {
+            return await navigator.credentials.create({ publicKey: op })
+        },
+        async getAssertion() {
+            return await navigator.credentials.get({ publicKey: op })
+        }
+    }
+}
+
+const w = await webauthn()
+const credential = await w.makeCredential()
+const decodedClientData = JSON.parse(new TextDecoder('utf-8').decode(credential.response.clientDataJSON))
+console.log(decodedClientData)
+// decode credential.response.attestationObject
+
+//
+ // w.getAssertion()
+//
+
+/*
 const credential = await navigator.credentials.create({
     publicKey: {
         challenge: Uint8Array.from(
@@ -42,7 +77,6 @@ const assertion = await navigator.credentials.get({
     publicKey: publicKeyCredentialRequestOptions
 })
 
-/* ALT
 
 ArrayBuffer.from = (string) => Uint8Array.from(string.split('').map(e => e.charCodeAt(0))).buffer
 
