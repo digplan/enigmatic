@@ -1,157 +1,81 @@
-# enigmatic
-Front end framework
+**Enigmatic.js - Documentation**
 
-## Usage HTML
-````html
-<script src='https://unpkg.com/enigmatic'></script>
-````
+*Note: The code provided is a self-contained JavaScript file that defines a library named Enigmatic.js. The documentation below explains the functions and features available in the library.*
 
-## Usage CSS
-````html
-<link rel=stylesheet href='https://unpkg.com/enigmatic/enigmatic.css'>
-````
+**1. Introduction**
 
-## Layout
+Enigmatic.js is a JavaScript library designed to provide utility functions and tools to simplify common tasks such as loading resources, working with custom elements, managing state, and handling data reactivity. The library aims to enhance web development productivity and offers the following features:
+
+- Resource Loading: Load JavaScript and CSS files dynamically.
+- Custom Element: Define custom web components with ease.
+- State Management: Easily manage and react to changes in application state.
+- Data Handling: Fetch data from remote sources and stream real-time data.
+
+**2. Helpers**
+
+Enigmatic.js provides several helper functions to simplify common tasks:
+
+- `w.$(selector)`: Returns the first element matching the given CSS selector within the document.
+- `w.$$(selector)`: Returns a list of all elements matching the given CSS selector within the document.
+- `w.loadJS(src)`: Loads a JavaScript file dynamically by creating a script element in the document's head.
+- `w.loadCSS(src)`: Loads a CSS file dynamically by creating a link element in the document's head.
+- `w.wait(ms)`: Returns a Promise that resolves after the specified number of milliseconds.
+- `w.ready()`: Returns a Promise that resolves when the DOM is ready and the document has completed loading.
+
+**3. Template Flattening**
+
+Enigmatic.js provides the `w.flatten(obj, text)` function to template a string using placeholders. The placeholders can be in the form of `{$key}`, `{_key_}`, or `{_val_}`. The function recursively replaces the placeholders with the corresponding keys and values from the provided object.
+
+**4. Custom Element**
+
+Enigmatic.js simplifies the process of defining custom elements with the `w.element(name, options)` function. It takes the following parameters:
+
+- `name` (string): The name of the custom element.
+- `options` (object): An object containing configuration options for the custom element.
+  - `onMount`: A function to be executed when the custom element is connected to the DOM.
+  - `beforeData`: A function to preprocess the data before rendering the template.
+  - `style`: A string containing CSS rules specific to the custom element.
+  - `template`: A string representing the HTML template for the custom element.
+
+**5. State, Data, and Reactivity**
+
+Enigmatic.js introduces reactive state management with the `w.state` object. It is implemented using a Proxy to reactively update DOM elements when state changes. DOM elements with `data` attributes that match state keys will be automatically updated when the corresponding state changes.
+
+- `w.state`: An object acting as reactive state storage. Changes to this object trigger updates in associated DOM elements with matching `data` attributes.
+
+- `w.save(obj, name)`: Saves a JavaScript object to the local storage under the specified name.
+- `w.load(name)`: Loads a JavaScript object from local storage using the given name.
+- `w.get(url, options, transform, key)`: Fetches data from a remote URL using the `fetch` API. Transforms the fetched data using the optional `transform` function and updates the state with the specified `key`.
+- `w.stream(url, key)`: Sets up an EventSource to stream real-time data from the specified URL and updates the state with the specified `key`.
+
+**6. Startup**
+
+Enigmatic.js provides the `w.start()` function to kickstart the library and process elements on the page with special attributes like `fetch`, `immediate`, and `stream`.
+
+**7. Global Object**
+
+The code creates a global object `w` that holds all the utility functions and state management features.
+
+**8. Usage Example**
+
+To use Enigmatic.js, include the script in your HTML file and call its functions as needed. For example:
+
 ```html
-<body style="--cols:1fr 1fr 1fr 10fr; --rows:1fr 10fr">
-<section style="--cols:1fr 10fr; --rows:1fr 10fr">
+<script src="path/to/enigmatic.js"></script>
+<script>
+  // Perform custom element registration
+  w.element('custom-element', {
+    template: '<div>{_key_}: {_val_}</div>',
+  });
+
+  // Initialize Enigmatic.js
+  (async () => {
+    await w.start();
+    w.state.exampleData = { key1: 'value1', key2: 'value2' };
+  })();
+</script>
 ```
 
-## Helpers
-````js
-$('.myclass') - document.querySelector
+**9. Support**
 
-$$('.myclass') - document.querySelectorAll
-
-loadJS('https://..') - load a js script
-
-loadCSS('https://..') - load a css file
-
-await wait(1000) - sleep
-
-await ready() - wait for page to load
-````
-
-## State
-A global to the page map, that provides reactivity
-
-Use the data attribute in HTML elements
-````html
-<div data='mydata'>Hello {name}</div>
-
-<script>
-  state.mydata = {name: 'World'}
-</script>
-````
-or in a custom element
-````html
-<script>
-  element('my-element', { template: 'Hello {name}' })
-</script>
-
-<my-element data='mydata'></my-element>
-
-<script>
-  state.mydata = {name: 'World'}
-</script>
-````
-Custom element using class syntax
-````js
-customElements.define('my-element', class MyElement extends HTMLElement {
-    set (data) {
-        console.log('setting data')
-        // ???
-    }
-})
-````
-## Flatten
-````js
-flatten(obj, text)
-````
-Templated text. Allows use of an object, or object array with string or object value.
-
-Object
-````html
-    <div data="testobj" style='--span: 4' preserve='true'>
-        {k1} {k2}
-    </div>
-
-    state.data
-````
-All keys and values
-````html
-    <div data="testobjkv" style='--span: 4' preserve='true'>
-        {$key} {$val}
-    </div>
-````
-Object array with string values
-````html
-    <div data="testarray" style='--span: 4' preserve='true'>
-        {$key}: {name}={value}
-    </div>
-````
-Object array with object values
-````html
-    <div data="testobjobj" style='--span: 4' preserve='true'>
-        {$key}: {name}={value}
-    </div>
-````
-## Get
-Alias for fetch, https only
-````js
-await get(url, options = {}, transform, key)
-
-const tf = obj => { obj.name = 'cb'; return obj }
-
-await get('https://my.server.com/api', {body: JSON.stringify({'my':'data'}), tf, 'mykey'})
-````
-
-## Stream
-Alias for EventSource
-````js
-stream(url, statekey)
-stream('https://my.websocket.server.com', 'mykey')
-````
-
-## Components
-````html
-<script src='components.js'></script>
-````
-Components allow for a collection of custom elements in one file, using a format like this:
-````js
-window.components = {
-    'hello-world': {
-        style: 'color: red',
-        onMount: async x => console.log('mounted h-w'),
-        template: 'Hello World'
-    },
-    'random-users': {
-        template: 'Hello Random user: {results[0].name.first} {results[0].name.last}',
-        onMount: e => console.log('Mounted', e.tagName, e.props),
-        beforeData: x => x.results[0].name.first = 'John'
-    },
-    'tailwind-example': {
-        template: '<div class="bg-blue-300 text-white font-bold py-2 px-4 rounded">I am Tailwind</div>',
-        onMount: async e => await loadCSS('https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css')
-    }
-}
-````
-Custom element definitions are provided with the name of the element, style, onMount function, and text template for the element.
-
-An optional beforeData can be provided to process the data beforehand to fit the template.
-
-## Element
-Element can be used to define these components in script.
-````js
-  element('element-name', { onMount, beforeData, style, template })
-````
-For instance,
-````js
-  const options = {}
-  options.onmount = () => console.log('mounted')
-  options.beforeData = obj => obj
-  options.style = 'color:red'
-  options.template = 'Hello {name}'
-
-  element('my-element', options)
-````
+For bug reports, feature requests, or general inquiries, please visit the GitHub repository of Enigmatic.js.
