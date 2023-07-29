@@ -1,5 +1,5 @@
 const w = {}, d = document
-w.enigmatic = { version: '2023-07-29 0.21.1' }
+w.enigmatic = { version: '2023-07-29 0.21.2' }
 
 window.onerror = (err, l, n) => {
   document.write(`<h2 style="border:8px solid Tomato;">${[l, 'line: ' + n, err].join('<br>')}</h2>`)
@@ -148,9 +148,8 @@ w.start = async () => {
       e.fetch = async () => {
         return w.get(e.attr.fetch, {}, null, e.attr.data)
       }
-    }
-    if (!e.hasAttribute('defer')) {
-      e.fetch()
+      if (!e.hasAttribute('defer'))
+        e.fetch()
     }
     if (e.attr?.stream) {
       e.stream = w.stream.bind(null, e.pr.stream, null, window[e.pr.transform], e.id)
