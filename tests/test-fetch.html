@@ -1,10 +1,10 @@
 <script src='../enigmatic.js'></script>
 
 <!-- HTML declarative -->
-<div data='users_declare' fetch='toydb-687z3zxxqk0r.runkit.sh/' immediate>{test_message}</div>
+<div data='users_declare' fetch='toydb-687z3zxxqk0r.runkit.sh/'>{test_message}</div>
 
 <!-- Not immediate -->
-<div id='f' data='users_declare2' fetch='toydb-687z3zxxqk0r.runkit.sh/'>Delayed: {test_message}</div>
+<div id='f' data='users_declare2' fetch='toydb-687z3zxxqk0r.runkit.sh/' defer>Delayed: {test_message}</div>
 <button onclick='f.fetch()'>Fetch</button>
 
 <!-- Transform results -->
