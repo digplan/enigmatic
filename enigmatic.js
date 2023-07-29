@@ -1,5 +1,5 @@
 const w = {}, d = document
-w.enigmatic = { version: '2022-10-19 0.12.0' }
+w.enigmatic = { version: '2023-07-29 0.21.1' }
 
 window.onerror = (err, l, n) => {
   document.write(`<h2 style="border:8px solid Tomato;">${[l, 'line: ' + n, err].join('<br>')}</h2>`)
@@ -121,7 +121,7 @@ w.state = new Proxy({}, {
 
 w.get = async (url, options = {}, transform, key) => {
   console.log(`fetching ${url}`)
-  let data = await (await fetch(`https://${url}`, options)).json()
+  let data = await (await fetch(url, options)).json()
   if (transform) {
     console.log('transforming ' + data)
     data = transform(data)
@@ -149,7 +149,7 @@ w.start = async () => {
         return w.get(e.attr.fetch, {}, null, e.attr.data)
       }
     }
-    if (e.hasAttribute('immediate')) {
+    if (!e.hasAttribute('defer')) {
       e.fetch()
     }
     if (e.attr?.stream) {
@@ -157,7 +157,7 @@ w.start = async () => {
     }
     let dta = e.attr?.data
     if (dta) {
-      console.log(`reactive ${e}`)
+      console.log(`reactive ${e} ${dta}`)
       if (!e.set) {
         if (e.innerHTML) {
           e.template = e.innerHTML
