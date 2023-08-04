@@ -121,7 +121,14 @@ w.state = new Proxy({}, {
 
 w.get = async (url, options = {}, transform, key) => {
   console.log(`fetching ${url}`)
-  let data = await (await fetch(url, options)).json()
+  let data
+  if (url.startsWith('{') || url.startsWith('[')) {
+      data = JSON.parse(url)
+  } else {
+      let f = await fetch(url, options)
+      if (!f.ok) throw Error(`Could not fetch ${url}`)
+      data = await f.json()
+  }
   if (transform) {
     console.log('transforming ' + data)
     data = transform(data)
