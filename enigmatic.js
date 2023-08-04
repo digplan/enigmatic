@@ -101,7 +101,8 @@ if (window.components) {
 }
 
 w.state = new Proxy({}, {
-  set: (obj, prop, value) => {
+  set: async (obj, prop, value) => {
+    await w.ready()
     console.log('state change:', prop, value)
     if (this[prop] === value) {
       return true
