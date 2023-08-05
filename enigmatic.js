@@ -154,7 +154,18 @@ w.start = async () => {
     [...e.attributes].map((a) => (e.attr[a.name] = a.value))
     if (e.attr.fetch) {
       e.fetch = async () => {
-        return w.get(e.attr.fetch, {}, null, e.attr.data)
+        let template = e.innerHTML
+        let ignore = template.match(/<!--IGNORE-->.*>/gms) || ''
+        if(ignore)
+          template = template.replace(ignore, '')
+        const obj = await w.get(e.attr.fetch, {}, null, e.attr.data)
+        e.innerHTML = w.flatten(obj, template) + ignore
+        let pos = 0
+        for(c in e.children) {
+          if('set' in e.children[c])
+            e.children[c].set(obj[pos++])
+        }
+        return obj
       }
       if (!e.hasAttribute('defer'))
         e.fetch()
