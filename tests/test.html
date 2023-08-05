@@ -8,24 +8,32 @@
 
        <div id='par' fetch='[{"id": 1, "control": "input"},{"id": 2, "control": "select"}]'>
             <div>{control}</div>
-            <test-element id="a{id}" onclick="$('#a{id}').myfunc()"></test-element>
+            <test-element id="a{id}"></test-element>
             <br>
             <!--IGNORE-->
                 ignore this
             <!--ENDIGNORE-->
        </div>
-
     </section>
     <div class="bg-yellow"></div>
 </body>
 
 <script>
+    e('test-element', null, {border: '4px green solid'}, {
+        set: o=>console.log(o),
+        click: x=>alert()
+    })
+    /*
+    More verbose:
     customElements.define('test-element', class extends HTMLElement {
+        connectedCallback() {
+            this.style.border = '3px black solid'
+        }
         set(o) {
             this.innerHTML = `<${o.control}></${o.control}>`
         }
         myfunc() {
             alert('custom func')
         }
-    })
+    })*/
 </script>

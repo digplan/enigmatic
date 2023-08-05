@@ -32,7 +32,6 @@ ol {
 }
 
 body,
-home,
 section {
   display: grid;
   margin: 0;
