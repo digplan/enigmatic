@@ -70,9 +70,22 @@ w.flatten = (obj, text) => {
   return htmls
 }
 
+w.e = (name, mount, style, fn) => {
+  customElements.define(name, class extends HTMLElement {
+    connectedCallback() {
+      Object.assign(this.style, style)
+      if (mount) mount()
+      Object.assign(this, fn)
+      Object.keys(fn).filter(k=>k.match(/click/)).forEach(k=>{
+        this.addEventListener(k, fn[k], true)
+      })
+    }
+  })
+}
+
 w.element = (
   name,
-  { onMount = x => x, beforeData = (x) => x, style, template = '' }
+  { onMount = x => x, beforeData = (x) => x, style, template = '', fn = {} }
 ) => {
   customElements.define(
     name,
@@ -86,6 +99,7 @@ w.element = (
         }
         this.template = template
         if (!this.template.match('{')) this.innerHTML = this.template
+        Object.assign(this, fn)
       }
       set(o) {
         o = beforeData(o)
@@ -162,7 +176,8 @@ w.start = async () => {
         e.innerHTML = w.flatten(obj, template) + ignore
         let pos = 0
         for(c in e.children) {
-          if('set' in e.children[c])
+          const ele = e.children[c]
+          if(typeof ele === 'object' && 'set' in ele)
             e.children[c].set(obj[pos++])
         }
         return obj
