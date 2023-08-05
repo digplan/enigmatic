@@ -8,7 +8,7 @@
 
        <div id='par' fetch='[{"id": 1, "control": "input"},{"id": 2, "control": "select"}]'>
             <div>{control}</div>
-            <test-element id="{id}"></test-element>
+            <test-element id="a{id}" onclick="$('#a{id}').myfunc()"></test-element>
             <br>
             <!--IGNORE-->
                 ignore this
@@ -23,6 +23,9 @@
     customElements.define('test-element', class extends HTMLElement {
         set(o) {
             this.innerHTML = `<${o.control}></${o.control}>`
+        }
+        myfunc() {
+            alert('custom func')
         }
     })
 </script>
