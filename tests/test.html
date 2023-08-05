@@ -5,13 +5,12 @@
 <body style="--cols:1fr 10fr 1fr; --rows:1fr">
     <div class="bg-black">a</div>
     <section class="bg-white">
-
        <div id='par' fetch='[{"id": 1, "control": "input"},{"id": 2, "control": "select"}]'>
             <div>{control}</div>
             <test-element id="a{id}"></test-element>
             <br>
             <!--IGNORE-->
-                ignore this
+                <test-link></test-link>
             <!--ENDIGNORE-->
        </div>
     </section>
@@ -19,10 +18,16 @@
 </body>
 
 <script>
-    e('test-element', null, {border: '4px green solid'}, {
+    e('test-element', {
         set: o=>console.log(o),
-        click: x=>alert()
+        click: ev=>alert()
+    }, { border: '4px green solid' })
+
+    e('test-link', {
+        init: e => e.innerHTML = '<a>Click me</a>',
+        click: ev => alert()
     })
+
     /*
     More verbose:
     customElements.define('test-element', class extends HTMLElement {
