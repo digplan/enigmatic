@@ -1,13 +1,28 @@
 <script src='../enigmatic.js'></script>
 <script src='../components.js'></script>
-<link rel='stylesheet' href='https://unpkg.com/enigmatic/enigmatic.css'>
+<link rel='stylesheet' href='../enigmatic.css'>
 
 <body style="--cols:1fr 10fr 1fr; --rows:1fr">
     <div class="bg-black">a</div>
     <section class="bg-white">
 
-       <div data="target" fetch='{"message": "hi"}'>{message}</div>
+       <div id='par' fetch='[{"id": 1, "control": "input"},{"id": 2, "control": "select"}]'>
+            <div>{control}</div>
+            <test-element id="{id}"></test-element>
+            <br>
+            <!--IGNORE-->
+                ignore this
+            <!--ENDIGNORE-->
+       </div>
 
     </section>
     <div class="bg-yellow"></div>
 </body>
+
+<script>
+    customElements.define('test-element', class extends HTMLElement {
+        set(o) {
+            this.innerHTML = `<${o.control}></${o.control}>`
+        }
+    })
+</script>
