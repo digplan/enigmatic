@@ -70,15 +70,15 @@ w.flatten = (obj, text) => {
   return htmls
 }
 
-w.e = (name, mount, style, fn) => {
+w.e = (name, fn = {}, style = {}) => {
   customElements.define(name, class extends HTMLElement {
     connectedCallback() {
       Object.assign(this.style, style)
-      if (mount) mount()
       Object.assign(this, fn)
       Object.keys(fn).filter(k=>k.match(/click/)).forEach(k=>{
         this.addEventListener(k, fn[k], true)
       })
+      if(this.init) this.init(this)
     }
   })
 }
