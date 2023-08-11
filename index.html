@@ -1,33 +1,76 @@
-<script src=components.js></script>
-<script src=enigmatic.js></script>
-<link rel=stylesheet href=enigmatic.css>
+<!DOCTYPE html>
+<html lang="en">
 
-<body style="--cols:3fr 10fr 3fr; --rows:3fr 11fr 2fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enigmatic Library</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
 
-    <div class="bg-white"></div>
-    <div class="bg-white">
-        <img height='62' style='filter:invert(50%)' 
-          src='https://unpkg.com/simple-icons@v7/icons/apple.svg'>
+        .header {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1rem;
+        }
 
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 2rem;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .description {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .install {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .install-code {
+            background-color: #f0f0f0;
+            padding: 1rem;
+            border-radius: 5px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Enigmatic</h1>
+        <p>Simpler front-end JS</p>
     </div>
-    <div class="bg-white"></div>
-
-    <div class="bg-white"></div>
-    <section class="bg-white" style="--cols: 1fr 1fr 1fr; --rows: 1fr 1fr 1fr">
-        <div class="bg-green"></div>
-        <div class="bg-white"><hello-world></hello-world></div>
-        <div class="bg-white"></div>
-        <div class="bg-white"></div>
-        <div class="bg-white"></div>
-        <div class="bg-white"></div>
-        <div class="bg-white"></div>
-        <div class="bg-white"></div>
-        <div class="bg-green"></div>
-    </section>
-    <div class="bg-white"></div>
-
-    <div class="bg-yellow"></div>
-    <div class="bg-yellow"></div>
-    <div class="bg-yellow"></div>
-
+    <div class="container">
+        <h2>What is Enigmatic?</h2>
+        <p class="description">
+            Enigmatic is a powerful JavaScript library designed to solve complex problems with ease.
+        </p>
+        <h2>Getting Started</h2>
+        <div class="install">
+            <p>To start using Enigmatic in your projects, simply include the following script tag:</p>
+            <pre class="install-code"><code>&lt;script src="https://unpkg.com/enigmatic"&gt;&lt;/script&gt;</code></pre>
+        </div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2023 Enigmatic. All rights reserved.</p>
+    </div>
 </body>
+
+</html>
