@@ -111,7 +111,7 @@ w.element = (
 }
 
 if (window.components) {
-  for (let name in window.components) w.element(name, window.components[name])
+  for (let name in window.components) w.e(name, window.components[name], window.components[name]?.style)
 }
 
 w.state = new Proxy({}, {

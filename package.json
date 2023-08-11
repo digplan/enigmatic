@@ -1,7 +1,7 @@
 {
     "name": "enigmatic",
     "main": "enigmatic.js",
-    "version": "0.21.7",
+    "version": "0.22.0",
     "scripts": {
         "test": "node test.mjs"
     },

@@ -61,7 +61,7 @@ The code creates a global object `w` that holds all the utility functions and st
 To use Enigmatic.js, include the script in your HTML file and call its functions as needed. For example:
 
 ```html
-<script src="path/to/enigmatic.js"></script>
+<script src="unpkg.com/enigmatic"></script>
 <script>
   // Perform custom element registration
   w.element('custom-element', {
