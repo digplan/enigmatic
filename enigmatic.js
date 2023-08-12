@@ -47,7 +47,13 @@ w.flattenMap = (obj, text) => {
     return template
   }
   for (let k in obj) {
-    text = text.replaceAll(`{${k}}`, obj[k])
+    let val = obj[k]
+    if(typeof val === 'object') {
+      for(const i in val)
+        text = text.replaceAll(`{${k}.${i}}`, val[i])
+    } else {
+      text = text.replaceAll(`{${k}}`, val)
+    }
   }
   return text
 }
@@ -63,11 +69,37 @@ w.flatten = (obj, text) => {
     for (let j in obj[k]) {
       const val = typeof obj[k] === 'object' ? obj[k][j] : obj[k]
       html = html.replaceAll('{_key_}', j).replaceAll('{$val}', val)
-      html = html.replaceAll(`{${j}}`, val)
+      if(typeof val === 'object') {
+        for (const i in val)
+          text = text.replaceAll(`{${j}.${i}}`, val[i])
+      } else {
+        html = html.replaceAll(`{${j}}`, val)
+      }
     }
     htmls += html
   }
   return htmls
+}
+
+w.flatten = (obj, text) => {
+  if(obj instanceof Array)
+    return obj.map(o => w.flatten(o, text)).join('')
+  /*
+  if (text.match('{$key}')) {
+    let v = text
+    for (let i in obj)
+      v += text.replace(/{\$key}/gm, i)
+    text = v
+  }*/
+  const m = text.match(/{([^}]*)}/gm)
+  for(const txt of m) {
+    let val = JSON.parse(JSON.stringify(obj))
+    for(let k of txt.replaceAll(/{|}/g, '').split('.')) {
+      val = val[k]
+    }
+    text = text.replaceAll(txt, val)
+  }
+  return text
 }
 
 w.e = (name, fn = {}, style = {}) => {
@@ -167,15 +199,20 @@ w.start = async () => {
     e.attr = {};
     [...e.attributes].map((a) => (e.attr[a.name] = a.value))
     if (e.attr.fetch) {
+      this.template = e.innerHTML
       e.fetch = async () => {
-        let template = e.innerHTML
+        let template = this.template
         let ignore = template.match(/<!--IGNORE-->.*>/gms) || ''
         if(ignore)
           template = template.replace(ignore, '')
-        const obj = await w.get(e.attr.fetch, {}, null, e.attr.data)
+        let obj = await w.get(e.attr.fetch, {}, null, e.attr.data)
+        if (e.hasAttribute('t')) {
+          obj = eval(e.getAttribute('t'))(obj)
+          console.log('transforming', obj)
+        }
         e.innerHTML = w.flatten(obj, template) + ignore
         let pos = 0
-        for(c in e.children) {
+        for(let c in e.children) {
           const ele = e.children[c]
           if(typeof ele === 'object' && 'set' in ele)
             e.children[c].set(obj[pos++])
