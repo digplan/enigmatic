@@ -95,8 +95,7 @@ w.flatten = (obj, text) => {
   return text
 }
 
-if (!window.components) window.components = {
-  "data-view": {
+w.e("data-view", {
     async init() {
       let ignore = this.innerHTML.match(/<!--IGNORE-->.*>/gms) || ''
       if (!ignore) {
@@ -108,7 +107,7 @@ if (!window.components) window.components = {
       this.fetch()
     },
     set(o) {
-      console.log('setting', o)
+      console.log('setting', this.template, o)
       const f = this.getAttribute('t')
       if (f) o = eval(f)(o)
       this.innerHTML = w.flatten(o, this.template)
@@ -128,8 +127,8 @@ if (!window.components) window.components = {
       if (tf) data = eval(tf)(data)
       this.set(data)
     }
-  }
-}
+})
+
 for (let name in window.components) w.e(name, window.components[name], window.components[name]?.style)
 Object.assign(window, w);
 

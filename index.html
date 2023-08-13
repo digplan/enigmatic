@@ -3,9 +3,15 @@
 
 <body style="--cols:1fr; --rows:1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr">
     <div>
-      Object:
+      1:
       <pre>&ltdata-view fetch="https://toydb-687z3zxxqk0r.runkit.sh/">{test_message}&lt;/data-view></pre>
       <data-view id=one fetch="https://toydb-687z3zxxqk0r.runkit.sh/">{test_message}</data-view>
+    </div>
+
+    <div>
+      2:
+      <pre>&ltdata-view fetch='{"name": "cb"}'>{name}&lt;/data-view></pre>
+      <data-view id=two fetch='{"name": "cb"}'>{name}</data-view>
     </div>
 
     <div id="ff" fetch='[{"name":"cb", "loc": "ee"}, {"name":"bc"}]' t="x => x" defer>
