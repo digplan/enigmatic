@@ -38,71 +38,8 @@ w.ready = async () => {
   })
 }
 
-w.flattenMap = (obj, text) => {
-  let template = ''
-  if (text.match(/\$key|\$val/i)) {
-    for (let k in obj) {
-      template += text.replaceAll('{$key}', k).replaceAll('{$val}', obj[k])
-    }
-    return template
-  }
-  for (let k in obj) {
-    let val = obj[k]
-    if(typeof val === 'object') {
-      for(const i in val)
-        text = text.replaceAll(`{${k}.${i}}`, val[i])
-    } else {
-      text = text.replaceAll(`{${k}}`, val)
-    }
-  }
-  return text
-}
-
-w.flatten = (obj, text) => {
-  if (!(obj instanceof Array) && typeof Object.values(obj)[0] === 'string') {
-    return w.flattenMap(obj, text)
-  }
-  let htmls = ''
-  if (obj instanceof Array) obj = { ...obj }
-  for (let k in obj) {
-    let html = text.replaceAll('{$key}', k)
-    for (let j in obj[k]) {
-      const val = typeof obj[k] === 'object' ? obj[k][j] : obj[k]
-      html = html.replaceAll('{_key_}', j).replaceAll('{$val}', val)
-      if(typeof val === 'object') {
-        for (const i in val)
-          text = text.replaceAll(`{${j}.${i}}`, val[i])
-      } else {
-        html = html.replaceAll(`{${j}}`, val)
-      }
-    }
-    htmls += html
-  }
-  return htmls
-}
-
-w.flatten = (obj, text) => {
-  if(obj instanceof Array)
-    return obj.map(o => w.flatten(o, text)).join('')
-  /*
-  if (text.match('{$key}')) {
-    let v = text
-    for (let i in obj)
-      v += text.replace(/{\$key}/gm, i)
-    text = v
-  }*/
-  const m = text.match(/{([^}]*)}/gm)
-  for(const txt of m) {
-    let val = JSON.parse(JSON.stringify(obj))
-    for(let k of txt.replaceAll(/{|}/g, '').split('.')) {
-      val = val[k]
-    }
-    text = text.replaceAll(txt, val)
-  }
-  return text
-}
-
 w.e = (name, fn = {}, style = {}) => {
+  console.log(`registering component ${name}`)
   customElements.define(name, class extends HTMLElement {
     connectedCallback() {
       Object.assign(this.style, style)
@@ -113,37 +50,6 @@ w.e = (name, fn = {}, style = {}) => {
       if(this.init) this.init(this)
     }
   })
-}
-
-w.element = (
-  name,
-  { onMount = x => x, beforeData = (x) => x, style, template = '', fn = {} }
-) => {
-  customElements.define(
-    name,
-    class extends HTMLElement {
-      connectedCallback(props) {
-        onMount(this)
-        if (style) {
-          const s = document.createElement('style')
-          s.innerHTML = `${name} {${style}}`
-          d.body.appendChild(s)
-        }
-        this.template = template
-        if (!this.template.match('{')) this.innerHTML = this.template
-        Object.assign(this, fn)
-      }
-      set(o) {
-        o = beforeData(o)
-        this.innerHTML = w.flatten(o, this.template)
-        return o
-      }
-    }
-  )
-}
-
-if (window.components) {
-  for (let name in window.components) w.e(name, window.components[name], window.components[name]?.style)
 }
 
 w.state = new Proxy({}, {
@@ -166,24 +72,6 @@ w.state = new Proxy({}, {
 }
 )
 
-w.get = async (url, options = {}, transform, key) => {
-  console.log(`fetching ${url}`)
-  let data
-  if (url.startsWith('{') || url.startsWith('[')) {
-      data = JSON.parse(url)
-  } else {
-      let f = await fetch(url, options)
-      if (!f.ok) throw Error(`Could not fetch ${url}`)
-      data = await f.json()
-  }
-  if (transform) {
-    console.log('transforming ' + data)
-    data = transform(data)
-  }
-  if (key) w.state[key] = data
-  return data
-}
-
 w.stream = async (url, key) => {
   const ev = new EventSource(url)
   ev.onmessage = (ev) => {
@@ -193,63 +81,58 @@ w.stream = async (url, key) => {
   }
 }
 
-w.start = async () => {
-  await w.ready();
-  [...$$('*')].map(e => {
-    e.attr = {};
-    [...e.attributes].map((a) => (e.attr[a.name] = a.value))
-    if (e.attr.fetch) {
-      this.template = e.innerHTML
-      e.fetch = async () => {
-        let template = this.template
-        let ignore = template.match(/<!--IGNORE-->.*>/gms) || ''
-        if(ignore)
-          template = template.replace(ignore, '')
-        let obj = await w.get(e.attr.fetch, {}, null, e.attr.data)
-        if (e.hasAttribute('t')) {
-          obj = eval(e.getAttribute('t'))(obj)
-          console.log('transforming', obj)
-        }
-        e.innerHTML = w.flatten(obj, template) + ignore
-        let pos = 0
-        for(let c in e.children) {
-          const ele = e.children[c]
-          if(typeof ele === 'object' && 'set' in ele)
-            e.children[c].set(obj[pos++])
-        }
-        return obj
-      }
-      if (!e.hasAttribute('defer'))
-        e.fetch()
+w.flatten = (obj, text) => {
+  if (obj instanceof Array)
+    return obj.map(o => w.flatten(o, text)).join('')
+  const m = text.match(/{([^}]*)}/gm) || []
+  for (const txt of m) {
+    let val = JSON.parse(JSON.stringify(obj))
+    for (let k of txt.replaceAll(/{|}/g, '').split('.')) {
+      val = val[k]
     }
-    if (e.attr?.stream) {
-      e.stream = w.stream.bind(null, e.pr.stream, null, window[e.pr.transform], e.id)
-    }
-    let dta = e.attr?.data
-    if (dta) {
-      console.log(`reactive ${e} ${dta}`)
-      if (!e.set) {
-        if (e.innerHTML) {
-          e.template = e.innerHTML
-          if (e.innerHTML.match('{') && !e.attr.preserve) {
-            e.innerHTML = ''
-          }
-        }
-        e.set = (o) => {
-          e.innerHTML = w.flatten(o, e.template) || o
-        }
-      }
-      if (e.attr.value) {
-        let o = e.attr.value
-        try { o = JSON.parse(o) } catch (e) { }
-        w.state[dta] = o
-      }
-    }
-  })
+    text = text.replaceAll(txt, val)
+  }
+  return text
 }
 
+if (!window.components) window.components = {
+  "data-view": {
+    async init() {
+      let ignore = this.innerHTML.match(/<!--IGNORE-->.*>/gms) || ''
+      if (!ignore) {
+        this.template = this.innerHTML
+      } else {
+        this.ignoreblock = ignore
+        this.template = this.innerHTML.replace(ignore, '')
+      }
+      this.fetch()
+    },
+    set(o) {
+      console.log('setting', o)
+      const f = this.getAttribute('t')
+      if (f) o = eval(f)(o)
+      this.innerHTML = w.flatten(o, this.template)
+      const target = this.getAttribute('data')
+      if (target) w.state[target] = o
+    },
+    async fetch() {
+      const u = this.getAttribute('fetch')
+      if (u.startsWith('[') || u.startsWith('{'))
+        return this.set(JSON.parse(u))
+      const opts = {}
+      const f = await fetch(u, opts)
+      console.log(f)
+      if (!f.ok) throw Error(`Could not fetch ${u}`)
+      let data = await f.json()
+      const tf = this.getAttribute('t')
+      if (tf) data = eval(tf)(data)
+      this.set(data)
+    }
+  }
+}
+for (let name in window.components) w.e(name, window.components[name], window.components[name]?.style)
 Object.assign(window, w);
 
 (async () => {
-  await w.start()
+  await w.ready()
 })()
