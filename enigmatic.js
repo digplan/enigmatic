@@ -44,7 +44,7 @@ w.e = (name, fn = {}, style = {}) => {
     connectedCallback() {
       Object.assign(this.style, style)
       Object.assign(this, fn)
-      Object.keys(fn).filter(k=>k.match(/click/)).forEach(k=>{
+      Object.keys(fn).filter(k=>k.match(/click|mouseover/)).forEach(k=>{
         this.addEventListener(k, fn[k], true)
       })
       if(this.init) this.init(this)
@@ -69,8 +69,7 @@ w.state = new Proxy({}, {
     if (prop == '_all') return obj
     return obj[prop]
   }
-}
-)
+})
 
 w.stream = async (url, key) => {
   const ev = new EventSource(url)
@@ -95,7 +94,7 @@ w.flatten = (obj, text) => {
   return text
 }
 
-w.e("data-view", {
+const props = {
     async init() {
       let ignore = this.innerHTML.match(/<!--IGNORE-->.*>/gms) || ''
       if (!ignore) {
@@ -104,18 +103,19 @@ w.e("data-view", {
         this.ignoreblock = ignore
         this.template = this.innerHTML.replace(ignore, '')
       }
+      this.innerHTML = ''
       this.fetch()
     },
     set(o) {
-      console.log('setting', this.template, o)
-      const f = this.getAttribute('t')
-      if (f) o = eval(f)(o)
+      console.log('setting', this, this.template, o)
       this.innerHTML = w.flatten(o, this.template)
-      const target = this.getAttribute('data')
-      if (target) w.state[target] = o
+      const dt = this.getAttribute('data')
+      if(dt)
+        w.state[dt] = o
     },
     async fetch() {
       const u = this.getAttribute('fetch')
+      if(!u) return
       if (u.startsWith('[') || u.startsWith('{'))
         return this.set(JSON.parse(u))
       const opts = {}
@@ -127,11 +127,17 @@ w.e("data-view", {
       if (tf) data = eval(tf)(data)
       this.set(data)
     }
-})
+}
 
-for (let name in window.components) w.e(name, window.components[name], window.components[name]?.style)
+for (let name in window.components) 
+  w.e(name, window.components[name], window.components[name]?.style)
+
 Object.assign(window, w);
 
 (async () => {
-  await w.ready()
+  await ready()
+  for (const i of $$('div')) {
+    Object.assign(i, props)
+    i?.init()
+  }
 })()

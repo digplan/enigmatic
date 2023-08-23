@@ -2,38 +2,18 @@
 <link rel="stylesheet" href="enigmatic.css">
 
 <body style="--cols:1fr; --rows:1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr">
-    <div>
-      1:
-      <pre>&ltdata-view fetch="https://toydb-687z3zxxqk0r.runkit.sh/">{test_message}&lt;/data-view></pre>
-      <data-view id=one fetch="https://toydb-687z3zxxqk0r.runkit.sh/">{test_message}</data-view>
-    </div>
+    <script>
+      e('my-element', {
+        init: (e) => e.innerText = 'ready',
+        click: (ev) => ev.target.style.color = 'green',
+        mouseover: (ev) => ev.target.style.color = 'yellow',
+      }, {
+        color: 'red',
+        "text-decoration": 'underline'
+      })
+    </script>
+    <my-element></my-element>
 
-    <div>
-      2:
-      <pre>&ltdata-view fetch='{"name": "cb"}'>{name}&lt;/data-view></pre>
-      <data-view id=two fetch='{"name": "cb"}'>{name}</data-view>
-    </div>
+    <div id=one fetch="https://randomuser.me/api/?results=1" t="e=>e.results">{email}</div>
 
-    <div id="ff" fetch='[{"name":"cb", "loc": "ee"}, {"name":"bc"}]' t="x => x" defer>
-        <div>
-          {name} {loc}
-        </div>
-        <!--IGNORE-->
-        <button onclick="ff.fetch()">fetch</button>
-        <!--ENDIGNORE-->
-    </div>
-
-     <div id="gg" fetch='[{"name": "cb", "age": "42"}, {"name": "cb", "age": "43"}]' t="x => x" defer>
-        {name} {age}
-        <!--IGNORE-->
-        <button onclick="gg.fetch()">fetch</button>
-        <!--ENDIGNORE-->
-     </div>   
-
-    <div id="rr" fetch='[{"name": "cb", "age": "42"}, {"name": "cb", "age": "43"}]' t="x => x" defer>
-      {$val}
-      <!--IGNORE-->
-      <button onclick="rr.fetch()">fetch</button>
-      <!--ENDIGNORE-->
-    </div>
 </body>
