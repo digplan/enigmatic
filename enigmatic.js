@@ -71,6 +71,15 @@ w.state = new Proxy({}, {
   }
 })
 
+w.get = async (url, opts = {}, transform, key) => {
+  const res = await fetch(url, opts)
+  if (!res.ok) throw Error(`Could not fetch ${url}`)
+  let data = await res.json()
+  if (transform) data = transform(data)
+  if (key) w.state[key] = data
+  return data
+}
+
 w.stream = async (url, key) => {
   const ev = new EventSource(url)
   ev.onmessage = (ev) => {
