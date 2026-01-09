@@ -1,10 +1,11 @@
 {
     "name": "enigmatic",
     "main": "enigmatic.js",
-    "version": "0.27.0",
+    "version": "2.0.0",
     "scripts": {
-        "test": "jest",
-        "test:watch": "jest --watch"
+        "start": "bun server/server.js",
+        "test": "jest --config __tests__/jest.config.js",
+        "test:watch": "jest --watch --config __tests__/jest.config.js"
     },
     "devDependencies": {
         "jest": "^29.7.0",

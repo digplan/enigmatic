@@ -7,4 +7,3 @@ if (typeof window !== 'undefined' && !window.components) {
 if (typeof global.fetch === 'undefined') {
   global.fetch = require('whatwg-fetch').fetch
 }
-
