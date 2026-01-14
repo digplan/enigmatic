@@ -1,4 +1,4 @@
-window.api = "https://enigmatic.digplan.workers.dev";
+window.api_url = "https://enigmatic.digplan.workers.dev"
 
 window.$  = document.querySelector.bind(document)
 window.$$ = document.querySelectorAll.bind(document)
@@ -48,35 +48,35 @@ window.custom = {
     }
   },
   "api": {
-    get: async (key) => {
-      const res = await fetchJson('GET', `${window.api}/${encodeURIComponent(key)}`)
+    get: async function(key) {
+      const res = await fetchJson('GET', `${window.api_url}/${encodeURIComponent(key)}`)
       return res.data
     },
-    set: async (key, value) => {
-      const res = await fetchJson('POST', `${window.api}/${encodeURIComponent(key)}`, {
+    set: async function(key, value) {
+      const res = await fetchJson('POST', `${window.api_url}/${encodeURIComponent(key)}`, {
         body: typeof value === 'string' ? value : JSON.stringify(value)
       })
       return res.data
     },
-    delete: async (key) => {
-      const res = await fetchJson('DELETE', `${window.api}/${encodeURIComponent(key)}`)
+    delete: async function(key) {
+      const res = await fetchJson('DELETE', `${window.api_url}/${encodeURIComponent(key)}`)
       return res.data
     },
-    put: async (key, body) => {
-      const res = await fetchJson('PUT', `${window.api}/${encodeURIComponent(key)}`, {
+    put: async function(key, body) {
+      const res = await fetchJson('PUT', `${window.api_url}/${encodeURIComponent(key)}`, {
         body: body instanceof Blob ? body : typeof body === 'string' ? body : JSON.stringify(body)
       })
       return res.data
     },
-    purge: async (key) => {
-      const res = await fetchJson('PURGE', `${window.api}/${encodeURIComponent(key)}`)
+    purge: async function(key) {
+      const res = await fetchJson('PURGE', `${window.api_url}/${encodeURIComponent(key)}`)
       return res.data
     },
-    login: () => {
-      window.location.href = '/login'
+    login: function() {
+      window.location.href = `${window.api_url}/login`
     },
-    logout: () => {
-      window.location.href = '/logout'
+    logout: function() {
+      window.location.href = `${window.api_url}/logout`
     }
   }
 }
