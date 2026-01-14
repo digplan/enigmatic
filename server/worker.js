@@ -1,17 +1,28 @@
 export default {
   async fetch(req, env) {
     const url = new URL(req.url), path = url.pathname, key = path.slice(1);
+    
+    // CORS Configuration
+    const cors = {
+      "Access-Control-Allow-Origin": req.headers.get("Origin") || "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie",
+      "Access-Control-Allow-Credentials": "true"
+    };
+
+    // 0. HANDLE PREFLIGHT
+    if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+
     const cb = `https://${url.host}/callback`;
     const token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
     
-    // 1. LOGOUT (First to fix "zombie session" lockouts)
+    // 1. LOGOUT
     if (path === "/logout") {
       if (token) await env.MY_KV.delete(`session:${token}`);
       return new Response(null, { status: 302, headers: { 
         Location: `https://${env.AUTH0_DOMAIN}/v2/logout?client_id=${env.AUTH0_CLIENT_ID}&returnTo=${url.origin}`,
         "Set-Cookie": "token=; Max-Age=0; Path=/; Secure; SameSite=Lax"
       }});
-      
     }
 
     // PUBLIC: Login & Callback
@@ -41,16 +52,19 @@ export default {
     }
 
     // AUTH CHECK
-    if (!token || !(await env.MY_KV.get(`session:${token}`))) return new Response("Unauthorized", { status: 401 });
+    // Added cors to headers here so frontend can see the 401 error
+    if (!token || !(await env.MY_KV.get(`session:${token}`))) return new Response("Unauthorized", { status: 401, headers: cors });
 
-    if (!key) return new Response("Welcome");
+    if (!key) return new Response("Welcome", { headers: cors });
+    
+    // API OPERATIONS (Added cors to all responses)
     switch (req.method) {
-      case "GET": return new Response(await env.MY_KV.get(key) || "Not found");
-      case "DELETE": await env.MY_KV.delete(key); return new Response("Deleted KV");
-      case "POST": await env.MY_KV.put(key, await req.text()); return new Response("Saved KV");
-      case "PUT": await env.MY_R2.put(key, req.body); return new Response("Saved R2");
-      case "PURGE": await env.MY_R2.delete(key); return new Response("Deleted R2");
-      default: return new Response("Method not allowed", { status: 405 });
+      case "GET": return new Response(await env.MY_KV.get(key) || "Not found", { headers: cors });
+      case "DELETE": await env.MY_KV.delete(key); return new Response("Deleted KV", { headers: cors });
+      case "POST": await env.MY_KV.put(key, await req.text()); return new Response("Saved KV", { headers: cors });
+      case "PUT": await env.MY_R2.put(key, req.body); return new Response("Saved R2", { headers: cors });
+      case "PURGE": await env.MY_R2.delete(key); return new Response("Deleted R2", { headers: cors });
+      default: return new Response("Method not allowed", { status: 405, headers: cors });
     }
   }
 };
