@@ -23,7 +23,7 @@ export default {
         if (token) await env.KV.delete(`session:${token}`);
         return new Response(null, { status: 302, headers: { 
           Location: `https://${env.AUTH0_DOMAIN}/v2/logout?client_id=${env.AUTH0_CLIENT_ID}&returnTo=${url.origin}`,
-          "Set-Cookie": "token=; Max-Age=0; Path=/; Secure; SameSite=Lax"
+          "Set-Cookie": "token=; Max-Age=0; Path=/; Secure; SameSite=None"
         }});
       } catch (e) {
         return new Response(`Error at line 21: ${e.message}`, { status: 500, headers: cors });
@@ -58,7 +58,7 @@ export default {
         const sess = crypto.randomUUID();
         await env.KV.put(`session:${sess}`, JSON.stringify(await uRes.json()), { expirationTtl: 86400 });
 
-        return new Response(null, { status: 302, headers: { Location: "/", "Set-Cookie": `token=${sess}; HttpOnly; Path=/; Secure; Max-Age=86400` }});
+        return new Response(null, { status: 302, headers: { Location: "https://localhost:3000", "Set-Cookie": `token=${sess}; HttpOnly; Path=/; Secure; SameSite=None; Max-Age=86400` }});
       } catch (e) {
         return new Response(`Error at line 35: ${e.message}`, { status: 500, headers: cors });
       }
