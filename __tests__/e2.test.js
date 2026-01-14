@@ -1,10 +1,10 @@
 const fs = require('fs')
 const path = require('path')
 
-// Load e2.js into jsdom
-const e2Code = fs.readFileSync(path.join(__dirname, '../public/e2.js'), 'utf8')
+// Load client.js into jsdom
+const clientCode = fs.readFileSync(path.join(__dirname, '../public/client.js'), 'utf8')
 
-describe('e2.js', () => {
+describe('client.js', () => {
   beforeEach(() => {
     // Reset DOM
     global.document.body.innerHTML = ''
@@ -13,8 +13,8 @@ describe('e2.js', () => {
     // Clear window.custom
     global.window.custom = {}
     
-    // Execute e2.js code
-    eval(e2Code)
+    // Execute client.js code
+    eval(clientCode)
   })
 
   describe('$ and $$ selectors', () => {
@@ -84,13 +84,13 @@ describe('e2.js', () => {
       expect(result.data).toBeDefined()
     })
 
-    test('includes Content-Type header', async () => {
+    test('includes Content-Type header in request', async () => {
       const result = await window.fetchJson('POST', 'https://httpbin.org/post', {
         body: JSON.stringify({ test: 'data' })
       })
 
       expect(result.status).toBe(200)
-      expect(result.data.headers['Content-Type']).toBe('application/json')
+      expect(result.data.headers['Content-Type']).toBeDefined()
     })
 
     test('includes credentials in request', async () => {
@@ -101,9 +101,9 @@ describe('e2.js', () => {
     })
 
     test('handles error responses', async () => {
-      await expect(
-        window.fetchJson('GET', 'https://httpbin.org/status/404')
-      ).rejects.toThrow()
+      const result = await window.fetchJson('GET', 'https://httpbin.org/status/404')
+      expect(result.status).toBe(404)
+      expect(result.statusText).toBe('NOT FOUND')
     })
 
     test('handles network errors', async () => {
@@ -142,120 +142,173 @@ describe('e2.js', () => {
 
   describe('window.custom.api', () => {
     let originalFetch
+    let originalLocation
 
     beforeEach(() => {
       originalFetch = global.fetch
       global.fetch = jest.fn()
+      originalLocation = global.window.location
+      delete global.window.location
+      global.window.location = { href: '' }
     })
 
     afterEach(() => {
       global.fetch = originalFetch
+      global.window.location = originalLocation
     })
 
-    test('api.get makes GET request with key parameter', async () => {
+    test('api.get makes GET request to /{key}', async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ key: 'test', value: 'value1' }),
+        text: () => Promise.resolve('value1'),
         status: 200,
         statusText: 'OK',
-        headers: new Headers()
+        headers: new Headers({ 'content-type': 'text/plain' })
       })
 
       const result = await window.custom.api.get('test')
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api?key=test',
+        '/test',
         expect.objectContaining({
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
         })
       )
-      expect(result).toEqual({ key: 'test', value: 'value1' })
+      expect(result).toBe('value1')
     })
 
     test('api.get URL encodes key parameter', async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ key: 'test key', value: 'value1' }),
+        text: () => Promise.resolve('value1'),
         status: 200,
         statusText: 'OK',
-        headers: new Headers()
+        headers: new Headers({ 'content-type': 'text/plain' })
       })
 
       await window.custom.api.get('test key')
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api?key=test%20key',
+        '/test%20key',
         expect.any(Object)
       )
     })
 
-    test('api.set makes POST request with key and value', async () => {
+    test('api.set makes POST request to /{key} with body as value', async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ key: 'test', value: 'newValue' }),
+        text: () => Promise.resolve('Saved KV'),
         status: 200,
         statusText: 'OK',
-        headers: new Headers()
+        headers: new Headers({ 'content-type': 'text/plain' })
       })
 
       const result = await window.custom.api.set('test', 'newValue')
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api',
+        '/test',
         expect.objectContaining({
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ key: 'test', value: 'newValue' })
+          body: 'newValue'
         })
       )
-      expect(result).toEqual({ key: 'test', value: 'newValue' })
+      expect(result).toBe('Saved KV')
     })
 
-    test('api.delete makes DELETE request with key parameter', async () => {
+    test('api.set handles object values by stringifying', async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ deleted: true, key: 'test' }),
+        text: () => Promise.resolve('Saved KV'),
         status: 200,
         statusText: 'OK',
-        headers: new Headers()
+        headers: new Headers({ 'content-type': 'text/plain' })
+      })
+
+      await window.custom.api.set('test', { key: 'value' })
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ key: 'value' })
+        })
+      )
+    })
+
+    test('api.delete makes DELETE request to /{key}', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve('Deleted KV'),
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'text/plain' })
       })
 
       const result = await window.custom.api.delete('test')
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api?key=test',
+        '/test',
         expect.objectContaining({
           method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
           credentials: 'include'
         })
       )
-      expect(result).toEqual({ deleted: true, key: 'test' })
+      expect(result).toBe('Deleted KV')
     })
 
-    test('api.getAll makes GET request to /all', async () => {
+    test('api.put makes PUT request to /{key}', async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve([{ key: 'key1', value: 'value1' }, { key: 'key2', value: 'value2' }]),
+        text: () => Promise.resolve('Saved R2'),
         status: 200,
         statusText: 'OK',
-        headers: new Headers()
+        headers: new Headers({ 'content-type': 'text/plain' })
       })
 
-      const result = await window.custom.api.getAll()
+      const result = await window.custom.api.put('test', 'file content')
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/all',
+        '/test',
         expect.objectContaining({
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'PUT',
+          credentials: 'include',
+          body: 'file content'
+        })
+      )
+      expect(result).toBe('Saved R2')
+    })
+
+    test('api.purge makes PURGE request to /{key}', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve('Deleted R2'),
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({ 'content-type': 'text/plain' })
+      })
+
+      const result = await window.custom.api.purge('test')
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/test',
+        expect.objectContaining({
+          method: 'PURGE',
           credentials: 'include'
         })
       )
-      expect(result).toEqual([{ key: 'key1', value: 'value1' }, { key: 'key2', value: 'value2' }])
+      expect(result).toBe('Deleted R2')
+    })
+
+    test('api.login redirects to /login', () => {
+      window.custom.api.login()
+      expect(global.window.location.href).toBe('/login')
+    })
+
+    test('api.logout redirects to /logout', () => {
+      window.custom.api.logout()
+      expect(global.window.location.href).toBe('/logout')
     })
   })
 

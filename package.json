@@ -1,15 +1,13 @@
 {
-    "name": "enigmatic",
-    "main": "enigmatic.js",
-    "version": "2.0.0",
-    "scripts": {
-        "start": "bun server/server.js",
-        "test": "jest --config __tests__/jest.config.js",
-        "test:watch": "jest --watch --config __tests__/jest.config.js"
-    },
-    "devDependencies": {
-        "jest": "^29.7.0",
-        "jest-environment-jsdom": "^29.7.0",
-        "whatwg-fetch": "^3.6.20"
-    }
+  "name": "enigmatic",
+  "version": "0.27.0",
+  "scripts": {
+    "start": "npx instaserve -secure",
+    "test": "jest --config __tests__/jest.config.js"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.0.0",
+    "whatwg-fetch": "^3.6.20"
+  }
 }
