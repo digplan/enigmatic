@@ -2,11 +2,6 @@
   "name": "enigmatic",
   "main": "server/worker.js",
   "compatibility_date": "2026-01-14",
-  "env_vars": {
-    "AUTH0_DOMAIN": "digplan.auth0.com",
-    "AUTH0_CLIENT_ID": "21c9EJMXML6ASxwkbj8PkdCdyrhdh4IA",
-    "AUTH0_CLIENT_SECRET": "E4b28U6v6dFH-bQicRkXPB2OoFRgbXRgcm4ciVSwYYjBL-QPIXhfk-2A9hYKTGVa"
-  },
   "r2_buckets": [
      {
        "binding": "MY_R2", // The name you use in code: env.BUCKET
