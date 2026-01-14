@@ -72,7 +72,8 @@ export default {
       return new Response(`Error at line 56: ${e.message}`, { status: 500, headers: cors });
     }
 
-    if (!key) return new Response("Welcome", { headers: cors });
+    // Redirect to https://localhost:3000 
+    if (!key) return new Response(null, { status: 302, headers: { Location: "https://localhost:3000" } });
     
     // API OPERATIONS (Added cors to all responses)
     try {
