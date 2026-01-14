@@ -58,7 +58,7 @@ export default {
         const sess = crypto.randomUUID();
         await env.KV.put(`session:${sess}`, JSON.stringify(await uRes.json()), { expirationTtl: 86400 });
 
-        return new Response(null, { status: 302, headers: { Location: "/", "Set-Cookie": `token=${sess}; HttpOnly; Path=/; Secure; SameSite=Lax; Max-Age=86400` }});
+        return new Response(null, { status: 302, headers: { Location: "/", "Set-Cookie": `token=${sess}; HttpOnly; Path=/; Secure; Max-Age=86400` }});
       } catch (e) {
         return new Response(`Error at line 35: ${e.message}`, { status: 500, headers: cors });
       }
