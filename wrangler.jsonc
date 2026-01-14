@@ -2,6 +2,6 @@
   "name": "enigmatic",
   "compatibility_date": "2026-01-14",
  "assets": {
-   "directory": "./server"
+   "directory": "."
  }
 }
