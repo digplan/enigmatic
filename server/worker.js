@@ -1,4 +1,4 @@
-import cors from 'cors.js';
+import cors from './cors.js';
 
 export default {
   async fetch(req, env) {
