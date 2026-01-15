@@ -69,9 +69,7 @@ window.custom = {
       return res.data
     },
     purge: async function(key) {
-      const res = await fetchJson('POST', `${window.api_url}/${encodeURIComponent(key)}`, {
-        headers: { 'X-HTTP-Method-Override': 'PURGE' }
-      })
+      const res = await fetchJson('PURGE', `${window.api_url}/${encodeURIComponent(key)}`)
       return res.data
     },
     login: function() {
