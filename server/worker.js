@@ -1,16 +1,17 @@
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie, X-HTTP-Method-Override",
-  "Access-Control-Allow-Credentials": "true"
-}
-
 export default {
   async fetch(req, env) {
     try {
       const url = new URL(req.url), path = url.pathname, key = path.slice(1);
       const cb = `https://${url.host}/callback`, logout_url = `https://${url.host}`;
       const token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
+      const origin = req.headers.get("Origin") || "*";
+      
+      const cors = {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie, X-HTTP-Method-Override",
+        "Access-Control-Allow-Credentials": origin !== "*" ? "true" : "false"
+      };
 
       if (req.method === "OPTIONS") {
         return new Response(null, { 
