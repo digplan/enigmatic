@@ -3,6 +3,7 @@
   "version": "0.27.0",
   "scripts": {
     "start": "npx instaserve -secure",
+    "bun": "bun --hot ./bun.js",
     "test": "jest --config __tests__/jest.config.js"
   },
   "devDependencies": {
