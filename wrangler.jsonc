@@ -13,5 +13,11 @@
        "binding": "KV",
        "id": "3e215d5d5bee436caf1373dc268ec055"
      }
-   ]
+   ],
+    "observability": {
+      "logs": {
+        "enabled": true,
+        "invocation_logs": true
+    }
+  }
 }
