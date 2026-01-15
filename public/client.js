@@ -7,10 +7,11 @@ window.state = new Proxy({}, {
     obj[prop] = value
     $$(`[data="${prop}"]`).forEach(el => {
       console.log('setting', el.tagName);
-      const f = window.custom[el.tagName.toLowerCase()];
+      const f = window.custom?.[el.tagName.toLowerCase()];
+      if (!f) return;
       if(typeof f === 'function') {
         el.innerHTML = f(value);
-      } else {
+      } else if (f && typeof f.render === 'function') {
         el.innerHTML = f.render(value);
       }
     });

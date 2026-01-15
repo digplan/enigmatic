@@ -1,8 +1,9 @@
 const fs = require('fs')
 const path = require('path')
 
-// Load client.js into jsdom
+// Load client.js and custom.js into jsdom
 const clientCode = fs.readFileSync(path.join(__dirname, '../public/client.js'), 'utf8')
+const customCode = fs.readFileSync(path.join(__dirname, '../public/custom.js'), 'utf8')
 
 describe('client.js', () => {
   beforeEach(() => {
@@ -13,6 +14,8 @@ describe('client.js', () => {
     // Clear window.custom
     global.window.custom = {}
     
+    // Execute custom.js first (defines window.custom)
+    eval(customCode)
     // Execute client.js code
     eval(clientCode)
   })
