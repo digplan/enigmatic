@@ -29,6 +29,7 @@ export default {
       try {
         if (token) await env.KV.delete(`session:${token}`);
         return new Response(null, { status: 302, headers: { 
+          ...cors,
           Location: `https://${env.AUTH0_DOMAIN}/v2/logout?client_id=${env.AUTH0_CLIENT_ID}&returnTo=${logout_url}`,
           "Set-Cookie": "token=; Max-Age=0; Path=/; Secure; SameSite=None"
         }});
@@ -65,7 +66,11 @@ export default {
         const sess = crypto.randomUUID();
         await env.KV.put(`session:${sess}`, JSON.stringify(await uRes.json()), { expirationTtl: 86400 });
 
-        return new Response(null, { status: 302, headers: { Location: "https://localhost:3000", "Set-Cookie": `token=${sess}; HttpOnly; Path=/; Secure; SameSite=None; Max-Age=86400` }});
+        return new Response(null, { status: 302, headers: { 
+          ...cors,
+          Location: "https://localhost:3000", 
+          "Set-Cookie": `token=${sess}; HttpOnly; Path=/; Secure; SameSite=None; Max-Age=86400` 
+        }});
       } catch (e) {
         return new Response(`Error at line 35: ${e.message}`, { status: 500, headers: cors });
       }
@@ -80,7 +85,7 @@ export default {
     }
 
     // Redirect to https://localhost:3000 
-    if (!key) return new Response(null, { status: 302, headers: { Location: "https://localhost:3000" } });
+    if (!key) return new Response(null, { status: 302, headers: { ...cors, Location: "https://localhost:3000" } });
     
     // API OPERATIONS (Added cors to all responses)
     try {
@@ -119,7 +124,13 @@ export default {
       return new Response(`Error at line 86: ${e.message}`, { status: 500, headers: cors });
     }
     } catch (e) {
-      return new Response(`Error at line 3: ${e.message}`, { status: 500, headers: { "Access-Control-Allow-Origin": "*" } });
+      const corsError = {
+        "Access-Control-Allow-Origin": req?.headers?.get("Origin") || "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie, X-HTTP-Method-Override",
+        "Access-Control-Allow-Credentials": "true"
+      };
+      return new Response(`Error at line 3: ${e.message}`, { status: 500, headers: corsError });
     }
   }
 };
