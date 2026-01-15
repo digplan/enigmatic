@@ -56,15 +56,24 @@ window.login = function() {
 }
 window.logout = function() {
   window.location.href = `${window.api_url}/logout`
-} 
+}
 
-// Custom elements
-window.custom = {
-  "hello-world": (data) => `Hello ${data}`,
-  "hello-world-2": {
-    prop: (data) => `${data} World`,
-    render: function(data) { 
-      return this.prop(data); 
-    }
-  }
+// Initialize custom elements on page load
+function initCustomElements() {
+  Object.keys(window.custom).forEach(tagName => {
+    $$(tagName).forEach(el => {
+      const f = window.custom[tagName];
+      if (typeof f === 'function') {
+        el.innerHTML = f();
+      } else if (f && typeof f.render === 'function') {
+        el.innerHTML = f.render();
+      }
+    });
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initCustomElements);
+} else {
+  initCustomElements();
 }

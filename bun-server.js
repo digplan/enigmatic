@@ -99,6 +99,7 @@ export default {
       case 'GET':
         if(url.pathname === '/') return new Response(Bun.file("./public/index.html"));
         if(url.pathname === '/client.js') return new Response(Bun.file("./public/client.js"));
+        if(url.pathname === '/custom.js') return new Response(Bun.file("./public/custom.js"));
         return json(db[key]);
 
       case 'POST':
