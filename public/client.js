@@ -46,11 +46,29 @@ window.purge = async function(key) {
   })
   return await res.json()
 }
-window.propfind = async function() {
+window.list = async function() {
   const res = await fetch(`${window.api_url}`, {
     method: 'PROPFIND'
   })
   return await res.json()
+}
+window.download = async function(key) {
+  try {
+    console.log('Downloading with method DOWNLOAD:', key);
+    const res = await fetch(`${window.api_url}/${encodeURIComponent(key)}`, { method: 'PATCH' });
+    console.log('Response:', key, res.status, res.statusText);
+    if (!res.ok) throw new Error('Download failed');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = key;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Download error:', err);
+    throw err;
+  }
 }
 window.login = function() {
   window.location.href = `${window.api_url}/login`
@@ -62,10 +80,10 @@ window.logout = function() {
 // Initialize custom elements on page load
 function initCustomElements() {
   Object.keys(window.custom).forEach(tagName => {
-    $$(tagName).forEach(el => {
+    $$(tagName).forEach(async el => {
       const f = window.custom[tagName];
       if (typeof f === 'function') {
-        el.innerHTML = f();
+        el.innerHTML = await f();
       } else if (f && typeof f.render === 'function') {
         el.innerHTML = f.render();
       }

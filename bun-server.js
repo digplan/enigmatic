@@ -12,7 +12,7 @@ const json = (data, status = 200, extraHeaders = {}) => new Response(JSON.string
   status,
   headers: {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, PROPFIND, OPTIONS",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, PROPFIND, DOWNLOAD, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie, X-HTTP-Method-Override",
     "Access-Control-Allow-Credentials": "true",
     "Content-Type": "application/json",
@@ -27,6 +27,7 @@ const redirect = (url, cookie = null) => new Response(null, {
 
 export default {
   async fetch(req) {
+    console.log('req.method', req.method);
     const url = new URL(req.url);
     const key = url.pathname.slice(1);
     const cb = `${url.origin}/callback`;
@@ -63,19 +64,9 @@ export default {
       const userInfo = await (await fetch(`https://${Bun.env.AUTH0_DOMAIN}/userinfo`, {
         headers: { Authorization: `Bearer ${tokens.access_token}` }
       })).json();
-      let idTokenClaims = {};
-      if (tokens.id_token) {
-        const parts = tokens.id_token.split('.');
-        if (parts.length === 3) {
-          const padded = parts[1] + '='.repeat((4 - parts[1].length % 4) % 4);
-          const decoded = JSON.parse(Buffer.from(padded, 'base64').toString());
-          idTokenClaims = { auth_time: decoded.auth_time, iat: decoded.iat, exp: decoded.exp, aud: decoded.aud, iss: decoded.iss };
-        }
-      }
       const session = crypto.randomUUID();
       db[`session:${session}`] = {
         ...userInfo,
-        ...idTokenClaims,
         login_time: new Date().toISOString(),
         access_token_expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null
       };
@@ -94,6 +85,7 @@ export default {
     const files = { '/': 'index.html', '/client.js': 'client.js', '/custom.js': 'custom.js' };
     if (req.method === 'GET' && files[url.pathname]) return new Response(Bun.file(`./public/${files[url.pathname]}`));
 
+    console.log(req.method);
     switch (req.method) {
       case 'GET': return json(db[key]);
       case 'POST':
@@ -119,6 +111,17 @@ export default {
           lastModified: item.lastModified || item.LastModified,
           size: item.size || item.Size || 0
         })));
+      case 'PATCH':
+        try {
+          const exists = await s3.exists(`${user.sub}/${key}`);
+          if (!exists) return json({ error: 'File not found' }, 404);
+          const file = await s3.file(`${user.sub}/${key}`);
+          if (!file) return json({ error: 'File not found' }, 404);
+          return new Response(file.stream(), { headers: file.headers });
+        } catch (err) {
+          console.error('Download error:', err);
+          return json({ error: 'File not found', details: err.message }, 404);
+        }
       default: return json({ error: 'Method not allowed' }, 405);
     }
   },

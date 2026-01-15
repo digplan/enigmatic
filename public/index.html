@@ -31,11 +31,7 @@
 
   <div class="section">
     <h2>R2 Storage</h2>
-    <input type="text" id="r2-key" placeholder="Key" value="test-file">
-    <input type="text" id="r2-value" placeholder="Content" value="file content">
-    <button onclick="window.put(document.querySelector('#r2-key').value, document.querySelector('#r2-value').value).then(r => window.$('#result').textContent = JSON.stringify(r)).catch(err => window.$('#result').textContent = 'Error: ' + err.message)">PUT</button>
-    <button onclick="window.purge(document.querySelector('#r2-key').value).then(r => window.$('#result').textContent = JSON.stringify(r)).catch(err => window.$('#result').textContent = 'Error: ' + err.message)">PURGE</button>
-    <button onclick="window.propfind(document.querySelector('#r2-key').value || '').then(r => window.$('#result').textContent = JSON.stringify(r, null, 2)).catch(err => window.$('#result').textContent = 'Error: ' + err.message)">PROPFIND (List)</button>
+    <file-widget></file-widget>
   </div>
 
   <div class="section">
@@ -45,6 +41,5 @@
   </div>
 
   <pre id="result"></pre>
-  <some-element></some-element>
 </body>
 </html>
