@@ -84,16 +84,39 @@ export default {
     
     // API OPERATIONS (Added cors to all responses)
     try {
-      switch (req.method) {
+      const method = req.headers.get("X-HTTP-Method-Override") || req.method;
+      switch (method) {
         case "GET": return new Response(await env.KV.get(key) || "Not found", { headers: cors });
         case "DELETE": await env.KV.delete(key); return new Response("Deleted KV", { headers: cors });
-        case "POST": await env.KV.put(key, await req.text()); return new Response("Saved KV", { headers: cors });
-        case "PUT": await env.MY_R2.put(key, req.body); return new Response("Saved R2", { headers: cors });
-        case "PURGE": await env.MY_R2.delete(key); return new Response("Deleted R2", { headers: cors });
+        case "POST": 
+          if (req.headers.get("X-HTTP-Method-Override") === "PURGE") {
+            try {
+              if (!env.MY_R2) return new Response("R2 not configured", { status: 500, headers: cors });
+              await env.MY_R2.delete(key); 
+              return new Response("Deleted R2", { headers: cors });
+            } catch (e) {
+              console.error("PURGE error:", e);
+              return new Response(`PURGE error: ${e.message}`, { status: 500, headers: cors });
+            }
+          }
+          await env.KV.put(key, await req.text()); 
+          return new Response("Saved KV", { headers: cors });
+        case "PUT": 
+          await env.MY_R2.put(key, req.body); 
+          return new Response("Saved R2", { headers: cors });
+        case "PURGE": 
+          try {
+            if (!env.MY_R2) return new Response("R2 not configured", { status: 500, headers: cors });
+            await env.MY_R2.delete(key); 
+            return new Response("Deleted R2", { headers: cors });
+          } catch (e) {
+            console.error("PURGE error:", e);
+            return new Response(`PURGE error: ${e.message}`, { status: 500, headers: cors });
+          }
         default: return new Response("Method not allowed", { status: 405, headers: cors });
       }
     } catch (e) {
-      return new Response(`Error at line 61: ${e.message}`, { status: 500, headers: cors });
+      return new Response(`Error at line 86: ${e.message}`, { status: 500, headers: cors });
     }
     } catch (e) {
       return new Response(`Error at line 3: ${e.message}`, { status: 500, headers: { "Access-Control-Allow-Origin": "*" } });
