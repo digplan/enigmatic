@@ -12,9 +12,16 @@ export default {
     };
 
     // 0. HANDLE PREFLIGHT
-    if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+    if (req.method === "OPTIONS") {
+      return new Response(null, { 
+        status: 204,
+        headers: cors 
+      });
+    }
 
     const cb = `https://${url.host}/callback`;
+    const logout_url = `https://localhost:3000`;
+
     const token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
     
     // 1. LOGOUT
@@ -22,7 +29,7 @@ export default {
       try {
         if (token) await env.KV.delete(`session:${token}`);
         return new Response(null, { status: 302, headers: { 
-          Location: `https://${env.AUTH0_DOMAIN}/v2/logout?client_id=${env.AUTH0_CLIENT_ID}&returnTo=${url.origin}`,
+          Location: `https://${env.AUTH0_DOMAIN}/v2/logout?client_id=${env.AUTH0_CLIENT_ID}&returnTo=${logout_url}`,
           "Set-Cookie": "token=; Max-Age=0; Path=/; Secure; SameSite=None"
         }});
       } catch (e) {
