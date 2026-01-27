@@ -36,13 +36,15 @@ Configures the base URL for all API requests. Modify this to point to your serve
 - Set a property: `window.state.myKey = 'value'`
 - Elements with `data="myKey"` attribute are automatically updated
 - The system looks for custom element handlers in `window.custom[tagName]`
+- Only elements with matching custom element handlers are updated
 - Supports both function and object-based custom elements
 
 **Example:**
 ```html
-<div data="message">Initial</div>
+<my-element data="message">Initial</my-element>
 <script>
-  window.state.message = "Updated!"; // Automatically updates the div
+  window.custom['my-element'] = (data) => `<div>${data}</div>`;
+  window.state.message = "Updated!"; // Automatically updates the element
 </script>
 ```
 
@@ -169,7 +171,7 @@ window.logout();
 
 ## Custom Elements System
 
-Custom elements are defined in `window.custom` object and automatically initialized when the DOM loads.
+Custom elements are defined in `window.custom` object and automatically initialized when the DOM loads or when elements are added dynamically.
 
 ### Initialization
 
@@ -178,6 +180,17 @@ The library automatically:
 2. Iterates through all keys in `window.custom`
 3. Finds all matching HTML elements by tag name
 4. Calls the custom element handler and sets `innerHTML`
+5. Watches for new elements added to the DOM via MutationObserver and initializes them automatically
+
+### Proxy Behavior
+
+`window.custom` is a Proxy that automatically initializes matching elements when you add a new custom element definition:
+
+```javascript
+// Adding a new custom element automatically initializes all matching elements in the DOM
+window.custom['my-element'] = (data) => `<div>${data}</div>`;
+// All <my-element> tags are immediately initialized
+```
 
 ### Defining Custom Elements
 
@@ -196,12 +209,15 @@ window.custom = {
 <my-element></my-element>
 ```
 
-When `window.state.myKey = 'value'` is set and an element has `data="myKey"`:
+When used with reactive state, the function receives the state value:
 ```html
 <my-element data="myKey"></my-element>
+<script>
+  window.state.myKey = 'value'; // Function is called with 'value'
+</script>
 ```
 
-The function receives the state value as the first parameter.
+The function receives the state value as the first parameter. If no state value is set, it receives `undefined`.
 
 #### Object-based Custom Element
 
@@ -267,18 +283,23 @@ window.get('key').catch(err => console.error(err));
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="custom.js"></script>
   <script src="client.js"></script>
+  <script>
+    // Define custom elements (can be before or after client.js)
+    window.custom = {
+      "hello-world": (data) => `Hello ${data || 'World'}`
+    };
+  </script>
 </head>
 <body>
-  <!-- Custom element -->
-  <file-widget></file-widget>
-  
-  <!-- Reactive state element -->
-  <div data="message">Initial</div>
+  <!-- Custom element with reactive state -->
+  <hello-world data="message"></hello-world>
   
   <script>
-    // Set reactive state
+    // Configure API URL
+    window.api_url = 'http://localhost:3000';
+    
+    // Set reactive state (triggers updates to elements with data="message")
     window.state.message = "Hello World";
     
     // Use API functions
@@ -305,18 +326,24 @@ window.get('key').catch(err => console.error(err));
 
 ## Dependencies
 
-- Requires `custom.js` to be loaded before `client.js` if using custom elements
 - Requires a backend server that implements the API endpoints
 - Requires browser support for:
   - `fetch` API
   - `Proxy` API
   - `Blob` API
   - `URL.createObjectURL`
+  - `MutationObserver` API
+
+**Note:** `custom.js` can be loaded before or after `client.js` - the Proxy system will handle initialization either way.
 
 ## Notes
 
 - All API functions automatically encode keys using `encodeURIComponent`
 - The `window.download()` function uses PATCH method internally (browsers don't support custom HTTP methods)
-- Custom elements are initialized once on page load; use `location.reload()` to refresh
+- Custom elements are automatically initialized:
+  - On page load (when DOM is ready)
+  - When new custom element definitions are added to `window.custom`
+  - When new matching elements are added to the DOM (via MutationObserver)
 - The reactive state system only updates elements with matching `data` attributes
 - Custom element handlers can be async functions
+- When a custom element has a `data` attribute, it automatically reads from `window.state[dataValue]` if no explicit value is provided

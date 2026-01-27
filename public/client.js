@@ -1,98 +1,80 @@
-window.api_url = "https://localhost:3000"
-window.$  = document.querySelector.bind(document)
-window.$$ = document.querySelectorAll.bind(document)
-window.$c = (selector) => $0.closest(selector);
-window.state = new Proxy({}, {
-  set(obj, prop, value) {
-    obj[prop] = value
-    $$(`[data="${prop}"]`).forEach(el => {
-      console.log('setting', el.tagName);
-      const f = window.custom?.[el.tagName.toLowerCase()];
-      if (!f) return;
-      if(typeof f === 'function') {
-        el.innerHTML = f(value);
-      } else if (f && typeof f.render === 'function') {
-        el.innerHTML = f.render(value);
-      }
-    });
-    return true
+const D = document, W = window, Enc = encodeURIComponent;
+
+// 1. Unified Render Logic (Handles both State & Custom Elements)
+const ren = async (el, v) => {
+  const f = W.custom?.[el.tagName.toLowerCase()];
+  if (f) {
+    const dataAttr = el.getAttribute('data');
+    const val = v !== undefined ? v : (dataAttr ? W.state[dataAttr] : undefined);
+    try { el.innerHTML = await (f.render || f)(val) } catch(e) { console.error(e) }
   }
-})
-window.get = async function(key) {
-  const res = await fetch(`${window.api_url}/${encodeURIComponent(key)}`)
-  return await res.json()
-}
-window.set = async function(key, value) {
-  const res = await fetch(`${window.api_url}/${encodeURIComponent(key)}`, {
-    method: 'POST', body: typeof value === 'string' ? value : JSON.stringify(value)
-  })
-  return await res.json()
-}
-window.delete = async function(key) {
-  const res = await fetch(`${window.api_url}/${encodeURIComponent(key)}`, {
-    method: 'DELETE'
-  })
-  return await res.json()
-}
-window.put = async function(key, body) {
-  const res = await fetch(`${window.api_url}/${encodeURIComponent(key)}`, {
-    method: 'PUT', body: body instanceof Blob ? body : typeof body === 'string' ? body : JSON.stringify(body)
-  })
-  return await res.json()
-}
-window.purge = async function(key) {
-  const res = await fetch(`${window.api_url}/${encodeURIComponent(key)}`, {
-    method: 'PURGE'
-  })
-  return await res.json()
-}
-window.list = async function() {
-  const res = await fetch(`${window.api_url}`, {
-    method: 'PROPFIND'
-  })
-  return await res.json()
-}
-window.download = async function(key) {
-  try {
-    console.log('Downloading with method DOWNLOAD:', key);
-    const res = await fetch(`${window.api_url}/${encodeURIComponent(key)}`, { method: 'PATCH' });
-    console.log('Response:', key, res.status, res.statusText);
-    if (!res.ok) throw new Error('Download failed');
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = key;
+};
+
+// 2. Proxies setup
+const cProx = new Proxy({}, {
+  set(t, p, v) {
+    t[p] = v;
+    setTimeout(() => W.$$(p).forEach(el => ren(el)), 0);
+    return true;
+  }
+});
+Object.defineProperty(W, 'custom', { get: () => cProx, set: v => Object.assign(cProx, v) });
+
+const sProx = new Proxy({}, {
+  set(o, p, v) {
+    o[p] = v;
+    W.$$(`[data="${p}"]`).forEach(el => ren(el, v));
+    return true;
+  }
+});
+
+// 3. API & DOM Helpers
+const req = (m, k, b) => fetch(`${W.api_url}/${k ? Enc(k) : ''}`, {
+  method: m, body: b instanceof Blob || typeof b === 'string' ? b : JSON.stringify(b)
+});
+
+Object.assign(W, {
+  $: s => D.querySelector(s),
+  $$: s => D.querySelectorAll(s),
+  $c: s => $0.closest(s),
+  state: sProx,
+  get: k => req('GET', k).then(r => r.json()),
+  set: (k, v) => req('POST', k, v).then(r => r.json()),
+  put: (k, v) => req('PUT', k, v).then(r => r.json()),
+  delete: k => req('DELETE', k).then(r => r.json()),
+  purge: k => req('PURGE', k).then(r => r.json()),
+  list: () => req('PROPFIND').then(r => r.json()),
+  login: () => W.location.href = `${W.api_url}/login`,
+  logout: () => W.location.href = `${W.api_url}/logout`,
+  download: async (k) => {
+    const r = await req('PATCH', k);
+    if (!r.ok) throw new Error('Download failed');
+    const a = D.createElement('a');
+    a.href = URL.createObjectURL(await r.blob());
+    a.download = k;
     a.click();
-    URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error('Download error:', err);
-    throw err;
-  }
-}
-window.login = function() {
-  window.location.href = `${window.api_url}/login`
-}
-window.logout = function() {
-  window.location.href = `${window.api_url}/logout`
-}
+    URL.revokeObjectURL(a.href);
+  },
+  initCustomElements: () => Object.keys(W.custom || {}).forEach(t => W.$$(t).forEach(el => ren(el)))
+});
 
-// Initialize custom elements on page load
-function initCustomElements() {
-  Object.keys(window.custom).forEach(tagName => {
-    $$(tagName).forEach(async el => {
-      const f = window.custom[tagName];
-      if (typeof f === 'function') {
-        el.innerHTML = await f();
-      } else if (f && typeof f.render === 'function') {
-        el.innerHTML = f.render();
-      }
+// 4. Initialization & Observers
+const boot = () => {
+  W.initCustomElements();
+  new MutationObserver((mutations) => {
+    mutations.forEach(m => {
+      m.addedNodes.forEach(node => {
+        if (node.nodeType === 1) { // Element node
+          const tag = node.tagName?.toLowerCase();
+          if (tag && W.custom?.[tag]) ren(node);
+          // Also check children
+          node.querySelectorAll && Array.from(node.querySelectorAll('*')).forEach(child => {
+            const childTag = child.tagName?.toLowerCase();
+            if (childTag && W.custom?.[childTag]) ren(child);
+          });
+        }
+      });
     });
-  });
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initCustomElements);
-} else {
-  initCustomElements();
-}
+  }).observe(D.body, { childList: true, subtree: true });
+};
+D.readyState === 'loading' ? D.addEventListener('DOMContentLoaded', boot) : boot();
