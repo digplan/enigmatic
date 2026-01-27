@@ -198,13 +198,13 @@ describe('client.js', () => {
       expect(result).toEqual({ status: 'deleted' })
     })
 
-    test('window.propfind makes PROPFIND request to base URL', async () => {
+    test('window.list makes PROPFIND request to base URL', async () => {
       global.fetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve([{ name: 'file1' }])
       })
 
-      const result = await window.propfind()
+      const result = await window.list()
 
       expect(global.fetch).toHaveBeenCalledWith(
         window.api_url,
