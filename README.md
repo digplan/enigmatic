@@ -4,6 +4,12 @@
 
 A lightweight client-side JavaScript library for DOM manipulation, reactive state management, and API interactions, with an optional Bun server for backend functionality.
 
+## Architecture
+
+![Client-Server Architecture](clientserver.png)
+
+The diagram above shows the interaction between the client (browser), Bun server, and external services (Auth0 and Cloudflare R2/S3).
+
 ## Quick Start
 
 ### Using client.js via CDN
@@ -472,11 +478,7 @@ npm test
 
 ### Building
 
-The library is ready to use as-is. For production, you can use the minified version:
-
-```html
-<script src="https://unpkg.com/enigmatic@0.34.0/public/client.min.js"></script>
-```
+The library is ready to use as-is. Simply include `client.js` via the unpkg CDN as shown in the Quick Start section.
 
 ## License
 
