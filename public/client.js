@@ -1,82 +1,111 @@
-window.api_url = "https://enigmatic.digplan.workers.dev"
+const D = document, W = window, Enc = encodeURIComponent;
 
-window.$  = document.querySelector.bind(document)
-window.$$ = document.querySelectorAll.bind(document)
-
-window.fetchJson = async (method, url, opts) => {
-  const res = await fetch(url, { method, ...opts, credentials: 'include' })
-  const contentType = res.headers.get('content-type') || ''
-  const isJson = contentType.includes('application/json')
-  let data
-  try {
-    data = isJson ? await res.json() : await res.text()
-  } catch (e) {
-    data = await res.text()
+// 1. Unified Render Logic (Handles both State & Custom Elements)
+const ren = async (el, v) => {
+  const f = W.custom?.[el.tagName.toLowerCase()];
+  if (f) {
+    const dataAttr = el.getAttribute('data');
+    const val = v !== undefined ? v : (dataAttr ? W.state[dataAttr] : undefined);
+    try { el.innerHTML = await (f.render || f)(val) } catch(e) { console.error(e) }
   }
-  return {
-    data,
-    status: res.status,
-    statusText: res.statusText,
-    headers: res.headers
-  }
-}
+};
 
-window.state = new Proxy({}, {
-  set(obj, prop, value) {
-    obj[prop] = value
-    $$(`[data="${prop}"]`).forEach(el => {
-      console.log('setting', el.tagName);
-      const f = window.custom[el.tagName.toLowerCase()];
-      if(typeof f === 'function') {
-        el.innerHTML = f(value);
-      } else {
-        el.innerHTML = f.render(value);
+// 2. Proxies setup
+const cProx = new Proxy({}, {
+  set(t, p, v) {
+    t[p] = v;
+    setTimeout(() => {
+      if (W.$$ && D.body) {
+        W.$$(p).forEach(el => ren(el));
+      }
+    }, 0);
+    return true;
+  }
+});
+Object.defineProperty(W, 'custom', { 
+  get: () => cProx, 
+  set: v => { 
+    Object.keys(v || {}).forEach(k => cProx[k] = v[k]); 
+    // Defer initialization to ensure DOM and functions are ready
+    setTimeout(() => {
+      if (W.initCustomElements && D.body) W.initCustomElements();
+    }, 50);
+  } 
+});
+
+const sProx = new Proxy({}, {
+  set(o, p, v) {
+    o[p] = v;
+    W.$$(`[data="${p}"]`).forEach(el => ren(el, v));
+    return true;
+  }
+});
+
+// 3. API & DOM Helpers
+const req = (m, k, b) => fetch(`${W.api_url}/${k ? Enc(k) : ''}`, {
+  method: m, body: b instanceof Blob || typeof b === 'string' ? b : JSON.stringify(b)
+});
+
+Object.assign(W, {
+  $: s => D.querySelector(s),
+  $$: s => D.querySelectorAll(s),
+  $c: s => $0.closest(s),
+  state: sProx,
+  get: k => req('GET', k).then(r => r.json()),
+  set: (k, v) => req('POST', k, v).then(r => r.json()),
+  put: (k, v) => req('PUT', k, v).then(r => r.json()),
+  delete: k => req('DELETE', k).then(r => r.json()),
+  purge: k => req('PURGE', k).then(r => r.json()),
+  list: () => req('PROPFIND').then(r => r.json()),
+  login: () => W.location.href = `${W.api_url}/login`,
+  logout: () => W.location.href = `${W.api_url}/logout`,
+  download: async (k) => {
+    const r = await req('PATCH', k);
+    if (!r.ok) throw new Error('Download failed');
+    const a = D.createElement('a');
+    a.href = URL.createObjectURL(await r.blob());
+    a.download = k;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  },
+  initCustomElements: () => {
+    if (!D.body) return;
+    Object.keys(W.custom || {}).forEach(t => {
+      const elements = W.$$(t);
+      if (elements.length > 0) {
+        elements.forEach(el => ren(el));
       }
     });
-    return true
   }
-})
+});
 
-// Custom elements
-
-window.custom = {
-  "hello-world": (data) => `Hello ${data}`,
-  "hello-world-2": {
-    prop: (data) => `${data} World`,
-    render: function(data) { 
-      return this.prop(data); 
-    }
-  },
-  "api": {
-    get: async function(key) {
-      const res = await fetchJson('GET', `${window.api_url}/${encodeURIComponent(key)}`)
-      return res.data
-    },
-    set: async function(key, value) {
-      const res = await fetchJson('POST', `${window.api_url}/${encodeURIComponent(key)}`, {
-        body: typeof value === 'string' ? value : JSON.stringify(value)
-      })
-      return res.data
-    },
-    delete: async function(key) {
-      const res = await fetchJson('DELETE', `${window.api_url}/${encodeURIComponent(key)}`)
-      return res.data
-    },
-    put: async function(key, body) {
-      const res = await fetchJson('PUT', `${window.api_url}/${encodeURIComponent(key)}`, {
-        body: body instanceof Blob ? body : typeof body === 'string' ? body : JSON.stringify(body)
-      })
-      return res.data
-    },
-    purge: async function(key) {
-      const res = await fetchJson('PURGE', `${window.api_url}/${encodeURIComponent(key)}`)
-      return res.data
-    },
-    login: function() {
-      window.location.href = `${window.api_url}/login`
-    },
-    logout: function() {
-      window.location.href = `${window.api_url}/logout`
-    }
+// 4. Initialization & Observers
+const boot = () => {
+  if (W.initCustomElements) {
+    // Run immediately and also after a short delay to catch any elements added during script execution
+    W.initCustomElements();
+    setTimeout(() => W.initCustomElements(), 10);
   }
+  if (D.body) {
+    new MutationObserver((mutations) => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType === 1) { // Element node
+            const tag = node.tagName?.toLowerCase();
+            if (tag && W.custom?.[tag]) ren(node);
+            // Also check children
+            node.querySelectorAll && Array.from(node.querySelectorAll('*')).forEach(child => {
+              const childTag = child.tagName?.toLowerCase();
+              if (childTag && W.custom?.[childTag]) ren(child);
+            });
+          }
+        });
+      });
+    }).observe(D.body, { childList: true, subtree: true });
+  }
+};
+if (D.readyState === 'loading') {
+  D.addEventListener('DOMContentLoaded', boot);
+} else {
+  setTimeout(boot, 0);
 }

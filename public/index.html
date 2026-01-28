@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>API Test</title>
+  <script>
+    window.api_url = 'https://localhost:3000';
+  </script>
+  <script src="custom.js"></script>
+  <script src="client.js"></script>
   <style>
     body { font-family: sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; }
     .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
@@ -19,104 +24,25 @@
   <h1>Server API Test</h1>
 
   <div class="section">
-    <h2>KV Storage (Key-Value)</h2>
-    <div>
-      <input type="text" id="kv-key" placeholder="Key" value="test-key">
-      <input type="text" id="kv-value" placeholder="Value" value="test-value">
-      <button onclick="testSet()">POST (Set KV)</button>
-      <button onclick="testGet()">GET (Get KV)</button>
-      <button onclick="testDelete()">DELETE (Delete KV)</button>
-    </div>
+    <h2>KV Storage</h2>
+    <input type="text" id="kv-key" placeholder="Key" value="test-key">
+    <input type="text" id="kv-value" placeholder="Value" value="test-value">
+    <button onclick="window.set(document.querySelector('#kv-key').value, document.querySelector('#kv-value').value).then(r => window.$('#result').textContent = JSON.stringify(r)).catch(err => window.$('#result').textContent = 'Error: ' + err.message)">POST</button>
+    <button onclick="window.get(document.querySelector('#kv-key').value).then(r => window.$('#result').textContent = JSON.stringify(r)).catch(err => window.$('#result').textContent = 'Error: ' + err.message)">GET</button>
+    <button onclick="window.delete(document.querySelector('#kv-key').value).then(r => window.$('#result').textContent = JSON.stringify(r)).catch(err => window.$('#result').textContent = 'Error: ' + err.message)">DELETE</button>
   </div>
 
   <div class="section">
-    <h2>R2 Storage (Object Storage)</h2>
-    <div>
-      <input type="text" id="r2-key" placeholder="Key" value="test-file">
-      <input type="text" id="r2-value" placeholder="Content" value="file content">
-      <button onclick="testPut()">PUT (Save R2)</button>
-      <button onclick="testPurge()">PURGE (Delete R2)</button>
-    </div>
+    <h2>R2 Storage</h2>
+    <file-widget></file-widget>
   </div>
 
   <div class="section">
     <h2>Auth</h2>
-    <div>
-      <button onclick="testLogin()">Login</button>
-      <button onclick="testLogout()">Logout</button>
-    </div>
+    <button onclick="window.login()">Login</button>
+    <button onclick="window.logout()">Logout</button>
   </div>
 
-  <div id="result"></div>
-
-  <script src="client.js"></script>
-  <script>
-    const resultEl = document.querySelector('#result')
-
-    function showResult(message, isError = false) {
-      resultEl.textContent = message
-      resultEl.className = isError ? 'error' : 'success'
-    }
-
-    async function testSet() {
-      try {
-        const key = document.querySelector('#kv-key').value
-        const value = document.querySelector('#kv-value').value
-        const result = await window.custom.api.set(key, value)
-        showResult(`POST /${key}\nStatus: Success\nResponse: ${result}`)
-      } catch (e) {
-        showResult(`Error: ${e.message}`, true)
-      }
-    }
-
-    async function testGet() {
-      try {
-        const key = document.querySelector('#kv-key').value
-        const result = await window.custom.api.get(key)
-        showResult(`GET /${key}\nResponse: ${result}`)
-      } catch (e) {
-        showResult(`Error: ${e.message}`, true)
-      }
-    }
-
-    async function testDelete() {
-      try {
-        const key = document.querySelector('#kv-key').value
-        const result = await window.custom.api.delete(key)
-        showResult(`DELETE /${key}\nResponse: ${result}`)
-      } catch (e) {
-        showResult(`Error: ${e.message}`, true)
-      }
-    }
-
-    async function testPut() {
-      try {
-        const key = document.querySelector('#r2-key').value
-        const value = document.querySelector('#r2-value').value
-        const result = await window.custom.api.put(key, value)
-        showResult(`PUT /${key}\nStatus: Success\nResponse: ${result}`)
-      } catch (e) {
-        showResult(`Error: ${e.message}`, true)
-      }
-    }
-
-    async function testPurge() {
-      try {
-        const key = document.querySelector('#r2-key').value
-        const result = await window.custom.api.purge(key)
-        showResult(`PURGE /${key}\nResponse: ${result}`)
-      } catch (e) {
-        showResult(`Error: ${e.message}`, true)
-      }
-    }
-
-    function testLogin() {
-      window.custom.api.login()
-    }
-
-    function testLogout() {
-      window.custom.api.logout()
-    }
-  </script>
+  <pre id="result"></pre>
 </body>
 </html>
