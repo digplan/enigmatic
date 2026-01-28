@@ -1,16 +1,16 @@
 import { S3Client } from "bun";
+import { BeeMap } from "./beemap.js";
 
-const dbPath = "db.json";
-const db = await Bun.file(dbPath).json().catch(() => ({}));
+const sessions = new BeeMap("sessions.jsonl", 20000), beeMaps = {};
 const s3 = new S3Client({
   accessKeyId: Bun.env.CLOUDFLARE_ACCESS_KEY_ID,
   secretAccessKey: Bun.env.CLOUDFLARE_SECRET_ACCESS_KEY,
   bucket: Bun.env.CLOUDFLARE_BUCKET_NAME,
   endpoint: Bun.env.CLOUDFLARE_PUBLIC_URL
 });
+
 const json = (data, status = 200, extraHeaders = {}) => new Response(JSON.stringify(data), {
-  status,
-  headers: {
+  status, headers: {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, PROPFIND, DOWNLOAD, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie, X-HTTP-Method-Override",
@@ -19,7 +19,7 @@ const json = (data, status = 200, extraHeaders = {}) => new Response(JSON.string
     ...extraHeaders
   }
 });
-const writeDb = () => Bun.write(dbPath, JSON.stringify(db, null, 2));
+
 const redirect = (url, cookie = null) => new Response(null, {
   status: 302,
   headers: { Location: url, ...(cookie && { "Set-Cookie": cookie }) }
@@ -27,21 +27,21 @@ const redirect = (url, cookie = null) => new Response(null, {
 
 export default {
   async fetch(req) {
-    console.log('req.method', req.method);
-    const url = new URL(req.url);
-    const key = url.pathname.slice(1);
-    const cb = `${url.origin}/callback`;
+    const url = new URL(req.url), key = url.pathname.slice(1);
     const token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
-    const user = token ? db[`session:${token}`] : null;
+    const user = token ? sessions.get(token) : null;
 
     if (req.method === "OPTIONS") return json(null, 204);
 
+    // Serve static files from public folder
+    if (req.method === 'GET') {
+      const file = Bun.file(`./public${url.pathname === '/' ? '/index.html' : url.pathname}`);
+      if (await file.exists()) return new Response(file);
+    }
+
     if (url.pathname === '/login') {
       return Response.redirect(`https://${Bun.env.AUTH0_DOMAIN}/authorize?${new URLSearchParams({
-        response_type: "code",
-        client_id: Bun.env.AUTH0_CLIENT_ID,
-        redirect_uri: cb,
-        scope: "openid email profile"
+        response_type: "code", client_id: Bun.env.AUTH0_CLIENT_ID, redirect_uri: cb, scope: "openid email profile"
       })}`);
     }
 
@@ -49,14 +49,10 @@ export default {
       const code = url.searchParams.get("code");
       if (!code) return json({ error: 'No code' }, 400);
       const tRes = await fetch(`https://${Bun.env.AUTH0_DOMAIN}/oauth/token`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
+        method: "POST", headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          grant_type: "authorization_code",
-          client_id: Bun.env.AUTH0_CLIENT_ID,
-          client_secret: Bun.env.AUTH0_CLIENT_SECRET,
-          code,
-          redirect_uri: cb
+          grant_type: "authorization_code", client_id: Bun.env.AUTH0_CLIENT_ID,
+          client_secret: Bun.env.AUTH0_CLIENT_SECRET, code, redirect_uri: `${url.origin}/callback`
         })
       });
       if (!tRes.ok) return json({ error: 'Auth error' }, 401);
@@ -65,37 +61,32 @@ export default {
         headers: { Authorization: `Bearer ${tokens.access_token}` }
       })).json();
       const session = crypto.randomUUID();
-      db[`session:${session}`] = {
+      sessions.set(session, {
         ...userInfo,
         login_time: new Date().toISOString(),
         access_token_expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null
-      };
-      await writeDb();
+      });
       return redirect(url.origin, `token=${session}; HttpOnly; Path=/; Secure; SameSite=Lax; Max-Age=86400`);
     }
 
     if (!token || !user) return json({ error: 'Unauthorized' }, 401);
 
     if (url.pathname === '/logout') {
-      delete db[`session:${token}`];
-      await writeDb();
+      sessions.delete(token);
       return redirect(url.origin, "token=; Max-Age=0; Path=/");
     }
 
-    const files = { '/': 'index.html', '/client.js': 'client.js', '/custom.js': 'custom.js' };
-    if (req.method === 'GET' && files[url.pathname]) return new Response(Bun.file(`./public/${files[url.pathname]}`));
+    // Initialize user's beeMap if needed
+    if (!beeMaps[user.sub]) beeMaps[user.sub] = new BeeMap(`kv_${user.sub}.jsonl`, 20000);
 
-    console.log(req.method);
     switch (req.method) {
-      case 'GET': return json(db[key]);
+      case 'GET': return json(beeMaps[user.sub].get(key) || null);
       case 'POST':
         const value = await req.text();
-        db[key] = (() => { try { return JSON.parse(value); } catch { return value; } })();
-        await writeDb();
+        beeMaps[user.sub].set(key, (() => { try { return JSON.parse(value); } catch { return value; } })());
         return json({ key, value });
       case 'DELETE':
-        delete db[key];
-        await writeDb();
+        beeMaps[user.sub].delete(key);
         return json({ status: "Deleted" });
       case 'PUT':
         await s3.write(`${user.sub}/${key}`, req.body);
@@ -125,6 +116,7 @@ export default {
       default: return json({ error: 'Method not allowed' }, 405);
     }
   },
+  
   port: 3000,
   tls: { cert: Bun.file("cert.pem"), key: Bun.file("key.pem") }
 };

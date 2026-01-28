@@ -14,11 +14,24 @@ const ren = async (el, v) => {
 const cProx = new Proxy({}, {
   set(t, p, v) {
     t[p] = v;
-    setTimeout(() => W.$$(p).forEach(el => ren(el)), 0);
+    setTimeout(() => {
+      if (W.$$ && D.body) {
+        W.$$(p).forEach(el => ren(el));
+      }
+    }, 0);
     return true;
   }
 });
-Object.defineProperty(W, 'custom', { get: () => cProx, set: v => Object.assign(cProx, v) });
+Object.defineProperty(W, 'custom', { 
+  get: () => cProx, 
+  set: v => { 
+    Object.keys(v || {}).forEach(k => cProx[k] = v[k]); 
+    // Defer initialization to ensure DOM and functions are ready
+    setTimeout(() => {
+      if (W.initCustomElements && D.body) W.initCustomElements();
+    }, 50);
+  } 
+});
 
 const sProx = new Proxy({}, {
   set(o, p, v) {
@@ -55,26 +68,44 @@ Object.assign(W, {
     a.click();
     URL.revokeObjectURL(a.href);
   },
-  initCustomElements: () => Object.keys(W.custom || {}).forEach(t => W.$$(t).forEach(el => ren(el)))
+  initCustomElements: () => {
+    if (!D.body) return;
+    Object.keys(W.custom || {}).forEach(t => {
+      const elements = W.$$(t);
+      if (elements.length > 0) {
+        elements.forEach(el => ren(el));
+      }
+    });
+  }
 });
 
 // 4. Initialization & Observers
 const boot = () => {
-  W.initCustomElements();
-  new MutationObserver((mutations) => {
-    mutations.forEach(m => {
-      m.addedNodes.forEach(node => {
-        if (node.nodeType === 1) { // Element node
-          const tag = node.tagName?.toLowerCase();
-          if (tag && W.custom?.[tag]) ren(node);
-          // Also check children
-          node.querySelectorAll && Array.from(node.querySelectorAll('*')).forEach(child => {
-            const childTag = child.tagName?.toLowerCase();
-            if (childTag && W.custom?.[childTag]) ren(child);
-          });
-        }
+  if (W.initCustomElements) {
+    // Run immediately and also after a short delay to catch any elements added during script execution
+    W.initCustomElements();
+    setTimeout(() => W.initCustomElements(), 10);
+  }
+  if (D.body) {
+    new MutationObserver((mutations) => {
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType === 1) { // Element node
+            const tag = node.tagName?.toLowerCase();
+            if (tag && W.custom?.[tag]) ren(node);
+            // Also check children
+            node.querySelectorAll && Array.from(node.querySelectorAll('*')).forEach(child => {
+              const childTag = child.tagName?.toLowerCase();
+              if (childTag && W.custom?.[childTag]) ren(child);
+            });
+          }
+        });
       });
-    });
-  }).observe(D.body, { childList: true, subtree: true });
+    }).observe(D.body, { childList: true, subtree: true });
+  }
 };
-D.readyState === 'loading' ? D.addEventListener('DOMContentLoaded', boot) : boot();
+if (D.readyState === 'loading') {
+  D.addEventListener('DOMContentLoaded', boot);
+} else {
+  setTimeout(boot, 0);
+}
