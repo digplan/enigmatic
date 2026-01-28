@@ -1,4 +1,118 @@
-# client.js Documentation
+# Enigmatic
+
+![Tests](https://img.shields.io/badge/tests-26%20passing-brightgreen) ![Size](https://img.shields.io/badge/size-3.4%20KB-blue) ![Version](https://img.shields.io/npm/v/enigmatic)
+
+A lightweight client-side JavaScript library for DOM manipulation, reactive state management, and API interactions, with an optional Bun server for backend functionality.
+
+## Quick Start
+
+### Using client.js via CDN
+
+Include `client.js` in any HTML file using the unpkg CDN:
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://unpkg.com/enigmatic@0.34.0/public/client.js"></script>
+  <script>
+    // Configure your API URL
+    window.api_url = 'https://your-server.com';
+    
+    // Define custom elements
+    window.custom = {
+      "hello-world": (data) => `Hello ${data || 'World'}`
+    };
+  </script>
+</head>
+<body>
+  <hello-world data="message"></hello-world>
+  <script>
+    window.state.message = "Hello World";
+  </script>
+</body>
+</html>
+```
+
+**Note:** Replace `0.34.0` with the latest version number from [npm](https://www.npmjs.com/package/enigmatic).
+
+### Using the Bun Server
+
+The Bun server provides a complete backend implementation with:
+- Key-value storage (using BeeMap)
+- File storage (using Cloudflare R2/S3)
+- Authentication (using Auth0)
+- Static file serving
+
+#### Installation
+
+1. Install Bun (if not already installed):
+   ```bash
+   curl -fsSL https://bun.sh/install | bash
+   ```
+
+2. Install dependencies:
+   ```bash
+   bun install
+   ```
+
+3. Generate HTTPS certificates (for local development):
+   ```bash
+   cd server
+   ./generate-certs.sh
+   cd ..
+   ```
+
+#### Environment Variables
+
+Create a `.env` file in the project root with the following variables:
+
+```bash
+# Auth0 Configuration
+AUTH0_DOMAIN=your-tenant.auth0.com
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+
+# Cloudflare R2 Configuration (optional, for file storage)
+CLOUDFLARE_ACCESS_KEY_ID=your-access-key-id
+CLOUDFLARE_SECRET_ACCESS_KEY=your-secret-access-key
+CLOUDFLARE_BUCKET_NAME=your-bucket-name
+CLOUDFLARE_PUBLIC_URL=https://your-account-id.r2.cloudflarestorage.com
+```
+
+#### Running the Server
+
+Start the server with hot reload:
+```bash
+npm start
+# or
+bun --hot ./bun-server.js
+```
+
+The server will start on `https://localhost:3000` (HTTPS is required for Auth0 cookies).
+
+#### Server Features
+
+- **Static File Serving**: Automatically serves any files from the `public/` folder
+- **Key-Value Storage**: Per-user KV storage using BeeMap (persisted to JSONL files)
+- **File Storage**: Per-user file storage using Cloudflare R2 (or compatible S3)
+- **Authentication**: OAuth2 flow with Auth0
+- **CORS**: Enabled for all origins (configurable)
+
+#### Server Endpoints
+
+- `GET /` or `GET /index.html` - Serves `public/index.html`
+- `GET /{path}` - Serves static files from `public/` folder
+- `GET /login` - Initiates Auth0 login flow
+- `GET /callback` - Auth0 callback handler
+- `GET /logout` - Logs out user
+- `GET /{key}` - Retrieves KV value (requires auth)
+- `POST /{key}` - Stores KV value (requires auth)
+- `DELETE /{key}` - Deletes KV value (requires auth)
+- `PUT /{key}` - Uploads file to R2 (requires auth)
+- `PURGE /{key}` - Deletes file from R2 (requires auth)
+- `PROPFIND /` - Lists files in R2 (requires auth)
+- `PATCH /{key}` - Downloads file from R2 (requires auth)
 
 ## Overview
 
@@ -283,9 +397,12 @@ window.get('key').catch(err => console.error(err));
 <!DOCTYPE html>
 <html>
 <head>
-  <script src="client.js"></script>
+  <script src="https://unpkg.com/enigmatic@0.34.0/public/client.js"></script>
   <script>
-    // Define custom elements (can be before or after client.js)
+    // Configure API URL
+    window.api_url = 'https://localhost:3000';
+    
+    // Define custom elements
     window.custom = {
       "hello-world": (data) => `Hello ${data || 'World'}`
     };
@@ -296,9 +413,6 @@ window.get('key').catch(err => console.error(err));
   <hello-world data="message"></hello-world>
   
   <script>
-    // Configure API URL
-    window.api_url = 'http://localhost:3000';
-    
     // Set reactive state (triggers updates to elements with data="message")
     window.state.message = "Hello World";
     
@@ -326,7 +440,7 @@ window.get('key').catch(err => console.error(err));
 
 ## Dependencies
 
-- Requires a backend server that implements the API endpoints
+- Requires a backend server that implements the API endpoints (or use the included Bun server)
 - Requires browser support for:
   - `fetch` API
   - `Proxy` API
@@ -334,7 +448,7 @@ window.get('key').catch(err => console.error(err));
   - `URL.createObjectURL`
   - `MutationObserver` API
 
-**Note:** `custom.js` can be loaded before or after `client.js` - the Proxy system will handle initialization either way.
+**Note:** Custom element definitions can be loaded before or after `client.js` - the Proxy system will handle initialization either way.
 
 ## Notes
 
@@ -347,3 +461,23 @@ window.get('key').catch(err => console.error(err));
 - The reactive state system only updates elements with matching `data` attributes
 - Custom element handlers can be async functions
 - When a custom element has a `data` attribute, it automatically reads from `window.state[dataValue]` if no explicit value is provided
+
+## Development
+
+### Running Tests
+
+```bash
+npm test
+```
+
+### Building
+
+The library is ready to use as-is. For production, you can use the minified version:
+
+```html
+<script src="https://unpkg.com/enigmatic@0.34.0/public/client.min.js"></script>
+```
+
+## License
+
+MIT

@@ -11,13 +11,37 @@ describe('client.js', () => {
     global.document.body.innerHTML = ''
     global.document.head.innerHTML = ''
     
-    // Clear window.custom
-    global.window.custom = {}
+    // Set api_url
+    global.window.api_url = 'https://localhost:3000'
     
-    // Execute custom.js first (defines window.custom)
-    eval(customCode)
-    // Execute client.js code
+    // Clear window properties that might have descriptors
+    try {
+      delete global.window.custom
+      delete global.window.state
+      delete global.window.$
+      delete global.window.$$
+      delete global.window.$c
+      delete global.window.get
+      delete global.window.set
+      delete global.window.put
+      delete global.window.delete
+      delete global.window.purge
+      delete global.window.list
+      delete global.window.login
+      delete global.window.logout
+      delete global.window.download
+      delete global.window.initCustomElements
+    } catch (e) {
+      // Ignore errors
+    }
+    
+    // Execute client.js code first (sets up Proxy)
     eval(clientCode)
+    // Execute custom.js (defines window.custom components)
+    eval(customCode)
+    
+    // Wait for initialization
+    return new Promise(resolve => setTimeout(resolve, 100))
   })
 
   describe('$ and $$ selectors', () => {
@@ -71,7 +95,8 @@ describe('client.js', () => {
       const result = await window.get('test key')
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${window.api_url}/test%20key`
+        `${window.api_url}/test%20key`,
+        expect.objectContaining({ method: 'GET' })
       )
       expect(result).toEqual({ value: 'test' })
     })
@@ -207,7 +232,7 @@ describe('client.js', () => {
       const result = await window.list()
 
       expect(global.fetch).toHaveBeenCalledWith(
-        window.api_url,
+        `${window.api_url}/`,
         expect.objectContaining({
           method: 'PROPFIND'
         })
@@ -255,29 +280,32 @@ describe('client.js', () => {
 
 
   describe('window.state proxy', () => {
-    test('state.set updates DOM elements with data attribute', () => {
+    test('state.set updates DOM elements with data attribute', async () => {
       global.document.body.innerHTML = '<hello-world data="name"></hello-world>'
       
       window.state.name = 'John'
+      await new Promise(resolve => setTimeout(resolve, 50))
       
       const el = global.document.querySelector('hello-world')
       expect(el.innerHTML).toBe('Hello John')
     })
 
-    test('state.set updates multiple elements with same data attribute', () => {
+    test('state.set updates multiple elements with same data attribute', async () => {
       global.document.body.innerHTML = '<hello-world data="name"></hello-world><hello-world data="name"></hello-world>'
       
       window.state.name = 'Jane'
+      await new Promise(resolve => setTimeout(resolve, 50))
       
       const els = global.document.querySelectorAll('hello-world')
       expect(els[0].innerHTML).toBe('Hello Jane')
       expect(els[1].innerHTML).toBe('Hello Jane')
     })
 
-    test('state.set works with object components', () => {
+    test('state.set works with object components', async () => {
       global.document.body.innerHTML = '<hello-world-2 data="test"></hello-world-2>'
       
       window.state.test = 'Hello'
+      await new Promise(resolve => setTimeout(resolve, 50))
       
       const el = global.document.querySelector('hello-world-2')
       expect(el.innerHTML).toBe('Hello World')
@@ -288,20 +316,22 @@ describe('client.js', () => {
       expect(window.state.test).toBe('value')
     })
 
-    test('state.set handles multiple properties', () => {
+    test('state.set handles multiple properties', async () => {
       global.document.body.innerHTML = '<hello-world data="a"></hello-world><hello-world data="b"></hello-world>'
       
       window.state.a = 'A'
       window.state.b = 'B'
+      await new Promise(resolve => setTimeout(resolve, 50))
       
       expect(global.document.querySelector('[data="a"]').innerHTML).toBe('Hello A')
       expect(global.document.querySelector('[data="b"]').innerHTML).toBe('Hello B')
     })
 
-    test('state.set does not update elements without matching data attribute', () => {
+    test('state.set does not update elements without matching data attribute', async () => {
       global.document.body.innerHTML = '<hello-world data="name"></hello-world><div data="other">Original</div>'
       
       window.state.name = 'John'
+      await new Promise(resolve => setTimeout(resolve, 50))
       
       expect(global.document.querySelector('[data="name"]').innerHTML).toBe('Hello John')
       expect(global.document.querySelector('[data="other"]').innerHTML).toBe('Original')

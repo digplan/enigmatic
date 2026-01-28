@@ -6,7 +6,13 @@ const ren = async (el, v) => {
   if (f) {
     const dataAttr = el.getAttribute('data');
     const val = v !== undefined ? v : (dataAttr ? W.state[dataAttr] : undefined);
-    try { el.innerHTML = await (f.render || f)(val) } catch(e) { console.error(e) }
+    try {
+      if (f.render) {
+        el.innerHTML = await f.render.call(f, val);
+      } else if (typeof f === 'function') {
+        el.innerHTML = await f(val);
+      }
+    } catch(e) { console.error(e) }
   }
 };
 
@@ -30,7 +36,8 @@ Object.defineProperty(W, 'custom', {
     setTimeout(() => {
       if (W.initCustomElements && D.body) W.initCustomElements();
     }, 50);
-  } 
+  },
+  configurable: true
 });
 
 const sProx = new Proxy({}, {
