@@ -1,14 +1,12 @@
 {
   "name": "enigmatic",
-  "version": "0.34.0",
-  "unpkg": "./public/client.js",
-  "scripts": {
-    "start": "bun --hot ./bun-server.js",
-    "test": "jest --config __tests__/jest.config.js"
+  "version": "0.35.0",
+  "bin": {
+    "enigmatic": "./bin/enigmatic.js"
   },
-  "devDependencies": {
-    "jest": "^29.0.0",
-    "jest-environment-jsdom": "^29.0.0",
-    "whatwg-fetch": "^3.6.20"
+  "unpkg": "./client/public/client.js",
+  "scripts": {
+    "start": "bun run bin/enigmatic.js",
+    "hot": "bun --hot bin/enigmatic.js"
   }
 }

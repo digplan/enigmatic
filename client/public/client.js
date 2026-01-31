@@ -53,17 +53,24 @@ const req = (m, k, b) => fetch(`${W.api_url}/${k ? Enc(k) : ''}`, {
   method: m, body: b instanceof Blob || typeof b === 'string' ? b : JSON.stringify(b)
 });
 
+const toJson = (r) => {
+  const ct = (r.headers.get('content-type') || '').toLowerCase();
+  if (!ct.includes('application/json')) return r.text().then((t) => { throw new Error('Server returned non-JSON (HTML?): ' + (t.slice(0, 60) || r.status)); });
+  return r.json();
+};
+
 Object.assign(W, {
   $: s => D.querySelector(s),
   $$: s => D.querySelectorAll(s),
   $c: s => $0.closest(s),
   state: sProx,
-  get: k => req('GET', k).then(r => r.json()),
-  set: (k, v) => req('POST', k, v).then(r => r.json()),
-  put: (k, v) => req('PUT', k, v).then(r => r.json()),
-  delete: k => req('DELETE', k).then(r => r.json()),
-  purge: k => req('PURGE', k).then(r => r.json()),
-  list: () => req('PROPFIND').then(r => r.json()),
+  get: k => req('GET', k).then(toJson),
+  set: (k, v) => req('POST', k, v).then(toJson),
+  put: (k, v) => req('PUT', k, v).then(toJson),
+  delete: k => req('DELETE', k).then(toJson),
+  purge: k => req('PURGE', k).then(toJson),
+  list: () => req('PROPFIND').then(toJson),
+  me: () => fetch(`${W.api_url}/me`, { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
   login: () => W.location.href = `${W.api_url}/login`,
   logout: () => W.location.href = `${W.api_url}/logout`,
   download: async (k) => {
