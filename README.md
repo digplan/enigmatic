@@ -127,7 +127,7 @@ const elements = window.$$('.my-class');
 ### API Base URL
 
 ```javascript
-window.api_url = "https://localhost:3000"
+window.api_url = "https://localhost:3001"
 ```
 
 Configures the base URL for all API requests. Modify this to point to your server.
