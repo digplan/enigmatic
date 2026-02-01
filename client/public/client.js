@@ -30,7 +30,8 @@ const sProx = new Proxy({}, {
 const req = (method, key, body) =>
   fetch(`${window.api_url}/${key ? encodeURIComponent(key) : ''}`, {
     method,
-    body: body instanceof Blob || typeof body === 'string' ? body : JSON.stringify(body)
+    body: body instanceof Blob || typeof body === 'string' ? body : JSON.stringify(body),
+    credentials: 'include',
   });
 
 const toJson = (r) => {

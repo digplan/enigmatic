@@ -65,6 +65,8 @@ export default {
     if (req.method === "OPTIONS") return json(null, 204);
 
     if (req.method === "GET") {
+      console.log(req.headers.get("Cookie"));
+
       const p = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
       if (p === "index.html" || /\.[a-z0-9]+$/i.test(p)) {
         const f = Bun.file(join(publicDir, p));
@@ -73,7 +75,7 @@ export default {
     }
 
     if (url.pathname === "/login") {
-      site_origin = url.origin;
+      site_origin = req.headers.get("referer");
       return Response.redirect(`https://${Bun.env.AUTH0_DOMAIN}/authorize?${new URLSearchParams({ response_type: "code", client_id: Bun.env.AUTH0_CLIENT_ID, redirect_uri: cb, scope: "openid email profile" })}`);
     }
 
@@ -86,7 +88,7 @@ export default {
       const userInfo = await (await fetch(`https://${Bun.env.AUTH0_DOMAIN}/userinfo`, { headers: { Authorization: `Bearer ${tokens.access_token}` } })).json();
       const sid = crypto.randomUUID();
       sessions.set(sid, { ...userInfo, login_time: new Date().toISOString(), access_token_expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null });
-      return redir(site_origin, `token=${sid}; HttpOnly; Path=/; Secure; SameSite=Lax; Max-Age=86400`);
+      return redir(site_origin || url.origin, `token=${sid}; HttpOnly; Path=/; Secure; SameSite=Lax; Max-Age=86400`);
     }
 
     if (url.pathname === "/me") return user ? json(user) : json({ error: "Unauthorized" }, 401);
