@@ -1,91 +1,73 @@
-const D = document, W = window, Enc = encodeURIComponent;
-
-// 1. Unified Render Logic (Handles both State & Custom Elements)
 const ren = async (el, v) => {
-  const f = W.custom?.[el.tagName.toLowerCase()];
+  const f = window.custom?.[el.tagName.toLowerCase()];
   if (f) {
     const dataAttr = el.getAttribute('data');
-    const val = v !== undefined ? v : (dataAttr ? W.state[dataAttr] : undefined);
+    const val = v !== undefined ? v : (dataAttr ? window.state[dataAttr] : undefined);
     try {
       if (f.render) {
         el.innerHTML = await f.render.call(f, val);
       } else if (typeof f === 'function') {
         el.innerHTML = await f(val);
       }
-    } catch(e) { console.error(e) }
+    } catch (e) {
+      console.error(e);
+    }
   }
 };
 
-// 2. Proxies setup
-const cProx = new Proxy({}, {
-  set(t, p, v) {
-    t[p] = v;
-    setTimeout(() => {
-      if (W.$$ && D.body) {
-        W.$$(p).forEach(el => ren(el));
-      }
-    }, 0);
-    return true;
-  }
-});
-Object.defineProperty(W, 'custom', { 
-  get: () => cProx, 
-  set: v => { 
-    Object.keys(v || {}).forEach(k => cProx[k] = v[k]); 
-    // Defer initialization to ensure DOM and functions are ready
-    setTimeout(() => {
-      if (W.initCustomElements && D.body) W.initCustomElements();
-    }, 50);
-  },
-  configurable: true
-});
+window.custom = {};
 
+// 2. State proxy
 const sProx = new Proxy({}, {
   set(o, p, v) {
     o[p] = v;
-    W.$$(`[data="${p}"]`).forEach(el => ren(el, v));
+    window.$$(`[data="${p}"]`).forEach(el => ren(el, v));
     return true;
   }
 });
 
-// 3. API & DOM Helpers
-const req = (m, k, b) => fetch(`${W.api_url}/${k ? Enc(k) : ''}`, {
-  method: m, body: b instanceof Blob || typeof b === 'string' ? b : JSON.stringify(b)
-});
+// 4. API helpers
+const req = (method, key, body) =>
+  fetch(`${window.api_url}/${key ? encodeURIComponent(key) : ''}`, {
+    method,
+    body: body instanceof Blob || typeof body === 'string' ? body : JSON.stringify(body)
+  });
 
 const toJson = (r) => {
   const ct = (r.headers.get('content-type') || '').toLowerCase();
-  if (!ct.includes('application/json')) return r.text().then((t) => { throw new Error('Server returned non-JSON (HTML?): ' + (t.slice(0, 60) || r.status)); });
+  if (!ct.includes('application/json')) {
+    return r.text().then((t) => { throw new Error('Server returned non-JSON (HTML?): ' + (t.slice(0, 60) || r.status)); });
+  }
   return r.json();
 };
 
-Object.assign(W, {
-  $: s => D.querySelector(s),
-  $$: s => D.querySelectorAll(s),
-  $c: s => $0.closest(s),
+Object.assign(window, {
+  $: (s) => document.querySelector(s),
+  $$: (s) => document.querySelectorAll(s),
+  $c: (s) => $0.closest(s),
   state: sProx,
-  get: k => req('GET', k).then(toJson),
+  get: (k) => req('GET', k).then(toJson),
   set: (k, v) => req('POST', k, v).then(toJson),
   put: (k, v) => req('PUT', k, v).then(toJson),
-  delete: k => req('DELETE', k).then(toJson),
-  purge: k => req('PURGE', k).then(toJson),
+  delete: (k) => req('DELETE', k).then(toJson),
+  purge: (k) => req('PURGE', k).then(toJson),
   list: () => req('PROPFIND').then(toJson),
-  me: () => fetch(`${W.api_url}/me`, { credentials: "include" }).then((r) => (r.ok ? r.json() : null)),
-  login: () => W.location.href = `${W.api_url}/login`,
-  logout: () => W.location.href = `${W.api_url}/logout`,
+  me: () => fetch(`${window.api_url}/me`, { credentials: 'include' }).then((r) => (r.ok ? r.json() : null)),
+  login: () => window.location.href = `${window.api_url}/login`,
+  logout: () => window.location.href = `${window.api_url}/logout`,
   download: async (k) => {
     const r = await req('PATCH', k);
     if (!r.ok) throw new Error('Download failed');
-    const a = D.createElement('a');
+    const a = document.createElement('a');
     a.href = URL.createObjectURL(await r.blob());
     a.download = k;
     a.click();
     URL.revokeObjectURL(a.href);
   },
   initCustomElements: () => {
-    if (!D.body) return;
-    Object.keys(W.custom || {}).forEach(t => {
-      const elements = W.$$(t);
+    if (!document.body) return;
+    Object.keys(window.custom || {}).forEach((t) => {
+      const elements = window.$$(t);
       if (elements.length > 0) {
         elements.forEach(el => ren(el));
       }
@@ -93,33 +75,31 @@ Object.assign(W, {
   }
 });
 
-// 4. Initialization & Observers
+// 5. Boot
 const boot = () => {
-  if (W.initCustomElements) {
-    // Run immediately and also after a short delay to catch any elements added during script execution
-    W.initCustomElements();
-    setTimeout(() => W.initCustomElements(), 10);
+  if (window.initCustomElements) {
+    window.initCustomElements();
+    setTimeout(() => window.initCustomElements(), 10);
   }
-  if (D.body) {
+  if (document.body) {
     new MutationObserver((mutations) => {
-      mutations.forEach(m => {
-        m.addedNodes.forEach(node => {
-          if (node.nodeType === 1) { // Element node
+      mutations.forEach((m) => {
+        m.addedNodes.forEach((node) => {
+          if (node.nodeType === 1) {
             const tag = node.tagName?.toLowerCase();
-            if (tag && W.custom?.[tag]) ren(node);
-            // Also check children
-            node.querySelectorAll && Array.from(node.querySelectorAll('*')).forEach(child => {
+            if (tag && window.custom?.[tag]) ren(node);
+            node.querySelectorAll && Array.from(node.querySelectorAll('*')).forEach((child) => {
               const childTag = child.tagName?.toLowerCase();
-              if (childTag && W.custom?.[childTag]) ren(child);
+              if (childTag && window.custom?.[childTag]) ren(child);
             });
           }
         });
       });
-    }).observe(D.body, { childList: true, subtree: true });
+    }).observe(document.body, { childList: true, subtree: true });
   }
 };
-if (D.readyState === 'loading') {
-  D.addEventListener('DOMContentLoaded', boot);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
 } else {
   setTimeout(boot, 0);
 }
