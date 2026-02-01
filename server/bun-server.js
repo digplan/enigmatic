@@ -11,7 +11,7 @@ const userKv = {};
 let site_origin = "";
 
 const kvPath = (sub) => join(kvDir, `${String(sub).replace(/[^a-zA-Z0-9_-]/g, "_")}.jsonl`);
-const json = (d, s = 200, h = {}) => new Response(JSON.stringify(d), { status: s, headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, PROPFIND, PATCH, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie", "Access-Control-Allow-Credentials": "true", "Content-Type": "application/json", ...h } });
+const json = (d, s = 200, h = {}, origin = null) => new Response(JSON.stringify(d), { status: s, headers: { "Access-Control-Allow-Origin": origin || "*", "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, PROPFIND, PATCH, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie", "Access-Control-Allow-Credentials": "true", "Content-Type": "application/json", ...h } });
 const redir = (url, cookie) => new Response(null, { status: 302, headers: { Location: url, ...(cookie && { "Set-Cookie": cookie }) } });
 
 async function getUserMap(sub) {
@@ -59,14 +59,13 @@ const s3 = new S3Client({
 export default {
   async fetch(req) {
     const url = new URL(req.url), key = url.pathname.slice(1), cb = `${url.origin}/callback`;
+    const origin = req.headers.get("Origin") || url.origin;
     const token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
     const user = (Bun.env.TEST_MODE === "1" && token === Bun.env.TEST_SESSION_ID) ? { sub: "test-user" } : (token ? sessions.get(token) : null);
 
-    if (req.method === "OPTIONS") return json(null, 204);
+    if (req.method === "OPTIONS") return json(null, 204, {}, origin);
 
     if (req.method === "GET") {
-      console.log(req.headers.get("Cookie"));
-
       const p = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
       if (p === "index.html" || /\.[a-z0-9]+$/i.test(p)) {
         const f = Bun.file(join(publicDir, p));
@@ -81,9 +80,9 @@ export default {
 
     if (url.pathname === "/callback") {
       const code = url.searchParams.get("code");
-      if (!code) return json({ error: "No code" }, 400);
+      if (!code) return json({ error: "No code" }, 400, {}, origin);
       const tRes = await fetch(`https://${Bun.env.AUTH0_DOMAIN}/oauth/token`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ grant_type: "authorization_code", client_id: Bun.env.AUTH0_CLIENT_ID, client_secret: Bun.env.AUTH0_CLIENT_SECRET, code, redirect_uri: cb }) });
-      if (!tRes.ok) return json({ error: "Auth error" }, 401);
+      if (!tRes.ok) return json({ error: "Auth error" }, 401, {}, origin);
       const tokens = await tRes.json();
       const userInfo = await (await fetch(`https://${Bun.env.AUTH0_DOMAIN}/userinfo`, { headers: { Authorization: `Bearer ${tokens.access_token}` } })).json();
       const sid = crypto.randomUUID();
@@ -91,33 +90,41 @@ export default {
       return redir(site_origin || url.origin, `token=${sid}; HttpOnly; Path=/; Secure; SameSite=None; Max-Age=86400`);
     }
 
-    if (url.pathname === "/me") return user ? json(user) : json({ error: "Unauthorized" }, 401);
-    if (!token || !user) return json({ error: "Unauthorized" }, 401);
+    if (url.pathname === "/me") return user ? json(user, 200, {}, origin) : json({ error: "Unauthorized" }, 401, {}, origin);
+    if (!token || !user) return json({ error: "Unauthorized" }, 401, {}, origin);
     if (url.pathname === "/logout") { sessions.delete(token); return redir(url.origin, "token=; Max-Age=0; Path=/; Secure; SameSite=None"); }
 
     const m = await getUserMap(user.sub);
     switch (req.method) {
-      case "GET": return json(m.get(key) ?? null);
+      case "GET": return json(m.get(key) ?? null, 200, {}, origin);
       case "POST":
         const val = await req.text();
         const v = (() => { try { return JSON.parse(val); } catch { return val; } })();
         m.set(key, v);
         await saveUserKv(user.sub, "update", key, v);
-        return json({ key, value: v });
-      case "DELETE": m.delete(key); await saveUserKv(user.sub, "delete", key); return json({ status: "Deleted" });
-      case "PUT": await s3.write(`${user.sub}/${key}`, req.body); return json({ status: "Saved to R2" });
-      case "PURGE": await s3.delete(`${user.sub}/${key}`); return json({ status: "Deleted from R2" });
+        return json({ key, value: v }, 200, {}, origin);
+      case "DELETE": m.delete(key); await saveUserKv(user.sub, "delete", key); return json({ status: "Deleted" }, 200, {}, origin);
+      case "PUT": await s3.write(`${user.sub}/${key}`, req.body); return json({ status: "Saved to R2" }, 200, {}, origin);
+      case "PURGE": await s3.delete(`${user.sub}/${key}`); return json({ status: "Deleted from R2" }, 200, {}, origin);
       case "PROPFIND":
         const list = await s3.list({ prefix: `${user.sub}/` });
         const items = Array.isArray(list) ? list : (list?.contents || []);
-        return json(items.map((i) => ({ name: i.key?.split("/").pop() || i.name || i.Key, lastModified: i.lastModified || i.LastModified, size: i.size || i.Size || 0 })));
+        return json(items.map((i) => ({ name: i.key?.split("/").pop() || i.name || i.Key, lastModified: i.lastModified || i.LastModified, size: i.size || i.Size || 0 })), 200, {}, origin);
       case "PATCH":
         try {
-          if (!(await s3.exists(`${user.sub}/${key}`))) return json({ error: "File not found" }, 404);
+          if (!(await s3.exists(`${user.sub}/${key}`))) {
+            const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+            return new Response(JSON.stringify({ error: "File not found" }), { status: 404, headers: { ...headers, "Content-Type": "application/json" } });
+          }
           const f = await s3.file(`${user.sub}/${key}`);
-          return f ? new Response(f.stream(), { headers: f.headers }) : json({ error: "File not found" }, 404);
-        } catch (e) { return json({ error: "File not found", details: e.message }, 404); }
-      default: return json({ error: "Method not allowed" }, 405);
+          if (f) {
+            const headers = { ...f.headers, "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+            return new Response(f.stream(), { headers });
+          }
+          const headers = { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true" };
+          return new Response(JSON.stringify({ error: "File not found" }), { status: 404, headers: { ...headers, "Content-Type": "application/json" } });
+        } catch (e) { return json({ error: "File not found", details: e.message }, 404, {}, origin); }
+      default: return json({ error: "Method not allowed" }, 405, {}, origin);
     }
   },
   port: 3000,
