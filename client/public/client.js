@@ -42,11 +42,23 @@ const toJson = (r) => {
   return r.json();
 };
 
+const fetchJson = async (url, data) => {
+  const r = await fetch(url, { 
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data)
+  });
+  return await toJson(r);
+};
+
 Object.assign(window, {
   $: (s) => document.querySelector(s),
   $$: (s) => document.querySelectorAll(s),
   $c: (s) => $0.closest(s),
   state: sProx,
+  fetchJson,
   get: (k) => req('GET', k).then(toJson),
   set: (k, v) => req('POST', k, v).then(toJson),
   put: (k, v) => req('PUT', k, v).then(toJson),
@@ -99,6 +111,7 @@ const boot = () => {
     }).observe(document.body, { childList: true, subtree: true });
   }
 };
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', boot);
 } else {

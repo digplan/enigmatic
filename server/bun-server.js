@@ -60,10 +60,33 @@ export default {
   async fetch(req) {
     const url = new URL(req.url), key = url.pathname.slice(1), cb = `${url.origin}/callback`;
     const origin = req.headers.get("Origin") || url.origin;
+    console.log("%s %s", req.method, url.pathname);
     const token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
     const user = (Bun.env.TEST_MODE === "1" && token === Bun.env.TEST_SESSION_ID) ? { sub: "test-user" } : (token ? sessions.get(token) : null);
 
     if (req.method === "OPTIONS") return json(null, 204, {}, origin);
+
+    // LLM proxy (no auth required)
+    if (url.pathname === "/llm/chat" && req.method === "POST") {
+      console.log("[llm] %s %s from %s", req.method, url.pathname, origin || req.headers.get("Origin") || "-");
+      try {
+        const body = await req.json();
+        const fixedModel = Bun.env.USE_LLM_MODEL;
+        const model = fixedModel || body?.model || "(none)";
+        const msgCount = Array.isArray(body?.messages) ? body.messages.length : 0;
+        console.log("[llm] body: model=%s messages=%d", model, msgCount);
+        const headers = { "Authorization": `${Bun.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" };
+        console.log("[llm] headers: %s", JSON.stringify(headers));
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers, body: JSON.stringify(body) });
+        const out = await response.json();
+        console.log("[llm] OpenRouter status=%d", response.status);
+        console.log("[llm] response: %s", JSON.stringify(out));
+        return json(out, response.status, {}, origin);
+      } catch (e) {
+        console.error("[llm] error:", e.message);
+        return json({ error: "LLM request failed", details: e.message }, 500, {}, origin);
+      }
+    }
 
     if (req.method === "GET") {
       const p = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
