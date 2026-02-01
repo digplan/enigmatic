@@ -88,12 +88,12 @@ export default {
       const userInfo = await (await fetch(`https://${Bun.env.AUTH0_DOMAIN}/userinfo`, { headers: { Authorization: `Bearer ${tokens.access_token}` } })).json();
       const sid = crypto.randomUUID();
       sessions.set(sid, { ...userInfo, login_time: new Date().toISOString(), access_token_expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000).toISOString() : null });
-      return redir(site_origin || url.origin, `token=${sid}; HttpOnly; Path=/; Secure; SameSite=Lax; Max-Age=86400`);
+      return redir(site_origin || url.origin, `token=${sid}; HttpOnly; Path=/; Secure; SameSite=None; Max-Age=86400`);
     }
 
     if (url.pathname === "/me") return user ? json(user) : json({ error: "Unauthorized" }, 401);
     if (!token || !user) return json({ error: "Unauthorized" }, 401);
-    if (url.pathname === "/logout") { sessions.delete(token); return redir(url.origin, "token=; Max-Age=0; Path=/"); }
+    if (url.pathname === "/logout") { sessions.delete(token); return redir(url.origin, "token=; Max-Age=0; Path=/; Secure; SameSite=None"); }
 
     const m = await getUserMap(user.sub);
     switch (req.method) {
