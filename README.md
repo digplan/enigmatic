@@ -42,6 +42,7 @@ The Bun server provides a complete backend with:
 - **File storage** – Per-user files via Cloudflare R2 (or S3-compatible API)
 - **Authentication** – Auth0 OAuth2 login/logout
 - **Static files** – Served from `client/public/`
+- **LLM proxy** – Proxies chat requests to [OpenRouter](https://openrouter.ai); no auth required. Set `OPENROUTER_API_KEY` to use.
 
 #### Installation
 
@@ -72,6 +73,9 @@ CLOUDFLARE_ACCESS_KEY_ID=your-access-key-id
 CLOUDFLARE_SECRET_ACCESS_KEY=your-secret-access-key
 CLOUDFLARE_BUCKET_NAME=your-bucket-name
 CLOUDFLARE_PUBLIC_URL=https://your-account-id.r2.cloudflarestorage.com
+
+# OpenRouter (optional, for LLM proxy)
+OPENROUTER_API_KEY=sk-or-v1-...
 ```
 
 #### Running the Server
@@ -96,6 +100,7 @@ Server runs at **https://localhost:3000** (HTTPS is required for Auth0 cookies).
 | GET      | `/callback`| Auth0 OAuth callback |
 | GET      | `/logout`  | Logs out and clears session |
 | GET      | `/me`      | Current user or 401 (no auth) |
+| POST     | `/llm/chat` | LLM proxy: forwards body to OpenRouter chat completions (no auth). Body: `{ model, messages }`. |
 | GET      | `/{key}`   | KV get (auth required) |
 | POST     | `/{key}`   | KV set (auth required) |
 | DELETE   | `/{key}`   | KV delete (auth required) |
@@ -103,6 +108,26 @@ Server runs at **https://localhost:3000** (HTTPS is required for Auth0 cookies).
 | PURGE    | `/{key}`   | Delete file from R2 (auth required) |
 | PROPFIND | `/`        | List R2 files (auth required) |
 | PATCH    | `/{key}`   | Download file from R2 (auth required) |
+
+#### LLM proxy
+
+The server can proxy chat requests to [OpenRouter](https://openrouter.ai). Set `OPENROUTER_API_KEY` in the environment. **No auth** is required for `/llm/chat`; the endpoint forwards the request body to OpenRouter and returns the response.
+
+**Request:** `POST {api_url}/llm/chat` with JSON body (OpenRouter chat completions format):
+
+```json
+{ "model": "openai/gpt-3.5-turbo", "messages": [{ "role": "user", "content": "Hello" }] }
+```
+
+**Example (curl):**
+
+```bash
+curl -X POST "https://localhost:3000/llm/chat" -k \
+  -H "Content-Type: application/json" \
+  -d '{"model":"openai/gpt-3.5-turbo","messages":[{"role":"user","content":"Say hi."}]}'
+```
+
+**Example (client):** From a page, `fetch(api_url + '/llm/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages }) })`. See `client/public/api.html` for a chat UI that uses this endpoint.
 
 ## Optional app convention (skill.md)
 
