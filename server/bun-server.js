@@ -75,7 +75,7 @@ export default {
         const model = fixedModel || body?.model || "(none)";
         const msgCount = Array.isArray(body?.messages) ? body.messages.length : 0;
         console.log("[llm] body: model=%s messages=%d", model, msgCount);
-        const headers = { "Authorization": `${Bun.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" };
+        const headers = { "Authorization": `bearer ${Bun.env.OPENROUTER_API_KEY}`, "Content-Type": "application/json" };
         console.log("[llm] headers: %s", JSON.stringify(headers));
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", { method: "POST", headers, body: JSON.stringify(body) });
         const out = await response.json();
