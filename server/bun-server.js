@@ -60,9 +60,14 @@ export default {
   async fetch(req) {
     const url = new URL(req.url), key = url.pathname.slice(1), cb = `${url.origin}/callback`;
     const origin = req.headers.get("Origin") || url.origin;
-    console.log("%s %s", req.method, url.pathname);
-    const token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
-    const user = (Bun.env.TEST_MODE === "1" && token === Bun.env.TEST_SESSION_ID) ? { sub: "test-user" } : (token ? sessions.get(token) : null);
+    console.log("%s %s %s", new Date().toISOString(), req.method, url.pathname);
+    let token = req.headers.get("Cookie")?.match(/token=([^;]+)/)?.[1];
+    let user = (token ? sessions.get(token) : null);
+
+    if (Bun.env.TEST_MODE === "1" && req.headers.get("Authorization") === "Bearer test-session-id") {
+      user = { sub: "test-user" };
+      token = "test-session-id";
+    }
 
     if (req.method === "OPTIONS") return json(null, 204, {}, origin);
 
@@ -113,8 +118,13 @@ export default {
       return redir(site_origin || url.origin, `token=${sid}; HttpOnly; Path=/; Secure; SameSite=None; Max-Age=86400`);
     }
 
-    if (url.pathname === "/me") return user ? json(user, 200, {}, origin) : json({ error: "Unauthorized" }, 401, {}, origin);
+    // Needs auth from here on out
     if (!token || !user) return json({ error: "Unauthorized" }, 401, {}, origin);
+
+    // If the path is /me, return the user
+    if (url.pathname === "/me") json(user, 200, {}, origin);
+
+    // If the path is /logout, delete the token and redirect to the origin
     if (url.pathname === "/logout") { sessions.delete(token); return redir(url.origin, "token=; Max-Age=0; Path=/; Secure; SameSite=None"); }
 
     const m = await getUserMap(user.sub);

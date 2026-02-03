@@ -5,11 +5,35 @@ description: When asked to make a web app, create only index.html, custom.js, an
 
 # Enigmatic Web App
 
+## What is Enigmatic?
+
+**Enigmatic** is a full-stack web platform consisting of:
+
+- **Client library** (`enigmatic`) — A lightweight JavaScript library for DOM manipulation, reactive state management, and API interactions, available via CDN
+- **Backend server** (Bun-based) — Provides:
+  - **Key-value storage** — Per-user persistent storage with `GET`, `POST`, `DELETE` operations
+  - **File storage** — Per-user file upload/download via Cloudflare R2 or S3-compatible APIs
+  - **Authentication** — Auth0 OAuth2 integration for user login/logout
+  - **LLM proxy** — Proxies chat requests to OpenRouter (no auth required)
+  - **Static file serving** — Serves HTML/CSS/JS files
+
+## Using Enigmatic as a Backend for Static Web Apps
+
+This document describes the **standard convention** for creating static web applications that use Enigmatic as a backend. When building web apps that connect to an Enigmatic server:
+
+1. **Set the API URL**: Configure `window.api_url` to point to your Enigmatic server (e.g., `https://digplan.app`)
+2. **Use the client library**: Include the enigmatic client library from CDN
+3. **Follow the file structure**: Create only `index.html`, `custom.js`, and `style.css` (as described below)
+4. **Use the API**: Access backend features via `window.get()`, `window.set()`, `window.put()`, `window.list()`, `window.me()`, etc.
+
+This convention ensures consistency and compatibility with the Enigmatic ecosystem.
+
 ## File set (strict)
 
 Every app has **only** these three files:
 
-- **index.html** — Markup, script tags for enigmatic and custom.js, and any custom elements (e.g. `<app-root></app-root>`, `<hw></hw>`).
+- **index.html** — Markup, script tags for enigmatic and custom.js, and any custom elements (e.g. `<web-app></web-app>`, `<hw></hw>`). <web-app> as an element may be used as an overall container, but the index.html should have the sections and custom elements explicitly in the file.
+
 - **custom.js** — All web component definitions on `window.custom`. No other app logic files.
 - **style.css** — All styles. No other stylesheets.
 
@@ -28,6 +52,12 @@ If the project has **REQUIREMENTS.md** (or a similar design/requirements doc):
 - One script tag for enigmatic:  
   `<script src="https://unpkg.com/enigmatic"></script>`
 - Load **custom.js** after enigmatic (e.g. a second script tag).
+- **Set the API URL** to point to your Enigmatic backend server:
+  ```html
+  <script>
+    window.api_url = 'https://your-enigmatic-server.com';
+  </script>
+  ```
 - In the body, use custom elements whose names match keys in `window.custom` (e.g. `<hw></hw>`, `<app-root></app-root>`). Enigmatic will render each element by calling the corresponding component in `window.custom` and injecting the returned string.
 
 ## custom.js — How to define web components
