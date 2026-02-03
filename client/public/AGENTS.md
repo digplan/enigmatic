@@ -53,6 +53,40 @@ state.name = "Hello Worlds!"
 - `<hw data="name"></hw>` → calls `window.custom.hw.render(window.state.name)`
 - Setting `window.state.name = "New"` automatically re-renders all `<hw data="name">` elements
 
+## API Calls
+
+All API functions return Promises. Use `await` or `.then()`:
+
+**Key-Value Storage:**
+- `await window.get(key)` — Get value
+- `await window.set(key, value)` — Set value
+- `await window.delete(key)` — Delete key
+
+**File Storage:**
+- `await window.put(filename, blobOrString)` — Upload file
+- `await window.list()` — List all files `[{name, lastModified, size}, ...]`
+- `await window.download(filename)` — Download file
+- `await window.purge(filename)` — Delete file
+
+**Authentication:**
+- `await window.me()` — Get current user or `null`
+- `window.login()` — Redirect to login
+- `window.logout()` — Redirect to logout
+
+**General:**
+- `await window.fetchJson(url, data)` — POST JSON with credentials
+
+**Example:**
+```js
+window.custom = {
+  data: async () => {
+    const user = await window.me();
+    const items = await window.list();
+    return `<div>User: ${user?.email || 'Not logged in'}</div>`;
+  }
+};
+```
+
 ## REQUIREMENTS.md
 
 If **REQUIREMENTS.md** exists, use it as the source of truth. Implement all sections and meet acceptance criteria.
