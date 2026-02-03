@@ -1,12 +1,12 @@
 {
   "name": "enigmatic",
-  "version": "0.38.0",
+  "version": "0.39.0",
   "bin": {
     "enigmatic": "./bin/enigmatic.js"
   },
   "unpkg": "./client/public/client.js",
   "scripts": {
-    "start": "bun run bin/enigmatic.js",
-    "hot": "bun --hot bin/enigmatic.js"
+    "start": "bun run server/server.js",
+    "hot": "bun --hot server/server.js"
   }
 }

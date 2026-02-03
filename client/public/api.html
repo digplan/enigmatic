@@ -6,7 +6,7 @@
   <title>Enigmatic Webapp</title>
 
   <script>
-    window.api_url = "https://digplan.app"
+    window.api_url = "https://localhost:3000"
   </script>
 
   <style>
@@ -253,6 +253,7 @@ window.state.message = "World";</pre>
         var llmUrl = new URL('/llm/chat', window.api_url).href;
         fetch(llmUrl, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: (modelEl.value || 'openai/gpt-3.5-turbo').trim(),
