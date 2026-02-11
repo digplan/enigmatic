@@ -6,3 +6,4 @@ certs/
 *.jsonl
 kv/
 test/
+.DS_Store

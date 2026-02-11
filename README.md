@@ -129,18 +129,6 @@ curl -X POST "https://localhost:3000/llm/chat" -k \
 
 **Example (client):** From a page, `fetch(api_url + '/llm/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model, messages }) })`. See `client/public/api.html` for a chat UI that uses this endpoint.
 
-## Optional app convention (skill.md)
-
-The repo includes an optional minimal convention in **`client/public/skill.md`** for building enigmatic web apps. It’s a small, human- and bot-friendly standard you can follow when creating or generating apps:
-
-- **Strict file set** — Only three files: `index.html`, `custom.js`, `style.css`. No package.json, tests, or extra files unless requested.
-- **index.html** — One script for enigmatic (CDN), then custom.js. Body uses custom elements whose names match keys in `window.custom` (e.g. `<hw></hw>`, `<app-root></app-root>`).
-- **custom.js** — `window.custom = window.custom || {}`; each component is a function on `window.custom` that returns a string (HTML or text). Element names match keys exactly (e.g. `window.custom.hw` for `<hw></hw>`, `window.custom["app-root"]` for `<app-root></app-root>`).
-- **style.css** — All app styles in one file.
-- **REQUIREMENTS.md** — If present, use it as the source of truth; implement every applicable section and any “Definition of done” or “Acceptance criteria.”
-
-This keeps apps minimal and predictable. See **`client/public/skill.md`** for the full spec, examples, and checklist.
-
 ## Overview
 
 `client.js` is a client-side JavaScript library that provides utilities for DOM manipulation, reactive state management, and API interactions with a backend server. It automatically initializes custom HTML elements and provides a simple API for key-value storage, file operations, and authentication.
