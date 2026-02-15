@@ -1,8 +1,161 @@
 # Enigmatic
 
-![Version](https://img.shields.io/npm/v/enigmatic)
+## 1. Project Overview
 
-A lightweight client-side JavaScript library for DOM manipulation, reactive state management, and API interactions, with an optional Bun server for backend functionality.
+**Project Name:** Enigmatic  
+**Type:** Open-source JavaScript library with Bun server  
+**License:** MIT
+
+## 2. Purpose & Vision
+
+### Why This Project Exists
+
+Modern web development has become increasingly complex, with heavy build processes, massive frameworks, and steep learning curves. Enigmatic exists to provide a **lightweight, zero-build alternative** for building interactive web applications.
+
+### Core Philosophy
+
+- **Simplicity over complexity**: No build steps, no bundlers, no transpilation
+- **Progressive enhancement**: Start with a single HTML file and a script tag
+- **Batteries included**: Client library + optional server = complete stack
+- **Developer experience**: Minimal API surface, intuitive patterns, rapid prototyping
+
+## 3. Problem Statement
+
+### The Challenge
+
+Developers building small-to-medium web applications face a dilemma:
+
+1. **Pure static sites** lack interactivity, state management, and backend integration
+2. **Modern frameworks** (React, Vue, Angular) require complex tooling, build processes, and significant learning investment
+3. **Backend solutions** often require separate deployment, complex configuration, and vendor lock-in
+
+### Target Audience
+
+- Rapid prototypers who need to go from idea to working app quickly
+- Developers building internal tools and dashboards
+- Educators teaching web development fundamentals
+- Indie hackers and solo developers
+- Anyone who wants to add interactivity without framework overhead
+
+## 4. Solution
+
+Enigmatic provides a **complete, lightweight stack**:
+
+### Client Library (`client.js`)
+- **Reactive state management** via Proxy objects
+- **Custom HTML elements** for component-like behavior
+- **DOM utilities** ($, $$ selectors)
+- **API integration** for KV storage, file operations, and auth
+- **Zero dependencies** – works in any modern browser
+
+### Bun Server (Optional)
+- **Key-value storage** – per-user persisted JSONL storage
+- **File storage** – Cloudflare R2/S3-compatible object storage
+- **Authentication** – Auth0 OAuth2 integration
+- **LLM proxy** – OpenRouter integration for AI features
+- **Static file serving** – for local development
+
+## 5. Key Features
+
+| Feature | Description | Use Case |
+|---------|-------------|----------|
+| Reactive State | Proxy-based state that auto-updates DOM | Live data dashboards |
+| Custom Elements | Define components with `window.custom` | Reusable UI components |
+| KV Storage | Simple key-value persistence | User preferences, app state |
+| File Storage | Upload/download with R2/S3 | Document management |
+| Authentication | OAuth2 login/logout | User-specific data |
+| LLM Proxy | Chat completions via OpenRouter | AI-powered features |
+
+## 6. Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        BROWSER                              │
+│  ┌──────────────────┐        ┌──────────────────────────┐  │
+│  │   client.js      │◄──────►│    Custom Elements       │  │
+│  │  (DOM + State)   │        │  (window.custom)         │  │
+│  └──────────────────┘        └──────────────────────────┘  │
+│           │                                                │
+│           ▼                                                │
+│  ┌──────────────────┐        ┌──────────────────────────┐  │
+│  │   window.state   │◄──────►│   Reactive DOM Updates   │  │
+│  └──────────────────┘        └──────────────────────────┘  │
+└───────────┬─────────────────────────────────────────────────┘
+            │ HTTP/HTTPS
+            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      BUN SERVER (Optional)                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │  KV Store    │  │   Auth0      │  │  Cloudflare R2   │  │
+│  │  (JSONL)     │  │  (OAuth2)    │  │   (File Store)   │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 7. Success Metrics
+
+- **Developer adoption**: Downloads, GitHub stars, community contributions
+- **Ease of use**: Time to first working app (< 5 minutes)
+- **Performance**: Minimal bundle size, fast load times
+- **Flexibility**: Works for simple sites to complex dashboards
+
+## 8. Project Scope
+
+### In Scope
+- Client library with state management and DOM utilities
+- Bun server with KV, file storage, and auth
+- Plugin architecture for extensibility
+- Documentation and examples
+
+### Out of Scope
+- Database ORM or complex data modeling
+- Server-side rendering (SSR)
+- Mobile app development
+- Enterprise-grade scalability features
+
+## 9. Risks & Mitigation
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Bun runtime adoption | Medium | Bun is gaining traction; Node.js port possible |
+| Security concerns | High | Auth0 integration, HTTPS enforcement, input validation |
+| Limited ecosystem | Low | Plugin architecture allows community extensions |
+
+## 10. Future Roadmap
+
+- **v1.0**: Stable API, comprehensive test suite
+- **v1.1**: Additional storage backends (PostgreSQL, MongoDB)
+- **v1.2**: WebSocket support for real-time features
+- **v2.0**: TypeScript definitions, CLI scaffolding tools
+
+## 11. Conclusion
+
+Enigmatic bridges the gap between static HTML and full-stack frameworks. By prioritizing simplicity and progressive enhancement, it empowers developers to build interactive web applications without the overhead of modern build pipelines.
+
+**Get started in 30 seconds:**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://unpkg.com/enigmatic"></script>
+  <script>
+    window.api_url = 'https://your-server.com';
+    window.state.message = 'Hello World';
+  </script>
+</head>
+<body>
+  <hello-world data="message"></hello-world>
+</body>
+</html>
+```
+
+---
+
+*This charter serves as the foundational document for the Enigmatic project. All major decisions should align with the principles outlined herein.*
+
+# Technical 
+
 
 ## Architecture
 

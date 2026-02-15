@@ -2,11 +2,11 @@
   "name": "enigmatic",
   "version": "0.39.0",
   "bin": {
-    "enigmatic": "./bin/enigmatic.js"
+    "enigmatic": "~/.enigmatic/server/server.js"
   },
-  "unpkg": "./client/public/client.js",
+  "unpkg": "./src/client/client.js",
   "scripts": {
-    "start": "bun run server/server.js",
-    "hot": "bun --hot server/server.js"
+    "start": "bun run src/server/server.js",
+    "hot": "bun --hot src/server/server.js"
   }
 }

@@ -1,9 +1,4 @@
 node_modules
-.env
 package-lock.json
-*.pem
 certs/
-*.jsonl
-kv/
-test/
-.DS_Store
+data/
