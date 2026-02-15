@@ -1,10 +1,6 @@
 {
   "use_plugins": [
-    "../server/logging.js",
-    "auth/auth0.js", 
-    "auth/bearer.js", 
-    "db/s3.js", 
-    "db/user-storage.js", 
-    "llm/llmchat.js"], 
+    "../server/logging.js"
+  ],
   "port": 3000
 }

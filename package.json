@@ -2,11 +2,22 @@
   "name": "enigmatic",
   "version": "0.39.0",
   "bin": {
-    "enigmatic": "~/.enigmatic/server/server.js"
+    "enigmatic": "~/.enigmatic/server/server2.js"
   },
   "unpkg": "./src/client/client.js",
   "scripts": {
-    "start": "bun run src/server/server.js",
-    "hot": "bun --hot src/server/server.js"
+    "start": "bun run src/server/server2.js",
+    "hot": "bun --hot src/server/server2.js"
+  },
+  "type": "module",
+  "imports": {
+    "#app": "./",
+    "#app/*": "./*",
+    "#plugins/*": "./src/plugins/*",
+    "#data/*" : "./data/*",
+    "#public": "./public"
+  },
+  "dependencies": {
+    "jsonc-data": "^0.0.1"
   }
 }
