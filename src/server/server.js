@@ -1,88 +1,102 @@
-import { join } from "path";
-import { fileURLToPath } from "url";
-import { readdir } from "node:fs/promises";
-import { read } from "node:fs";
+import { extname, join } from "node:path";
+import { readdir, readFile } from "node:fs/promises";
+import config from "#app/config.json";
 
-const __dirname = fileURLToPath(new URL(".", import.meta.url));
-const configPath = join(__dirname, "..", "..", "config.json");
-const certsDir = join(__dirname, "..", "..", "certs");
-const publicDir = join(__dirname, "..", "..", "public");
+// Plugins
+const app = { 
+  path: import.meta.path.split("/src")[0], 
+  routes: { always: [] },
+  requiredEnvs: [],
+  getUserFns: []
+};
 
-// Load config
-const config = await import(configPath, { assert: { type: "json" } }).then(m => m.default).catch(() => ({
-  use_plugins: [],
-  port: 3000
-}));
-
-const { use_plugins = [], port = 3000 } = config;
-
-// Load Plugins
-let routes = {};
-for (const name of use_plugins) {
+for (const name of config.use_plugins || []) {
   try {
-    const pluginPath = name.startsWith("/") ? name : join(__dirname, "..", "plugins", name);
-    const plugin = await import(pluginPath);
-    for (const route in plugin) {
-      routes[route] = plugin[route];
-    }
+    const mod = await import(name.startsWith("/") ? name : `#plugins/${name}`);
+    if (typeof mod.default === "function") await mod.default(app);
   } catch (e) {
-    console.error(`Failed to load plugin ${name}:`, e.message);
+    console.error(`Failed to load plugin ${name}: ${e.message}`);
   }
 }
 
-// Static files
-const htmls = {}
-for(const filename of await readdir(publicDir)) {
-  htmls[`/${filename}`] = await Bun.file(publicDir + '/' + filename).text();
-}
+// Check env
+const required = [
+  ...(Array.isArray(app.requiredEnvs) ? app.requiredEnvs : []),
+  ...(Array.isArray(app.requiredEnv) ? app.requiredEnv : []),
+];
+const missing = [...new Set(required)].filter((k) => !Bun.env[k]);
+if (missing.length) throw new Error(`Missing env: ${missing.join(", ")}`);
 
-function json(d, s = 200, h = {}, origin) {
-  return new Response(JSON.stringify(d), {
-    status: s,
-    headers: {
-      "Access-Control-Allow-Origin": origin ?? "*",
-      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, PROPFIND, PATCH, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie",
-      "Access-Control-Allow-Credentials": "true",
-      "Content-Type": "application/json",
-      ...h,
-    },
-  });
-}
+// Static files
+const files = {};
+for (const f of await readdir(join(app.path, "public"))) files[`/${f}`] = await readFile(join(app.path, "public", f));
+
+const types = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".ico": "image/x-icon",
+};
+
+const cors = (o) => ({
+  "Access-Control-Allow-Origin": o || "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PURGE, PROPFIND, PATCH, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, Cookie",
+  "Access-Control-Allow-Credentials": "true",
+});
+
+const redir = (url, cookie) => Response.redirect(url, { headers: cookie ? { "Set-Cookie": cookie } : {} });
 
 export function createServer(options = {}) {
   return {
-    async fetch(req) {
-      const { method, url } = req;
-      const requestUrl = new URL(url);
-      const pathname = requestUrl.pathname;
-      const origin = req.headers.get("Origin") || requestUrl.origin;
-
-      // CORS
-      if (method === "OPTIONS") {
-        return json(null, 204, {}, origin);
-      }
-
-      // Check if there's a route handler for this path
-      if (routes[pathname]) {
-        if (method === "GET") {
-          return new Response(routes[pathname]);
-        }
-        // If route is a function, call it
-        if (typeof routes[pathname] === "function") {
-          return await routes[pathname](req);
-        }
-      }
-
-      // Static file serving (public) or not found
-      return htmls[url] ? json(htmls[url], 200) : json({ error: "Not found" }, 404, {}, origin);
-    },
-    port: config.port,
+    port: options.port ?? config.port ?? 3000,
     tls: {
-      cert: Bun.file(join(certsDir, "cert.pem")),
-      key: Bun.file(join(certsDir, "key.pem")),
+      cert: Bun.file(join(app.path, "certs", "cert.pem")),
+      key: Bun.file(join(app.path, "certs", "key.pem")),
+    },
+    async fetch(req) {
+      const url = new URL(req.url), path = url.pathname, key = path.slice(1), origin = req.headers.get("Origin") || url.origin;
+      if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
+      for (const fn of app.routes.always || []) fn(req, null, null);
+
+      let auth = { token: null, user: null };
+      for (const getUser of app.getUserFns || []) {
+        const out = getUser(req);
+        if (out?.token || out?.user) {
+          auth = out;
+          break;
+        }
+      }
+
+      const json = (d, s = 200, h = {}) =>
+        new Response(JSON.stringify(d), { status: s, headers: { ...cors(origin), "Content-Type": "application/json", ...h } });
+      const ctx = { req, method: req.method, path, key, url, origin, token: auth.token, user: auth.user, json, redir };
+
+      for (const k of [`${req.method} ${path}`, `${req.method} *`, "*"]) {
+        const list = Array.isArray(app.routes[k]) ? app.routes[k] : [app.routes[k]];
+        for (const fn of list) {
+          if (typeof fn !== "function") continue;
+          const out = await fn(req, ctx);
+          if (out) return out;
+        }
+      }
+
+      const p = path === "/" ? "/index.html" : path;
+      if (files[p]) return new Response(files[p], { headers: { ...cors(origin), "Content-Type": types[extname(p)] || "application/octet-stream" } });
+      return json({ error: "Not Found" }, 404);
     },
   };
 }
 
-export default createServer();
+export default createServer;
+
+if (import.meta.main) {
+  const server = createServer();
+  console.log(`vanilla-light server starting on port ${server.port}...`);
+  Bun.serve(server);
+}

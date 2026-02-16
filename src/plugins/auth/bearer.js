@@ -1,18 +1,18 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 
-const sessions = new Map();
-const users = new Map();
+export function getBearerUser(req, sessions) {
+  const raw = req.headers.get("Authorization") || "";
+  const token = /^Bearer\s+(.+)$/i.exec(raw)?.[1] || null;
+  return { token, user: token ? sessions.get(token) || null : null };
+}
 
-export function createAuthBearer() {
-  const getTokenAndUser = (req) => {
-    const auth = req.headers.get("Authorization") || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    const user = token ? sessions.get(token) || null : null;
-    return { token, user };
-  };
+export default function (app) {
+  const users = (app.users ||= new Map());
+  const sessions = (app.sessions ||= new Map());
+  app.getUserFns.push((req) => getBearerUser(req, sessions));
 
-  const register = async (req, ctx) => {
-    if (ctx.method !== "POST" || ctx.path !== "/register") return null;
+  let k = "POST /register";
+  let fn = async (req, ctx) => {
     const body = await req.json().catch(() => ({}));
     const sub = body.sub || randomUUID();
     const user = {
@@ -24,45 +24,34 @@ export function createAuthBearer() {
     users.set(sub, user);
     const token = randomUUID();
     sessions.set(token, user);
-    return ctx.json({ token, user }, 200, {}, ctx.origin);
+    return ctx.json({ token, user });
   };
+  app.routes[k] = app.routes[k] ? (Array.isArray(app.routes[k]) ? [...app.routes[k], fn] : [app.routes[k], fn]) : fn;
 
-  const login = async (req, ctx) => {
-    if (ctx.method !== "POST" || ctx.path !== "/login") return null;
+  k = "POST /login";
+  fn = async (req, ctx) => {
     const body = await req.json().catch(() => ({}));
-    const sub = body.sub;
-    if (!sub || !users.has(sub)) return ctx.json({ error: "User not found" }, 404, {}, ctx.origin);
-    const user = users.get(sub);
+    const user = users.get(body.sub);
+    if (!user) return ctx.json({ error: "User not found" }, 404);
     const token = randomUUID();
     sessions.set(token, user);
-    return ctx.json({ token, user }, 200, {}, ctx.origin);
+    return ctx.json({ token, user });
   };
+  app.routes[k] = app.routes[k] ? (Array.isArray(app.routes[k]) ? [...app.routes[k], fn] : [app.routes[k], fn]) : fn;
 
-  const me = async (_req, ctx) => {
-    if (ctx.method !== "GET" || ctx.path !== "/me") return null;
-    if (!ctx.user) return ctx.json({ error: "Not found" }, 404, {}, ctx.origin);
-    return ctx.json(ctx.user, 200, {}, ctx.origin);
+  k = "GET /me";
+  fn = async (_req, ctx) => {
+    if (!ctx.user) return null;
+    return ctx.json(ctx.user);
   };
+  app.routes[k] = app.routes[k] ? (Array.isArray(app.routes[k]) ? [...app.routes[k], fn] : [app.routes[k], fn]) : fn;
 
-  const logout = async (_req, ctx) => {
-    if (ctx.method !== "GET" || ctx.path !== "/logout") return null;
-    const auth = ctx.req.headers.get("Authorization") || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    if (token) sessions.delete(token);
-    return ctx.json({ status: "Logged out" }, 200, {}, ctx.origin);
+  k = "GET /logout";
+  fn = async (req, ctx) => {
+    const { token } = getBearerUser(req, sessions);
+    if (!token) return null;
+    sessions.delete(token);
+    return ctx.json({ status: "Logged out" });
   };
-
-  const handle = (req, ctx) => register(req, ctx) ?? login(req, ctx) ?? me(req, ctx) ?? logout(req, ctx);
-
-  return {
-    routes: {
-      "/register": { POST: handle },
-      "/login": { POST: handle },
-      "/me": { GET: handle },
-      "/logout": { GET: handle },
-    },
-    getTokenAndUser,
-  };
+  app.routes[k] = app.routes[k] ? (Array.isArray(app.routes[k]) ? [...app.routes[k], fn] : [app.routes[k], fn]) : fn;
 }
-
-export const { routes, getTokenAndUser } = createAuthBearer();

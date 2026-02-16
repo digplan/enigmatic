@@ -10,7 +10,7 @@ for (let i = 0; i < args.length; i++) {
   if (arg === "--port" || arg === "-p") {
     options.port = parseInt(args[++i], 10) || 3000;
   } else if (arg === "--help" || arg === "-h") {
-    console.log(`Usage: enigmatic [options]
+    console.log(`Usage: vanilla-light [options]
 
 Options:
   -p, --port <number>    Port to listen on (default: 3000)
@@ -20,5 +20,5 @@ Options:
 }
 
 const config = createServer(options);
-console.log(`Enigmatic server starting on port ${options.port}...`);
+console.log(`vanilla-light server starting on port ${options.port}...`);
 Bun.serve(config);

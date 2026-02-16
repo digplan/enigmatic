@@ -1,33 +1,22 @@
-/**
- * LLM chat plugin: POST /llm/chat → OpenRouter (no auth).
- * Convention: routes + handle(req, ctx). See plugin/README.md.
- */
-export function createLlmChat(env) {
-  const apiKey = env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("Missing env: OPENROUTER_API_KEY");
-  const fixedModel = env.USE_LLM_MODEL;
+export default function (app) {
+  const apiKey = Bun.env.OPENROUTER_API_KEY;
+  const auth = apiKey?.startsWith("Bearer ") ? apiKey : `Bearer ${apiKey || ""}`;
+  app.requiredEnvs = [...(app.requiredEnvs || []), "OPENROUTER_API_KEY"];
 
-  const handle = async (req, ctx) => {
-    console.log("[llm] %s %s from %s", ctx.method, ctx.path, ctx.origin || "-");
-    try {
-      const body = await req.json();
-      const model = fixedModel || body?.model || "(none)";
-      console.log("[llm] body: model=%s messages=%d", model, Array.isArray(body?.messages) ? body.messages.length : 0);
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: { Authorization: apiKey, "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      return ctx.json(await res.json(), res.status, {}, ctx.origin);
-    } catch (e) {
-      return ctx.json({ error: "LLM request failed", details: e.message }, 500, {}, ctx.origin);
-    }
-  };
+  const k = "POST /llm/chat";
+  const fn = async (req, ctx) => {
+    if (!apiKey) return ctx.json({ error: "Missing OPENROUTER_API_KEY" }, 503);
+    const body = await req.json().catch(() => ({}));
+    const model = Bun.env.USE_LLM_MODEL;
+    if (model && !body.model) body.model = model;
 
-  return {
-    routes: { "/llm/chat": { POST: handle } },
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: auth, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    return ctx.json(await res.json(), res.status);
   };
+  app.routes[k] = app.routes[k] ? (Array.isArray(app.routes[k]) ? [...app.routes[k], fn] : [app.routes[k], fn]) : fn;
 }
-
-// Pre-initialized export using Bun.env
-export const { routes } = createLlmChat(Bun.env);

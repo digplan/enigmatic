@@ -1,13 +1,13 @@
 {
-  "name": "enigmatic",
-  "version": "0.39.0",
+  "name": "vanilla-light",
+  "version": "0.40.0",
   "bin": {
-    "enigmatic": "~/.enigmatic/server/server2.js"
+    "vanilla-light": "~/.vanilla-light/server/server.js"
   },
-  "unpkg": "./src/client/client.js",
+  "unpkg": "./public/client.js",
   "scripts": {
-    "start": "bun run src/server/server2.js",
-    "hot": "bun --hot src/server/server2.js"
+    "start": "bun run src/server/server.js",
+    "hot": "bun --hot src/server/server.js"
   },
   "type": "module",
   "imports": {
