@@ -25,7 +25,7 @@
 
 ## + architecture image
 
-<a href="https://ibb.co/mVbjyBxY"><img src="https://i.ibb.co/hJL6dMqn/clientserver.png" alt="clientserver" border="0" /></a>
+![Client/server architecture](https://i.ibb.co/hJL6dMqn/clientserver.png)
 
 This visualizes the same split shown above:
 - Left side is the browser/static layer (`public/index.html`, `public/client.js`, `public/components.js`) that renders UI and sends API requests.
