@@ -30,6 +30,7 @@ async function loadConfig() {
 
 const { config, configPath } = await loadConfig();
 const certsDir = typeof config.certs_dir === "string" && config.certs_dir.trim() ? config.certs_dir.trim() : "certs";
+const disableSsl = config.disable_ssl === true;
 
 // Plugins
 const app = { 
@@ -89,6 +90,8 @@ const redir = (url, cookie) =>
   });
 
 export function warnMissingTlsFiles() {
+  if (disableSsl) return;
+
   const certPath = join(app.path, certsDir, "cert.pem");
   const keyPath = join(app.path, certsDir, "key.pem");
   const missing = [
@@ -104,12 +107,8 @@ export function warnMissingTlsFiles() {
 }
 
 export function createServer(options = {}) {
-  return {
+  const server = {
     port: options.port ?? 3000,
-    tls: {
-      cert: Bun.file(join(app.path, certsDir, "cert.pem")),
-      key: Bun.file(join(app.path, certsDir, "key.pem")),
-    },
     async fetch(req) {
       const url = new URL(req.url), path = url.pathname, key = path.slice(1), origin = req.headers.get("Origin") || url.origin;
       if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
@@ -142,6 +141,15 @@ export function createServer(options = {}) {
       return json({ error: "Not Found" }, 404);
     },
   };
+
+  if (!disableSsl) {
+    server.tls = {
+      cert: Bun.file(join(app.path, certsDir, "cert.pem")),
+      key: Bun.file(join(app.path, certsDir, "key.pem")),
+    };
+  }
+
+  return server;
 }
 
 export default createServer;
@@ -149,7 +157,7 @@ export default createServer;
 if (import.meta.main) {
   const server = createServer();
   if (configPath) console.log(`using config: ${configPath}`);
-  console.log(`server starting on port ${server.port}...`);
+  console.log(`server starting on ${disableSsl ? "http" : "https"}://localhost:${server.port}...`);
   warnMissingTlsFiles();
   Bun.serve(server);
 }
