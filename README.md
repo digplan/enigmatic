@@ -2,50 +2,68 @@
 [![npm version](https://img.shields.io/npm/v/vanilla-light.svg)](https://www.npmjs.com/package/vanilla-light)
 [![npm downloads](https://img.shields.io/npm/dm/enigmatic.svg)](https://www.npmjs.com/package/enigmatic)
 
-Vanilla-light is a no-build, dependency-free full-stack framework with a reactive browser client and an HTTPS server.
-It is designed for a split deployment model: static frontend on CDN + API backend on Bun, with built-in plugins for auth, database/storage, and LLM proxy routes.
+Vanilla-light is a no-build, dependency-free full-stack framework with a reactive browser client and an HTTPS Bun server.
+It is designed for split deployment: static frontend on CDN + API backend with plugin-driven routes.
 
 - no frontend build step
 - no runtime npm dependencies
-- 16kb with plugins
-- standalone front and back-end (can be separately hosted)
+- standalone frontend/backend deployment
 - reactive `window.state` + custom web components
 - plugin-driven backend (`src/plugins/*`)
 - auth (auth0, bearer) | db (jsonl) | llm (openrouter)
 
-**Try now! Host locally**
-```bash
-$ npx vanilla-light
-```
-Open a browser to localhost:3000
-
-Client import ([`client.js` exports](#clientjs-exports)):
-```js
-import { $, $$, get, set, del, me } from 'https://unpkg.com/vanilla-light'
-```
-
-```text
-Browser (CDN/Static)                     HTTPS Server (API)
-tiny js client + components + html      <-> server + plugins
-```
-
-![Client/server architecture](https://i.ibb.co/hJL6dMqn/clientserver.png)
-
-This project splits into:
-- Browser/static layer: `public/index.html`, `public/client.js`, `public/components.js`
-- Bun backend: `src/server.js` + `src/plugins/*` (auth, storage, llm)
-- Communication: browser <-> backend API calls
-
 ## Quick Start
 ```bash
-bun install
 bun run hot
 # or
 bun run start
 ```
 Default server URL: `https://localhost:3000`
 
-Set `disable_ssl: true` in `config.json` to run plain HTTP (`http://localhost:3000`) instead of HTTPS. This is useful behind a reverse proxy (nginx/caddy/cloudflare) that terminates HTTPS.
+`bun install` is not needed for this project right now because it has no runtime npm dependencies.
+
+To run HTTP instead of HTTPS, set `disable_ssl: true` in config.
+
+## CLI
+Run commands with any of these:
+```bash
+bun bin/cli.js <command>
+npx vanilla-light <command>
+vlserver <command>
+```
+
+Common commands:
+```bash
+vlserver start
+vlserver config
+vlserver port 3000
+vlserver insecure true
+vlserver insecure false
+vlserver certsdir certs
+vlserver +plugin auth/bearer.js
+vlserver -plugin auth/bearer.js
+```
+
+Notes:
+- `vlserver config` prints active config path + config JSON
+- `+plugin` errors if plugin file does not exist under `src/plugins`
+- `certsdir` errors if the directory does not exist
+
+## Configuration
+Default config shape:
+```json
+{
+  "use_plugins": [],
+  "port": 3000,
+  "disable_ssl": false,
+  "certs_dir": "certs"
+}
+```
+
+Config resolution order:
+1. `~/.vanilla-light/config.json`
+2. `./config.json`
+3. built-in defaults
 
 ## Layout
 - `src/server.js`: server + route dispatch
@@ -60,17 +78,19 @@ Run frontend and backend separately:
 - Backend: Bun server (`src/server.js`)
 - Frontend: static/CDN host (`client.js`, `components.js`, HTML)
 
-Client-side requirement:
+Client import:
 ```js
 import { $, $$, get, set, del, me } from 'https://unpkg.com/vanilla-light'
 ```
 
-Example backend config for reverse-proxy TLS termination:
+Reverse-proxy TLS termination example:
 ```json
 { "disable_ssl": true }
 ```
 
-## Required Env (current config)
+![Client/server architecture](https://i.ibb.co/hJL6dMqn/clientserver.png)
+
+## Required Env (Current Plugins)
 ```bash
 AUTH0_DOMAIN=...
 AUTH0_CLIENT_ID=...
@@ -82,31 +102,14 @@ CLOUDFLARE_PUBLIC_URL=...
 OPENROUTER_API_KEY=...
 ```
 
-## Auth Modes
-```text
-[Auth0 redirect] loginAuth0() / logoutAuth0()
-[Bearer API]    registerBearer(email, name?, sub?) / loginBearer(sub) / logoutBearer()
-```
-`login()` -> Auth0 login  
-`logout()` -> bearer logout if token exists, else Auth0 logout
+## API Overview
+Main routes:
+- `POST /register`, `POST /login`, `GET /me`
+- KV: `POST/GET/DELETE /{key}`
+- Storage: `PUT /{key}`, `PROPFIND /`, `PATCH /{key}`
+- LLM: `POST /llm/chat`
 
-## API Behavior
-```text
-POST   /register    -> { token, user }
-POST   /login       -> { token, user }
-GET    /me          -> user or not found
-POST   /{key}       -> { "POST":"ok" }            (kv set, auth)
-GET    /{key}       -> stored value | null        (kv get, auth)
-DELETE /{key}       -> { "DELETE":"ok" }          (kv delete, auth)
-PUT    /{key}       -> { status:"Saved to R2" }   (s3 upload, auth)
-PROPFIND /          -> [ ...files ]               (s3 list, auth)
-PATCH  /{key}       -> file stream                (s3 download, auth)
-POST   /llm/chat    -> OpenRouter proxy
-```
-Unauthorized KV/S3 response:
-```json
-{ "error": "Unauthorized" }
-```
+For full behavior details, see `docs/server.md`.
 
 ## Writing a Server Plugin
 File: `src/plugins/<group>/<name>.js`
@@ -180,7 +183,7 @@ Notes:
 ## `client.js` Exports
 Available imports from `https://unpkg.com/vanilla-light`:
 - DOM: `$`, `$$`, `$c`
-- KV/storage-ish helpers: `get`, `set`, `put`, `del`, `purge`, `list`, `download`
+- KV/storage helpers: `get`, `set`, `put`, `del`, `purge`, `list`, `download`
 - Generic HTTP helper: `fetchJson`
 - User/auth helpers: `me`, `login`, `logout`, `loginAuth0`, `logoutAuth0`, `registerBearer`, `loginBearer`, `logoutBearer`
 - Reactivity/components: `state`, `initComponents`

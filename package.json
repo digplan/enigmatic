@@ -2,7 +2,7 @@
   "name": "vanilla-light",
   "version": "0.1.1",
   "bin": {
-    "vanilla-light": "./bin/start.js"
+    "vlserver": "./bin/cli.js"
   },
   "unpkg": "./public/client.js",
   "scripts": {

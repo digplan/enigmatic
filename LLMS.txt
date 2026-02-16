@@ -1,0 +1,63 @@
+Project: vanilla-light
+
+Summary
+- vanilla-light is a no-build, dependency-free full-stack project.
+- Frontend is a tiny JS client + custom components served from `public/`.
+- Backend is an HTTPS Bun server in `src/server.js` with plugin-driven routes.
+- Core plugin areas: auth, db/storage, llm.
+
+Runtime Model
+- Server entry: `src/server.js`
+- CLI entry: `bin/start.js`
+- Static assets: `public/`
+- Plugin folders: `src/plugins/always`, `src/plugins/auth`, `src/plugins/storage`, `src/plugins/llm`
+- Tests: `test/server.sh`
+
+Config and TLS
+- Config lookup order:
+  1) `~/.vanilla-light/config.json`
+  2) local `config.json`
+- `disable_ssl: true` runs HTTP (useful behind reverse proxies that terminate HTTPS).
+- Otherwise TLS files are expected in `certs_dir` (default `certs`):
+  - `cert.pem`
+  - `key.pem`
+
+Plugin Conventions (Current Team Style)
+- Export one default function: `export default function pluginName(app) { ... }`
+- Register routes with object spread:
+  `app.routes = { ...app.routes, 'GET /path': async (req) => ... }`
+- Use `req` argument name (not `_req`), and do not use `ctx` in plugin handlers.
+- Auth user is expected on `req.user` (set by auth plugins).
+- Import response helpers from server:
+  `import { json, redir } from '../src/server.js'`
+- `json` supports:
+  - normal JSON: `json({ ok: true })`
+  - custom status: `json({ error: 'x' }, 400)`
+  - status-only no-body: `json(204)` or `json(undefined, 304)`
+
+Route Matching Behavior
+- Router checks in this order:
+  1) exact: `"METHOD /path"`
+  2) method wildcard: `"METHOD *"`
+  3) global wildcard: `"*"`
+- Return `null` from a handler to pass to the next matching handler.
+
+Client API
+- Primary client import:
+  `import { $, $$, get, set, del, me } from 'https://unpkg.com/vanilla-light'`
+- Additional exports are documented in `README.md` under `client.js` exports.
+
+Development Notes
+- No extra npm dependencies for core code.
+- Prefer simple, readable JS over abstraction.
+- Formatting preferences in this repo:
+  - 2-space indentation
+  - single quotes
+  - no semicolons
+  - ESM only (`import`/`export`)
+
+Quick Commands
+- Start server: `bun run start`
+- Dev mode: `bun run hot`
+- Smoke tests: `bash test/server.sh`
+
