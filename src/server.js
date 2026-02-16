@@ -1,9 +1,28 @@
-import { extname, join } from "node:path";
+import { dirname, extname, join } from "node:path";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { readdir, readFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 
-const appPath = import.meta.path.split("/src")[0];
+function resolveAppPath() {
+  const compiled = import.meta.path.startsWith("/$bunfs/");
+  if (!compiled) return import.meta.path.split("/src")[0];
+
+  const exeDir = dirname(process.execPath);
+  const candidates = [
+    process.cwd(),
+    join(exeDir, ".."),
+    exeDir,
+  ];
+
+  for (const base of candidates) {
+    if (existsSync(join(base, "public"))) return base;
+  }
+
+  return process.cwd();
+}
+
+const appPath = resolveAppPath();
 
 async function loadConfig() {
   const homeConfigPath = join(homedir(), ".vanilla-light", "config.json");
@@ -42,7 +61,8 @@ const app = {
 
 for (const name of config.use_plugins || []) {
   try {
-    const mod = await import(name.startsWith("/") ? name : `#plugins/${name}`);
+    const pluginPath = name.startsWith("/") ? name : join(app.path, "src", "plugins", name);
+    const mod = await import(pathToFileURL(pluginPath).href);
     if (typeof mod.default === "function") await mod.default(app);
   } catch (e) {
     console.error(`Failed to load plugin ${name}: ${e.message}`);

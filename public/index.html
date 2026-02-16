@@ -4,20 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>vanilla-light Demo</title>
-  <style>
-    body { font: 14px/1.4 sans-serif; max-width: 760px; margin: 24px auto; padding: 0 12px; }
-    h1 { margin: 0 0 12px; }
-    section { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 12px 0; }
-    input, textarea, button { font: inherit; padding: 6px; }
-    textarea { width: 100%; min-height: 90px; }
-    pre { background: #f6f6f6; padding: 10px; border-radius: 6px; overflow: auto; }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
-  </style>
-  <script src="/client.js"></script>
-  <script src="/custom.js"></script>
-  <script>
-    window.api_url = 'https://localhost:3000'
-  </script>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <h1>vanilla-light</h1>
@@ -27,11 +14,11 @@
     <b>Auth</b>
     <div>logged in? <span id="logged">no</span> | user: <span id="who">-</span></div>
     <div class="row">
-      <button onclick="auth0Login()">Auth0 Login</button>
-      <button onclick="bearerRegister()">Bearer Register</button>
-      <button onclick="bearerLogin()">Bearer Login</button>
-      <button onclick="doLogout()">Logout</button>
-      <button onclick="showMe()">Show User</button>
+      <button id="auth0-login">Auth0 Login</button>
+      <button id="bearer-register">Bearer Register</button>
+      <button id="bearer-login">Bearer Login</button>
+      <button id="do-logout">Logout</button>
+      <button id="show-me">Show User</button>
     </div>
     <pre id="me">null</pre>
   </section>
@@ -41,9 +28,9 @@
     <div class="row">
       <input id="k" placeholder="key" value="demo-key">
       <input id="v" placeholder="value" value="hello">
-      <button onclick="kvSet()">Set</button>
-      <button onclick="kvGet()">Get</button>
-      <button onclick="kvDel()">Delete</button>
+      <button id="kv-set">Set</button>
+      <button id="kv-get">Get</button>
+      <button id="kv-del">Delete</button>
     </div>
     <pre id="kv">null</pre>
   </section>
@@ -57,44 +44,60 @@
     <b>LLM Chat</b>
     <textarea id="prompt">Say hi in one sentence.</textarea>
     <div class="row">
-      <button onclick="chat()">Send</button>
+      <button id="chat-send">Send</button>
     </div>
     <pre id="chat">null</pre>
   </section>
 
-  <script>
-    window.api_url = window.location.origin;
-    const el = (id) => document.getElementById(id);
-    const show = (id, v) => el(id).textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2);
+  <script type="module">
+    import { $, $$, fetchJson, get, set, del, me, loginAuth0, registerBearer, loginBearer, logout } from "/client.js";
+
+    const show = (id, v) => $(id).textContent = typeof v === "string" ? v : JSON.stringify(v, null, 2);
+
     async function refreshAuth() {
       const u = await me();
-      el("logged").textContent = u ? "yes" : "no";
-      el("who").textContent = u?.name || u?.email || u?.sub || "-";
+      $("#logged").textContent = u ? "yes" : "no";
+      $("#who").textContent = u?.name || u?.email || u?.sub || "-";
       return u;
     }
 
-    function auth0Login() { loginAuth0(); }
-    async function bearerRegister() {
+    async function bearerRegisterFlow() {
       const email = prompt("email") || `demo-${Date.now()}@example.com`;
-      show("me", await registerBearer(email));
+      show("#me", await registerBearer(email));
       await refreshAuth();
     }
-    async function bearerLogin() {
+
+    async function bearerLoginFlow() {
       const sub = prompt("sub (from register response)");
       if (!sub) return;
-      show("me", await loginBearer(sub));
+      show("#me", await loginBearer(sub));
       await refreshAuth();
     }
-    async function doLogout() { await logout(); show("me", null); await refreshAuth(); }
-    async function showMe() { show("me", await refreshAuth()); }
-    async function kvSet() { show("kv", await set(el("k").value, el("v").value)); }
-    async function kvGet() { show("kv", await get(el("k").value)); }
-    async function kvDel() { show("kv", await window.delete(el("k").value)); }
-    async function chat() {
-      const body = { model: "openai/gpt-4o-mini", messages: [{ role: "user", content: el("prompt").value }] };
-      show("chat", await fetchJson(`${api_url}/llm/chat`, body));
+
+    async function logoutFlow() {
+      await logout();
+      show("#me", null);
+      await refreshAuth();
     }
-    refreshAuth();
+
+    async function chatFlow() {
+      const body = { model: "openai/gpt-4o-mini", messages: [{ role: "user", content: $("#prompt").value }] };
+      show("#chat", await fetchJson(`${window.api_url}/llm/chat`, body));
+    }
+
+    if ($$("#auth0-login").length) {
+      $("#auth0-login").addEventListener("click", loginAuth0);
+      $("#bearer-register").addEventListener("click", bearerRegisterFlow);
+      $("#bearer-login").addEventListener("click", bearerLoginFlow);
+      $("#do-logout").addEventListener("click", logoutFlow);
+      $("#show-me").addEventListener("click", async () => show("#me", await refreshAuth()));
+      $("#kv-set").addEventListener("click", async () => show("#kv", await set($("#k").value, $("#v").value)));
+      $("#kv-get").addEventListener("click", async () => show("#kv", await get($("#k").value)));
+      $("#kv-del").addEventListener("click", async () => show("#kv", await del($("#k").value)));
+      $("#chat-send").addEventListener("click", chatFlow);
+
+      refreshAuth();
+    }
   </script>
 </body>
 </html>

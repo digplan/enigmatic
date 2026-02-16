@@ -5,7 +5,7 @@ Core code lives under `src/`.
 - `src/`: Bun server entry point (`server.js`) and server utilities.
 - `src/plugins/`: pluggable features by domain (`auth/`, `storage/`, `llm/`).
 - `src/client/`: browser-side custom element helpers.
-- `public/`: static files served by the server (`index.html`, `client.js`, `custom.js`).
+- `public/`: static files served by the server (`index.html`, `client.js`, `components.js`).
 - `data/`: local JSONL data files used by storage plugins.
 - `test/`: shell-based API smoke tests (`test/server.sh`).
 - `bin/start.js`: CLI entrypoint.

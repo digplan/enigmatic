@@ -18,7 +18,7 @@
       Browser (CDN / Static)              Bun Server (API)
    +--------------------------+       +--------------------------+
    | public/client.js         | <---> | src/server.js            |
-   | public/custom.js         |       | src/plugins/*            |
+   | public/components.js     |       | src/plugins/*            |
    | your HTML app            |       | auth + kv + s3 + llm     |
    +--------------------------+       +--------------------------+
 ```
@@ -28,7 +28,7 @@
 ![Client/server architecture](assets/clientserver.png)
 
 `assets/clientserver.png` visualizes the same split shown above:
-- Left side is the browser/static layer (`public/index.html`, `public/client.js`, `public/custom.js`) that renders UI and sends API requests.
+- Left side is the browser/static layer (`public/index.html`, `public/client.js`, `public/components.js`) that renders UI and sends API requests.
 - Right side is the Bun backend (`src/server.js` + `src/plugins/*`) that handles auth, KV/S3 storage, and LLM proxy routes.
 - The center arrow indicates two-way communication over HTTPS API calls between client and server.
 
@@ -48,7 +48,7 @@ server default: `https://localhost:3000`
 - `src/server.js` : server + route dispatch
 - `src/plugins/` : `always`, `auth`, `storage`, `llm`
 - `public/client.js` : browser API
-- `public/custom.js` : `window.custom` components
+- `public/components.js` : exported `components` registry
 - `public/index.html` : simple full demo
 - `test/server.sh` : integration smoke tests
 
@@ -57,13 +57,12 @@ server default: `https://localhost:3000`
 run frontend and backend separately:
 
 - backend: Bun server (`src/server.js`)
-- frontend: static/CDN host (`client.js`, `custom.js`, HTML)
+- frontend: static/CDN host (`client.js`, `components.js`, HTML)
 
 only requirement on client side is:
 
 ```html
-<script src="https://cdn.example.com/client.js"></script>
-<script src="https://cdn.example.com/custom.js"></script>
+<script type="module" src="https://cdn.example.com/client.js"></script>
 <script>
   window.api_url = "https://api.example.com";
 </script>
@@ -145,12 +144,12 @@ rules:
 - append required envs to `app.requiredEnvs`
 - enable plugin in `config.json`
 
-## + writing custom web components (window.custom)
+## + writing custom web components
 
-define in `public/custom.js`:
+define in `public/components.js`:
 
 ```js
-window.custom = {
+export const components = {
   "hello-card": (data) => `<div>Hello ${data || "world"}</div>`,
   "user-badge": {
     render: async () => {
@@ -177,7 +176,7 @@ use in HTML:
 window.state.count = 1
    -> proxy set(...)
    -> find [data="count"]
-   -> render matching window.custom[tag]
+   -> render matching window.components[tag]
 ```
 
 example:
@@ -185,7 +184,7 @@ example:
 ```html
 <counter-view data="count"></counter-view>
 <script>
-  window.custom["counter-view"] = (v) => `<div>${v}</div>`;
+  window.components["counter-view"] = (v) => `<div>${v}</div>`;
   window.state.count = 1;
 </script>
 ```

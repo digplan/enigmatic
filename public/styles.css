@@ -1,0 +1,7 @@
+body { font: 14px/1.4 sans-serif; max-width: 760px; margin: 24px auto; padding: 0 12px; }
+h1 { margin: 0 0 12px; }
+section { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin: 12px 0; }
+input, textarea, button { font: inherit; padding: 6px; }
+textarea { width: 100%; min-height: 90px; }
+pre { background: #f6f6f6; padding: 10px; border-radius: 6px; overflow: auto; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
