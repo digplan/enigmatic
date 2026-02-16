@@ -6,8 +6,8 @@
   },
   "unpkg": "./public/client.js",
   "scripts": {
-    "start": "bun run src/server/server.js",
-    "hot": "bun --hot src/server/server.js"
+    "start": "bun run src/server.js",
+    "hot": "bun --hot src/server.js"
   },
   "type": "module",
   "imports": {

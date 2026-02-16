@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 Core code lives under `src/`.
-- `src/server/`: Bun server entry points (`server.js`) and server utilities.
+- `src/`: Bun server entry point (`server.js`) and server utilities.
 - `src/plugins/`: pluggable features by domain (`auth/`, `storage/`, `llm/`).
 - `src/client/`: browser-side custom element helpers.
 - `public/`: static files served by the server (`index.html`, `client.js`, `custom.js`).
@@ -12,7 +12,7 @@ Core code lives under `src/`.
 
 ## Build, Test, and Development Commands
 - `bun install`: install dependencies.
-- `bun run start` (or `npm start`): run server using `src/server/server.js`.
+- `bun run start` (or `npm start`): run server using `src/server.js`.
 - `bun run hot` (or `npm run hot`): run server with Bun hot reload.
 - `bun run bin/start.js --port 3000`: run via CLI entrypoint.
 - `bash test/server.sh`: run curl smoke tests against `https://localhost:3000`.

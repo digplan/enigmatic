@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { createServer, warnMissingTlsFiles } from "../src/server/server.js";
+import { createServer, warnMissingTlsFiles } from "../src/server.js";
 
 function printBanner() {
   console.log(`

@@ -17,7 +17,7 @@
 ```text
       Browser (CDN / Static)              Bun Server (API)
    +--------------------------+       +--------------------------+
-   | public/client.js         | <---> | src/server/server.js     |
+   | public/client.js         | <---> | src/server.js            |
    | public/custom.js         |       | src/plugins/*            |
    | your HTML app            |       | auth + kv + s3 + llm     |
    +--------------------------+       +--------------------------+
@@ -29,7 +29,7 @@
 
 `assets/clientserver.png` visualizes the same split shown above:
 - Left side is the browser/static layer (`public/index.html`, `public/client.js`, `public/custom.js`) that renders UI and sends API requests.
-- Right side is the Bun backend (`src/server/server.js` + `src/plugins/*`) that handles auth, KV/S3 storage, and LLM proxy routes.
+- Right side is the Bun backend (`src/server.js` + `src/plugins/*`) that handles auth, KV/S3 storage, and LLM proxy routes.
 - The center arrow indicates two-way communication over HTTPS API calls between client and server.
 
 ## + quick start
@@ -45,7 +45,7 @@ server default: `https://localhost:3000`
 
 ## + layout
 
-- `src/server/server.js` : server + route dispatch
+- `src/server.js` : server + route dispatch
 - `src/plugins/` : `always`, `auth`, `storage`, `llm`
 - `public/client.js` : browser API
 - `public/custom.js` : `window.custom` components
@@ -56,7 +56,7 @@ server default: `https://localhost:3000`
 
 run frontend and backend separately:
 
-- backend: Bun server (`src/server/server.js`)
+- backend: Bun server (`src/server.js`)
 - frontend: static/CDN host (`client.js`, `custom.js`, HTML)
 
 only requirement on client side is:

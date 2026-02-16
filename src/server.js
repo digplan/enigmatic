@@ -29,6 +29,7 @@ async function loadConfig() {
 }
 
 const { config, configPath } = await loadConfig();
+const certsDir = typeof config.certs_dir === "string" && config.certs_dir.trim() ? config.certs_dir.trim() : "certs";
 
 // Plugins
 const app = { 
@@ -88,16 +89,16 @@ const redir = (url, cookie) =>
   });
 
 export function warnMissingTlsFiles() {
-  const certPath = join(app.path, "certs", "cert.pem");
-  const keyPath = join(app.path, "certs", "key.pem");
+  const certPath = join(app.path, certsDir, "cert.pem");
+  const keyPath = join(app.path, certsDir, "key.pem");
   const missing = [
     !existsSync(certPath) ? "cert.pem" : null,
     !existsSync(keyPath) ? "key.pem" : null,
   ].filter(Boolean);
 
-  if (missing.length) {
+    if (missing.length) {
     console.warn(
-      `[warning] Missing TLS file${missing.length > 1 ? "s" : ""} in certs/: ${missing.join(", ")}`
+      `[warning] Missing TLS file${missing.length > 1 ? "s" : ""} in ${certsDir}/: ${missing.join(", ")}`
     );
   }
 }
@@ -106,8 +107,8 @@ export function createServer(options = {}) {
   return {
     port: options.port ?? 3000,
     tls: {
-      cert: Bun.file(join(app.path, "certs", "cert.pem")),
-      key: Bun.file(join(app.path, "certs", "key.pem")),
+      cert: Bun.file(join(app.path, certsDir, "cert.pem")),
+      key: Bun.file(join(app.path, certsDir, "key.pem")),
     },
     async fetch(req) {
       const url = new URL(req.url), path = url.pathname, key = path.slice(1), origin = req.headers.get("Origin") || url.origin;
