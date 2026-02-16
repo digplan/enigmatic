@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { createServer } from "../src/server/server.js";
+import { createServer, warnMissingTlsFiles } from "../src/server/server.js";
 
 // Parse CLI arguments
 const args = process.argv.slice(2);
@@ -21,4 +21,5 @@ Options:
 
 const config = createServer(options);
 console.log(`vanilla-light server starting on port ${options.port}...`);
+warnMissingTlsFiles();
 Bun.serve(config);

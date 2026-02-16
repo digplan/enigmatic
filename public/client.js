@@ -59,7 +59,7 @@ Object.assign(window, {
     state: sProx,
     fetchJson,
     get: (k) => req('GET', k).then(toJson),
-    set: (k, v) => req('POST', k, v).then(toJson),
+    set: (k, v) => req('POST', k, typeof v === 'string' ? JSON.stringify(v) : v).then(toJson),
     put: (k, v) => req('PUT', k, v).then(toJson),
     delete: (k) => req('DELETE', k).then(toJson),
     purge: (k) => req('PURGE', k).then(toJson),

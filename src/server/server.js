@@ -1,4 +1,5 @@
 import { extname, join } from "node:path";
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import config from "#app/config.json";
 
@@ -59,6 +60,21 @@ const redir = (url, cookie) =>
     },
   });
 
+export function warnMissingTlsFiles() {
+  const certPath = join(app.path, "certs", "cert.pem");
+  const keyPath = join(app.path, "certs", "key.pem");
+  const missing = [
+    !existsSync(certPath) ? "cert.pem" : null,
+    !existsSync(keyPath) ? "key.pem" : null,
+  ].filter(Boolean);
+
+  if (missing.length) {
+    console.warn(
+      `[warning] Missing TLS file${missing.length > 1 ? "s" : ""} in certs/: ${missing.join(", ")}`
+    );
+  }
+}
+
 export function createServer(options = {}) {
   return {
     port: options.port ?? config.port ?? 3000,
@@ -105,5 +121,6 @@ export default createServer;
 if (import.meta.main) {
   const server = createServer();
   console.log(`vanilla-light server starting on port ${server.port}...`);
+  warnMissingTlsFiles();
   Bun.serve(server);
 }
