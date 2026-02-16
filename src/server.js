@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import { readdir, readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 
+// Resolve the project root in both normal and compiled Bun execution modes.
 function resolveAppPath() {
   const compiled = import.meta.path.startsWith("/$bunfs/");
   if (!compiled) return import.meta.path.split("/src")[0];
@@ -24,6 +25,7 @@ function resolveAppPath() {
 
 const appPath = resolveAppPath();
 
+// Load config from user home first, then local project config as fallback.
 async function loadConfig() {
   const homeConfigPath = join(homedir(), ".vanilla-light", "config.json");
   const candidates = [
@@ -51,7 +53,7 @@ const { config, configPath } = await loadConfig();
 const certsDir = typeof config.certs_dir === "string" && config.certs_dir.trim() ? config.certs_dir.trim() : "certs";
 const disableSsl = config.disable_ssl === true;
 
-// Plugins
+// Shared app state that plugins mutate (routes, auth hooks, required envs, etc).
 const app = { 
   path: appPath,
   routes: { always: [] },
@@ -59,6 +61,7 @@ const app = {
   getUserFns: []
 };
 
+// Load each configured plugin module and let it register behavior into app.
 for (const name of config.use_plugins || []) {
   try {
     const pluginPath = name.startsWith("/") ? name : join(app.path, "src", "plugins", name);
@@ -69,15 +72,14 @@ for (const name of config.use_plugins || []) {
   }
 }
 
-// Check env
+// Fail fast when required env vars are missing.
 const required = [
-  ...(Array.isArray(app.requiredEnvs) ? app.requiredEnvs : []),
   ...(Array.isArray(app.requiredEnv) ? app.requiredEnv : []),
 ];
 const missing = [...new Set(required)].filter((k) => !Bun.env[k]);
 if (missing.length) throw new Error(`Missing env: ${missing.join(", ")}`);
 
-// Static files
+// Static files (cached in memory)
 const files = {};
 for (const f of await readdir(join(app.path, "public"))) files[`/${f}`] = await readFile(join(app.path, "public", f));
 
@@ -100,7 +102,7 @@ const cors = (o) => ({
   "Access-Control-Allow-Credentials": "true",
 });
 
-const redir = (url, cookie) =>
+export const redir = (url, cookie) =>
   new Response(null, {
     status: 302,
     headers: {
@@ -109,21 +111,23 @@ const redir = (url, cookie) =>
     },
   });
 
-export function warnMissingTlsFiles() {
-  if (disableSsl) return;
-
-  const certPath = join(app.path, certsDir, "cert.pem");
-  const keyPath = join(app.path, certsDir, "key.pem");
-  const missing = [
-    !existsSync(certPath) ? "cert.pem" : null,
-    !existsSync(keyPath) ? "key.pem" : null,
-  ].filter(Boolean);
-
-    if (missing.length) {
-    console.warn(
-      `[warning] Missing TLS file${missing.length > 1 ? "s" : ""} in ${certsDir}/: ${missing.join(", ")}`
-    );
+// JSON helper with support for status-only responses (e.g. json(204)).
+export function json(d, s = 200, h = {}) {
+  if (typeof d === "number" && s === 200 && Object.keys(h).length === 0) {
+    return new Response(null, { status: d });
   }
+
+  if (d === undefined) {
+    return new Response(null, {
+      status: s,
+      headers: h,
+    });
+  }
+
+  return new Response(JSON.stringify(d), {
+    status: s,
+    headers: { "Content-Type": "application/json", ...h },
+  });
 }
 
 export function createServer(options = {}) {
@@ -132,8 +136,11 @@ export function createServer(options = {}) {
     async fetch(req) {
       const url = new URL(req.url), path = url.pathname, key = path.slice(1), origin = req.headers.get("Origin") || url.origin;
       if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(origin) });
+
+      // Global middleware-like hooks that always run.
       for (const fn of app.routes.always || []) fn(req, null, null);
 
+      // First auth plugin that returns token/user wins.
       let auth = { token: null, user: null };
       for (const getUser of app.getUserFns || []) {
         const out = getUser(req);
@@ -143,10 +150,11 @@ export function createServer(options = {}) {
         }
       }
 
-      const json = (d, s = 200, h = {}) =>
-        new Response(JSON.stringify(d), { status: s, headers: { ...cors(origin), "Content-Type": "application/json", ...h } });
-      const ctx = { req, method: req.method, path, key, url, origin, token: auth.token, user: auth.user, json, redir };
+      const toJson = (d, s = 200, h = {}) =>
+        json(d, s, { ...cors(origin), ...h });
+      const ctx = { req, method: req.method, path, key, url, origin, token: auth.token, user: auth.user, json: toJson, redir };
 
+      // Route resolution order: exact -> method wildcard -> global wildcard.
       for (const k of [`${req.method} ${path}`, `${req.method} *`, "*"]) {
         const list = Array.isArray(app.routes[k]) ? app.routes[k] : [app.routes[k]];
         for (const fn of list) {
@@ -158,11 +166,21 @@ export function createServer(options = {}) {
 
       const p = path === "/" ? "/index.html" : path;
       if (files[p]) return new Response(files[p], { headers: { ...cors(origin), "Content-Type": types[extname(p)] || "application/octet-stream" } });
-      return json({ error: "Not Found" }, 404);
+      return toJson({ error: "Not Found" }, 404);
     },
   };
 
+  // Enable TLS unless explicitly disabled (sometimes done behind TLS-terminating proxies).
   if (!disableSsl) {
+    const missing = ["cert.pem", "key.pem"].filter((name) =>
+      !existsSync(join(app.path, certsDir, name))
+    );
+    if (missing.length) {
+      console.warn(
+        `[warning] Missing TLS file${missing.length > 1 ? "s" : ""} in ${certsDir}/: ${missing.join(", ")}`
+      );
+    }
+
     server.tls = {
       cert: Bun.file(join(app.path, certsDir, "cert.pem")),
       key: Bun.file(join(app.path, certsDir, "key.pem")),
@@ -178,6 +196,5 @@ if (import.meta.main) {
   const server = createServer();
   if (configPath) console.log(`using config: ${configPath}`);
   console.log(`server starting on ${disableSsl ? "http" : "https"}://localhost:${server.port}...`);
-  warnMissingTlsFiles();
   Bun.serve(server);
 }

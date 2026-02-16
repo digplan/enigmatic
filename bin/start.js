@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-import { createServer, warnMissingTlsFiles } from "../src/server.js";
+import { createServer } from "../src/server.js";
 
 function printBanner() {
   console.log(`
@@ -30,5 +30,4 @@ Options:
 const config = createServer(options);
 printBanner();
 console.log(`server starting on ${config.tls ? "https" : "http"}://localhost:${config.port}...`);
-warnMissingTlsFiles();
 Bun.serve(config);

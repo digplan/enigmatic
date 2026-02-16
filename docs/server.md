@@ -14,7 +14,6 @@
 ## Exports
 
 - `createServer(options = {})`
-- `warnMissingTlsFiles()`
 - default export: `createServer`
 
 ## Config Resolution
@@ -57,6 +56,5 @@ Important config keys used here:
 ## TLS / Startup
 
 - TLS files expected under `<certs_dir>/cert.pem` and `<certs_dir>/key.pem`.
-- `warnMissingTlsFiles()` logs missing cert/key warnings.
+- Missing cert/key warnings are logged inside `createServer()` when TLS is enabled.
 - when executed as main module, it starts with `Bun.serve(createServer())`.
-
