@@ -8,13 +8,13 @@ Core code lives under `src/`.
 - `public/`: static files served by the server (`index.html`, `client.js`, `custom.js`).
 - `data/`: local JSONL data files used by storage plugins.
 - `test/`: shell-based API smoke tests (`test/server.sh`).
-- `bin/enigmatic.js`: CLI entrypoint.
+- `bin/start.js`: CLI entrypoint.
 
 ## Build, Test, and Development Commands
 - `bun install`: install dependencies.
 - `bun run start` (or `npm start`): run server using `src/server/server.js`.
 - `bun run hot` (or `npm run hot`): run server with Bun hot reload.
-- `bun run bin/enigmatic.js --port 3000`: run via CLI entrypoint.
+- `bun run bin/start.js --port 3000`: run via CLI entrypoint.
 - `bash test/server.sh`: run curl smoke tests against `https://localhost:3000`.
   Example with custom target: `BASE=https://localhost:4000 bash test/server.sh`.
 

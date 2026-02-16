@@ -2,7 +2,7 @@
   "name": "vanilla-light",
   "version": "0.1.0",
   "bin": {
-    "vanilla-light": "./bin/enigmatic.js"
+    "vanilla-light": "./bin/start.js"
   },
   "unpkg": "./public/client.js",
   "scripts": {

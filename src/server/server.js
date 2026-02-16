@@ -102,14 +102,6 @@ export function warnMissingTlsFiles() {
   }
 }
 
-export function printIceCreamArt() {
-  console.log(`
-========================
-      vanilla-light
-========================
-`);
-}
-
 export function createServer(options = {}) {
   return {
     port: options.port ?? 3000,
@@ -155,7 +147,6 @@ export default createServer;
 
 if (import.meta.main) {
   const server = createServer();
-  printIceCreamArt();
   if (configPath) console.log(`using config: ${configPath}`);
   console.log(`server starting on port ${server.port}...`);
   warnMissingTlsFiles();

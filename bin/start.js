@@ -1,5 +1,13 @@
 #!/usr/bin/env bun
-import { createServer, printIceCreamArt, warnMissingTlsFiles } from "../src/server/server.js";
+import { createServer, warnMissingTlsFiles } from "../src/server/server.js";
+
+function printBanner() {
+  console.log(`
+========================
+      vanilla-light
+========================
+`);
+}
 
 // Parse CLI arguments
 const args = process.argv.slice(2);
@@ -20,7 +28,7 @@ Options:
 }
 
 const config = createServer(options);
-printIceCreamArt();
+printBanner();
 console.log(`server starting on port ${config.port}...`);
 warnMissingTlsFiles();
 Bun.serve(config);
