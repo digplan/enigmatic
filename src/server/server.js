@@ -50,7 +50,14 @@ const cors = (o) => ({
   "Access-Control-Allow-Credentials": "true",
 });
 
-const redir = (url, cookie) => Response.redirect(url, { headers: cookie ? { "Set-Cookie": cookie } : {} });
+const redir = (url, cookie) =>
+  new Response(null, {
+    status: 302,
+    headers: {
+      Location: url,
+      ...(cookie ? { "Set-Cookie": cookie } : {}),
+    },
+  });
 
 export function createServer(options = {}) {
   return {
