@@ -25,9 +25,9 @@
 
 ## + architecture image
 
-![Client/server architecture](assets/clientserver.png)
+<a href="https://ibb.co/mVbjyBxY"><img src="https://i.ibb.co/hJL6dMqn/clientserver.png" alt="clientserver" border="0" /></a>
 
-`assets/clientserver.png` visualizes the same split shown above:
+This visualizes the same split shown above:
 - Left side is the browser/static layer (`public/index.html`, `public/client.js`, `public/components.js`) that renders UI and sends API requests.
 - Right side is the Bun backend (`src/server.js` + `src/plugins/*`) that handles auth, KV/S3 storage, and LLM proxy routes.
 - The center arrow indicates two-way communication over HTTPS API calls between client and server.
