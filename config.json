@@ -8,6 +8,6 @@
     "llm/llmchat.js"
   ],
   "port": 3000,
-  "disable_ssl": false,
+  "disable_ssl": true,
   "certs_dir": "certs"
 }

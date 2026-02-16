@@ -7,10 +7,17 @@ It is designed for a split deployment model: static frontend on CDN + API backen
 
 - no frontend build step
 - no runtime npm dependencies
+- 16kb with plugins
 - standalone front and back-end (can be separately hosted)
 - reactive `window.state` + custom web components
 - plugin-driven backend (`src/plugins/*`)
 - auth (auth0, bearer) | db (jsonl) | llm (openrouter)
+
+**Try now! Host locally**
+```bash
+$ npx vanilla-light
+```
+Open a browser to localhost:3000
 
 Client import ([`client.js` exports](#clientjs-exports)):
 ```js
