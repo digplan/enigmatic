@@ -1,12 +1,16 @@
 # vanilla-light
 
 [![npm version](https://img.shields.io/npm/v/vanilla-light.svg)](https://www.npmjs.com/package/vanilla-light)
-[![npm downloads](https://img.shields.io/npm/dm/vanilla-light.svg)](https://www.npmjs.com/package/vanilla-light)
+[![npm downloads](https://img.shields.io/npm/dm/enigmatic.svg)](https://www.npmjs.com/package/enigmatic)
 
 ```text
 +--------------------------------------------------------------+
-| VANILLA-LIGHT                                                |
-| Lightweight browser utilities + Bun backend plugins          |
+| VANILLA-LIGHT  Full Stack Web Framework                      | 
+|    - Reactive client                                         |
+|    - Custom web components                                   |
+|    - Bun server w/plugins: Auth0, bearer, db, llm            |
+|    - Standalone reactivity, components, server               |
+|    - No builds, no dependencies                              |
 +--------------------------------------------------------------+
 ```
 
@@ -18,6 +22,15 @@
    | your HTML app            |       | auth + kv + s3 + llm     |
    +--------------------------+       +--------------------------+
 ```
+
+## + architecture image
+
+![Client/server architecture](assets/clientserver.png)
+
+`assets/clientserver.png` visualizes the same split shown above:
+- Left side is the browser/static layer (`public/index.html`, `public/client.js`, `public/custom.js`) that renders UI and sends API requests.
+- Right side is the Bun backend (`src/server/server.js` + `src/plugins/*`) that handles auth, KV/S3 storage, and LLM proxy routes.
+- The center arrow indicates two-way communication over HTTPS API calls between client and server.
 
 ## + quick start
 

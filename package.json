@@ -1,8 +1,8 @@
 {
   "name": "vanilla-light",
-  "version": "0.40.0",
+  "version": "0.1.0",
   "bin": {
-    "vanilla-light": "~/.vanilla-light/server/server.js"
+    "vanilla-light": "./bin/enigmatic.js"
   },
   "unpkg": "./public/client.js",
   "scripts": {
@@ -16,8 +16,5 @@
     "#plugins/*": "./src/plugins/*",
     "#data/*" : "./data/*",
     "#public": "./public"
-  },
-  "dependencies": {
-    "jsonc-data": "^0.0.1"
   }
 }

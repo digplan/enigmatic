@@ -1,11 +1,38 @@
 import { extname, join } from "node:path";
 import { existsSync } from "node:fs";
+import { homedir } from "node:os";
 import { readdir, readFile } from "node:fs/promises";
-import config from "#app/config.json";
+
+const appPath = import.meta.path.split("/src")[0];
+
+async function loadConfig() {
+  const homeConfigPath = join(homedir(), ".vanilla-light", "config.json");
+  const candidates = [
+    homeConfigPath,
+    join(appPath, "config.json"),
+  ];
+
+  for (const file of candidates) {
+    if (!existsSync(file)) continue;
+    try {
+      const parsed = JSON.parse(await readFile(file, "utf8"));
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return { config: parsed, configPath: file };
+      }
+      console.warn(`[warning] Ignoring invalid config at ${file}`);
+    } catch (e) {
+      console.warn(`[warning] Failed to parse config at ${file}: ${e.message}`);
+    }
+  }
+
+  return { config: {}, configPath: null };
+}
+
+const { config, configPath } = await loadConfig();
 
 // Plugins
 const app = { 
-  path: import.meta.path.split("/src")[0], 
+  path: appPath,
   routes: { always: [] },
   requiredEnvs: [],
   getUserFns: []
@@ -75,9 +102,17 @@ export function warnMissingTlsFiles() {
   }
 }
 
+export function printIceCreamArt() {
+  console.log(`
+========================
+      vanilla-light
+========================
+`);
+}
+
 export function createServer(options = {}) {
   return {
-    port: options.port ?? config.port ?? 3000,
+    port: options.port ?? 3000,
     tls: {
       cert: Bun.file(join(app.path, "certs", "cert.pem")),
       key: Bun.file(join(app.path, "certs", "key.pem")),
@@ -120,7 +155,9 @@ export default createServer;
 
 if (import.meta.main) {
   const server = createServer();
-  console.log(`vanilla-light server starting on port ${server.port}...`);
+  printIceCreamArt();
+  if (configPath) console.log(`using config: ${configPath}`);
+  console.log(`server starting on port ${server.port}...`);
   warnMissingTlsFiles();
   Bun.serve(server);
 }
