@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 Core code lives under `src/`.
 - `src/server/`: Bun server entry points (`server.js`) and server utilities.
-- `src/plugins/`: pluggable features by domain (`auth/`, `db/`, `llm/`).
+- `src/plugins/`: pluggable features by domain (`auth/`, `storage/`, `llm/`).
 - `src/client/`: browser-side custom element helpers.
 - `public/`: static files served by the server (`index.html`, `client.js`, `custom.js`).
 - `data/`: local JSONL data files used by storage plugins.

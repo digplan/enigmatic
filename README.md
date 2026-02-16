@@ -8,7 +8,7 @@
 | VANILLA-LIGHT  Full Stack Web Framework                      | 
 |    - Reactive client                                         |
 |    - Custom web components                                   |
-|    - Bun server w/plugins: Auth0, bearer, db, llm            |
+|    - Bun server w/plugins: Auth0, bearer, storage, llm            |
 |    - Standalone reactivity, components, server               |
 |    - No builds, no dependencies                              |
 +--------------------------------------------------------------+
@@ -46,7 +46,7 @@ server default: `https://localhost:3000`
 ## + layout
 
 - `src/server/server.js` : server + route dispatch
-- `src/plugins/` : `always`, `auth`, `db`, `llm`
+- `src/plugins/` : `always`, `auth`, `storage`, `llm`
 - `public/client.js` : browser API
 - `public/custom.js` : `window.custom` components
 - `public/index.html` : simple full demo
